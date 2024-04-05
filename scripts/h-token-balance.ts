@@ -13,7 +13,7 @@ import { TokenSymbol, getHTokenAddress } from './utils/addresses';
  * npx hardhat hTokenBalance --token [hETh, hMatic, hAvax...] --account [accountAddress] --network [the target network]
  */
 task('hTokenBalance', 'Get the hToken balance of the recipient')
-  .addParam('token', 'The address of the hToken contract')
+  .addParam('token', 'The hToken symbol [hETh, hMatic, hAvax...]')
   .addParam('account', 'The address of the account')
   .setAction(async ({ token, account }, hre: HardhatRuntimeEnvironment) => {
     const signer = (await hre.ethers.getSigners())[0]; // Get the first signer
@@ -22,6 +22,7 @@ task('hTokenBalance', 'Get the hToken balance of the recipient')
     const network = networks[hre.network.name];
     const currentNetworkType: NetworkType = network.type;
 
+    // Get the hToken contract address
     const hTokenAddress = getHTokenAddress(currentNetworkType as NetworkType, token as TokenSymbol);
     if (!hTokenAddress) {
       throw new Error(`Invalid h token: ${token}`);
@@ -41,6 +42,7 @@ task('hTokenBalance', 'Get the hToken balance of the recipient')
     // singer address does not matter. We are only reading
     const hTokenContract = new ethers.Contract(hTokenAddress, hTokenArtifact.abi, signer);
 
+    // Log the account's balance
     const balanceOf = await hTokenContract.balanceOf(account);
     console.log(
       `hToken balance of ${account} is ${balanceOf.toString()} wei or ${ethers.utils.formatEther(balanceOf)} ETH`
