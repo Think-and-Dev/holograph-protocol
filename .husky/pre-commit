@@ -2,16 +2,17 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 # ---------------------------------------------------------------------------- #
-#                       Check code formatting using forge                      #
+#                                 Code updates                                 #
 # ---------------------------------------------------------------------------- #
 
-# forge fmt --check
+# -------------------------- Foundry code formatting ------------------------- #
 
-# ---------------------------------------------------------------------------- #
-#                          Precompute Solidity Hashes                          #
-# ---------------------------------------------------------------------------- #
+# forge fmt
+
+# ------------------------ Precompute Solidity Hashes ------------------------ #
 
 npx ts-node scripts/precompute-solidity-hashes.ts
 
-# Add any changes made by the precompute-solidity-hashes script
+# --------------------------- Add any changes made --------------------------- #
+
 git add .
