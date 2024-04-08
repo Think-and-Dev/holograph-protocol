@@ -1,6 +1,16 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+# ---------------------------------------------------------------------------- #
+#                       Check code formatting using forge                      #
+# ---------------------------------------------------------------------------- #
+
+# forge fmt --check
+
+# ---------------------------------------------------------------------------- #
+#                          Precompute Solidity Hashes                          #
+# ---------------------------------------------------------------------------- #
+
 npx ts-node scripts/precompute-solidity-hashes.ts
 
 # Add any changes made by the precompute-solidity-hashes script
