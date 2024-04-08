@@ -64,6 +64,10 @@ library Constants {
     return address(0x98E2Ed9849B14E541454Ae6202b4cA06627269C1);
   }
 
+  function getHolographERC20() internal pure returns (address) {
+    return address(0xbC6Cf78c63d5f4C8D5aC56F096928AA742cbAC25);
+  }
+
   function getDropsEventConfig() internal pure returns (uint256) {
     return 0x0000000000000000000000000000000000000000000000000000000000040000;
   }
