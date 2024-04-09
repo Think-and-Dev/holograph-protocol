@@ -37,7 +37,7 @@ jobs:
         run: yarn install && forge install
 
       - name: Run the protocol
-        run: bash scripts/start_protocol.sh
+        run: bash scripts/start-protocol.sh
 
       - name: Run tests
         run: forge test --no-match-test "(FFI|Fork)" --no-match-contract Fork
