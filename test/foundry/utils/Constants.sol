@@ -24,22 +24,41 @@ library Constants {
     return address(0x17253175f447ca4B560a87a3F39591DFC7A021e3);
   }
 
+  function getHolographBridge() internal pure returns (address) {
+    return address(0x0af817Df693A292a4b8b9ACC698199333eB0DD9e);
+  }
+
   function getHolographBridgeProxy() internal pure returns (address) {
     return address(0x53D2B46b341385bC7e022667Eb1860505073D43a);
+  }
+
+  function getHolographFactory() internal pure returns (address) {
+    return address(0xa574B1A37c9235d19D942DD4393f728d2a646FDe);
   }
 
   function getHolographFactoryProxy() internal pure returns (address) {
     return address(0xcE2cDFDF0b9D45F8Bd2D3CCa4033527301903FDe);
   }
 
+  function getHolographOperator() internal pure returns (address) {
+    return address(0x0d173B3F4Da8e50333734F36E40c5f475874A7b3);
+  }
+
   function getHolographOperatorProxy() internal pure returns (address) {
     return address(0xABc5a4C81D3033cf920b982E75D1080b91AA0EF9);
+  }
+
+  function getHolographRegistry() internal pure returns (address) {
+    return address(0x1052ae1742fc6878010a31aA53671fEF7D51bf65);
   }
 
   function getHolographRegistryProxy() internal pure returns (address) {
     return address(0xB47C0E0170306583AA979bF30c0407e2bFE234b2);
   }
 
+  function getHolographTreasury() internal pure returns (address) {
+    return address(0x76c4fC0627405741Db0959E66d64c0ECeAceDC94);
+  }
   function getHolographTreasuryProxy() internal pure returns (address) {
     return address(0x65115A3Be2Aa1F267ccD7499e720088060c7ccd2);
   }
@@ -66,6 +85,22 @@ library Constants {
 
   function getHolographERC20() internal pure returns (address) {
     return address(0xbC6Cf78c63d5f4C8D5aC56F096928AA742cbAC25);
+  }
+
+  function getHolographERC721() internal pure returns (address) {
+    return address(0x3337B6e8eF94D36D21406c75Fe8d88E74381c071);
+  }
+
+  function getCxipERC721Proxy() internal pure returns (address) {
+    return address(0x2869c23117e1432850a09dE5ea7eA294E8fa2431);
+  }
+
+  function getCxipERC721() internal pure returns (address) {
+    return address(0xE7AD7a544fa0262256F035Da6F77e396A271eA4C);
+  }
+
+  function getERC20Mock() internal pure returns (address) {
+    return address(0x6eF2a267742D2EdA91cE4f3D875a91c599e5e079);
   }
 
   function getDropsEventConfig() internal pure returns (uint256) {

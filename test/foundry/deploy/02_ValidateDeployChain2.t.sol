@@ -4,49 +4,108 @@ pragma solidity 0.8.13;
 import {Test, Vm, console} from "forge-std/Test.sol";
 // import {HolographInterfaces} from "../../../contracts/HolographInterfaces.sol";
 // import {Holographer} from "../../../contracts/HolographInterfaces.sol";
-import {MyContractTest} from "../TestSetup.t.sol";
 import {Constants} from "../utils/Constants.sol";
+import {DeployedSetUp} from "../utils/DeployedSetUp.t.sol";
 
-contract ValidateDeployChain2 is Test {
+contract ValidateDeployChain2 is DeployedSetUp {
   uint256 localHost2Fork;
   string LOCALHOST2_RPC_URL = vm.envString("LOCALHOST2_RPC_URL");
 
-  // HolographInterfaces public holographInterfaces;
-
-  function setUp() public {
-    // super.setUp();
+  function setUp() public override {
+    super.setUp();
     localHost2Fork = vm.createFork(LOCALHOST2_RPC_URL);
     vm.selectFork(localHost2Fork);
-    // holographInterfaces = new HolographInterfaces();
   }
 
-  function testSelectFork() public {
-    assertEq(vm.activeFork(), localHost2Fork);
+  function testHolographInterfaces() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographInterfaces.sol:HolographInterfaces");
+    assertEq(holographInterfacesDeployed.code, bytecodeDeployed);
   }
-
-  // function testHolographInterfaces() public {
-  //   bytes memory bytecode = abi.encodePacked(
-  //     vm.getCode("HolographInterfaces.sol:HolographInterfaces"),
-  //     holographInterfaces
-  //   );
-
-  //   address IholographAddress;
-  //   assembly {
-  //     IholographAddress := create(0, add(bytecode, 0x20), mload(bytecode))
-  //   }
-  //   bytes memory bytecodeDeployed = vm.getDeployedCode("HolographInterfaces.sol:HolographInterfaces");
-  //   assertEq0(IholographAddress.code, bytecodeDeployed);
-  // }
-
-  // function testHolographInterfaces2() public {
-  //   bytes memory bytecodeDeployed = vm.getDeployedCode("HolographInterfaces.sol:HolographInterfaces");
-  //   assertEq(address(holographInterfaces).code, bytecodeDeployed);
-  // }
 
   function testHolograph() public {
-    // Holographer holographer = new Holographer();
     bytes memory bytecodeDeployed = vm.getDeployedCode("Holograph.sol:Holograph");
-    assertEq(address(Constants.getHolograph()).code, bytecodeDeployed);
+    assertEq(holographDeployed.code, bytecodeDeployed);
   }
 
+  function testHolographERC721() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC721.sol:HolographERC721");
+    assertEq(holographERC721Deployed.code, bytecodeDeployed);
+  }
+
+  //TO DO: fail, not found the sc
+  function testCxipERC721Proxy() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("CxipERC721Proxy.sol:CxipERC721Proxy");
+    assertEq(cxipERC721ProxyDeployed.code, bytecodeDeployed);
+  }
+
+  function testCxipERC721() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("CxipERC721.sol:CxipERC721");
+    assertEq(cxipERC721Deployed.code, bytecodeDeployed);
+  }
+
+  function testErc20Mock() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("ERC20Mock.sol:ERC20Mock");
+    assertEq(erc20MockDeployed.code, bytecodeDeployed);
+  }
+
+  function testHolographBridge() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographBridge.sol:HolographBridge");
+    assertEq(holographBridgeDeployed.code, bytecodeDeployed);
+  }
+
+  function testHolographBridgeProxy() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographBridgeProxy.sol:HolographBridgeProxy");
+    assertEq(holographBridgeProxyDeployed.code, bytecodeDeployed);
+  }
+
+  function testHolographERC20() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("holographERC20.sol:holographERC20");
+    assertEq(holographERC20Deployed.code, bytecodeDeployed);
+  }
+
+  function testHolographFactory() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographFactory.sol:HolographFactory");
+    assertEq(holographFactoryDeployed.code, bytecodeDeployed);
+  }
+
+  function testHolographFactoryProxy() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographFactoryProxy.sol:HolographFactoryProxy");
+    assertEq(holographFactoryProxyDeployed.code, bytecodeDeployed);
+  }
+
+  // TODO refact local to use network
+  function testHolographGenesis() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographGenesisLocal.sol:HolographGenesisLocal");
+    assertEq(holographGenesisDeployed.code, bytecodeDeployed);
+  }
+
+  function testHolographOperator() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographOperator.sol:HolographOperator");
+    assertEq(holographOperatorDeployed.code, bytecodeDeployed);
+  }
+
+  function testHolographOperatorProxy() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographOperatorProxy.sol:HolographOperatorProxy");
+    assertEq(holographOperatorProxyDeployed.code, bytecodeDeployed);
+  }
+
+  function testHolographRegistry() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographRegistry.sol:HolographRegistry");
+    assertEq(holographRegistryDeployed.code, bytecodeDeployed);
+  }
+
+  function testHolographRegistryProxy() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographRegistryProxy.sol:HolographRegistryProxy");
+    assertEq(holographRegistryProxyDeployed.code, bytecodeDeployed);
+  }
+
+  function testHolographTreasury() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographTreasury.sol:HolographTreasury");
+    assertEq(holographTreasuryDeployed.code, bytecodeDeployed);
+  }
+
+  function testHolographTreasuryProxy() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographTreasuryProxy.sol:HolographTreasuryProxy");
+    assertEq(HolographTreasuryProxyDeployed.code, bytecodeDeployed);
+  }
 }
