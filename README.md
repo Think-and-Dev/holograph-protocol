@@ -356,11 +356,10 @@ Please make use of the `yarn run prettier:fix` command to format the codebase in
 root
 
 ├── <a href="./config">config</a>: Network configuration files
-├── <a href="./contracts">contracts</a>: Smart contracts that power the Holograph protocol
+├── <a href="./src">contracts</a>: Smart contracts that power the Holograph protocol
 ├── <a href="./deploy">deploy</a>: Deployment scripts for the smart contracts uses <a href="https://hardhat.org/">Hardhat</a> and <a href="https://github.com/wighawag/hardhat-deploy">Hardhat Deploy</a>
 ├── <a href="./deployments">deployments</a>: Deployment build files that include contract addresses on each network
 ├── <a href="./scripts">scripts</a>: Scripts and helper utilities
-├── <a href="./src">src</a>: Source contracts that get dynamically transpiled down into the finalized output <a href="./contracts">contracts</a>
 └── <a href="./test">test</a>: Hardhat tests for the smart contracts
 </pre>
 
