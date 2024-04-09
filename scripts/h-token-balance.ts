@@ -5,17 +5,17 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { TokenSymbol, getHTokenAddress } from './utils/addresses';
 
 /**
- * Task to get the hToken Balance of an account
+ * Task to get the hToken Balance of an recipient
  * @param contract The address of the hToken contract
- * @param account The address of the account
+ * @param recipient The address of the recipient
  *
  * Run this task with:
- * npx hardhat hTokenBalance --token [hETh, hMatic, hAvax...] --account [accountAddress] --network [the target network]
+ * npx hardhat hTokenBalance --token [hETh, hMatic, hAvax...] --recipient [recipientAddress] --network [the target network]
  */
 task('hTokenBalance', 'Get the hToken balance of the recipient')
   .addParam('token', 'The hToken symbol [hETh, hMatic, hAvax...]')
-  .addParam('account', 'The address of the account')
-  .setAction(async ({ token, account }, hre: HardhatRuntimeEnvironment) => {
+  .addParam('recipient', 'The address of the recipient')
+  .setAction(async ({ token, recipient }, hre: HardhatRuntimeEnvironment) => {
     const signer = (await hre.ethers.getSigners())[0]; // Get the first signer
 
     // Get the address of the token to bridge
@@ -42,9 +42,9 @@ task('hTokenBalance', 'Get the hToken balance of the recipient')
     // singer address does not matter. We are only reading
     const hTokenContract = new ethers.Contract(hTokenAddress, hTokenArtifact.abi, signer);
 
-    // Log the account's balance
-    const balanceOf = await hTokenContract.balanceOf(account);
+    // Log the recipient's balance
+    const balanceOf = await hTokenContract.balanceOf(recipient);
     console.log(
-      `hToken balance of ${account} is ${balanceOf.toString()} wei or ${ethers.utils.formatEther(balanceOf)} ETH`
+      `hToken balance of ${recipient} is ${balanceOf.toString()} wei or ${ethers.utils.formatEther(balanceOf)} ETH`
     );
   });
