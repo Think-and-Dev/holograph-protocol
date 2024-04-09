@@ -1,0 +1,46 @@
+name: Foundry tests
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+
+env:
+  FOUNDRY_PROFILE: ci
+  CI: true
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Install Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Yarn
+        run: npm install -g yarn
+
+      - name: asdf
+        run: asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git && asdf plugin-add yarn
+
+      - name: Install deps
+        run: yarn install && forge install
+
+      - name: Run the protocol
+        run: bash scripts/start_protocol.sh
+
+      - name: Run tests
+        run: forge test --no-match-test "(FFI|Fork)" --no-match-contract Fork
+
+      - name: Kill the anvil nodes
+        run: bash scripts/stop_protocol.sh
