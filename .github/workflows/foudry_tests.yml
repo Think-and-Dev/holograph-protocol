@@ -7,7 +7,7 @@ on:
 
 env:
   FOUNDRY_PROFILE: ci
-  CI: true
+  SKIP_DEPLOY_CONFIRMATION: true
 
 jobs:
   run-foundry-tests:
@@ -30,11 +30,8 @@ jobs:
       - name: Install Yarn
         run: npm install -g yarn
 
-      - name: Install asdf
-        run: git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.14.0 && bash $HOME/.asdf/asdf.sh
-
-      - name: asdf
-        run: asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git && asdf plugin-add yarn
+      - name: Install tools from asdf config
+        uses: ai/asdf-cache-action@v1
 
       - name: Install deps
         run: yarn install && forge install
