@@ -12,9 +12,10 @@ contract ValidateDeployChain2 is DeployedSetUp {
   string LOCALHOST2_RPC_URL = vm.envString("LOCALHOST2_RPC_URL");
 
   function setUp() public override {
-    super.setUp();
     localHost2Fork = vm.createFork(LOCALHOST2_RPC_URL);
     vm.selectFork(localHost2Fork);
+    super.init(vm.activeFork());
+    super.setUp();
   }
 
   function testHolographInterfaces() public {

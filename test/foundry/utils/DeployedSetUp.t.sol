@@ -5,6 +5,8 @@ import {Test, Vm, console} from "forge-std/Test.sol";
 import {Constants} from "./Constants.sol";
 
 contract DeployedSetUp is Test {
+  uint256 constant notValidForkId = 9999999;
+  uint256 forkId = notValidForkId;
   address holographInterfacesDeployed;
   address holographDeployed;
   address holographERC721Deployed;
@@ -23,18 +25,25 @@ contract DeployedSetUp is Test {
   address holographRegistryProxyDeployed;
   address holographTreasuryDeployed;
   address holographTreasuryProxyDeployed;
-
   address hTokenDeployed;
   address mockERC721ReceiverDeployed;
   address holographRoyaltiesDeployed;
   address sampleERC20Deployed;
   address sampleERC721Deployed;
+  address sampleERC721Deployed2;
+
+  function init(uint256 _forkId) public {
+    require(_forkId != notValidForkId, "DeployedSetUp: _forkId cannot be 9999999");
+    forkId = _forkId;
+  }
 
   function setUp() public virtual {
+    require(forkId != notValidForkId, "DeployedSetUp: you need init first, forkId cannot be 9999999");
     holographInterfacesDeployed = Constants.getHolographInterfaces();
     holographDeployed = Constants.getHolograph();
     holographERC721Deployed = Constants.getHolographERC721();
-    cxipERC721ProxyDeployed = Constants.getCxipERC721Proxy();
+    if (vm.activeFork() == forkId) cxipERC721ProxyDeployed = Constants.getCxipERC721Proxy_L2();
+    else cxipERC721ProxyDeployed = Constants.getCxipERC721Proxy();
     cxipERC721Deployed = Constants.getCxipERC721();
     erc20MockDeployed = Constants.getERC20Mock();
     holographBridgeDeployed = Constants.getHolographBridge();
@@ -52,7 +61,9 @@ contract DeployedSetUp is Test {
     hTokenDeployed = Constants.getHToken();
     mockERC721ReceiverDeployed = Constants.getMockERC721Receiver();
     holographRoyaltiesDeployed = Constants.getHolographRoyalties();
-    sampleERC20Deployed = Constants.getSampleERC20();
-    sampleERC721Deployed = Constants.getSampleERC721();
+    if (vm.activeFork() == forkId) sampleERC20Deployed = Constants.getSampleERC20_L2();
+    else sampleERC20Deployed = Constants.getSampleERC20();
+    if (vm.activeFork() == forkId) sampleERC721Deployed = Constants.getSampleERC721_L2();
+    else sampleERC721Deployed = Constants.getSampleERC721();
   }
 }
