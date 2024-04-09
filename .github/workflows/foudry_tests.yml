@@ -10,7 +10,7 @@ env:
   CI: true
 
 jobs:
-  run-tests:
+  run-foundry-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,7 +31,7 @@ jobs:
         run: npm install -g yarn
 
       - name: Install asdf
-        run: git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.14.0 && echo '. "$HOME/.asdf/asdf.sh"' >> ~/.bashrc
+        run: git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.14.0 && bash $HOME/.asdf/asdf.sh
 
       - name: asdf
         run: asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git && asdf plugin-add yarn
