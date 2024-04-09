@@ -35,14 +35,6 @@ jobs:
         with:
           version: nightly
 
-      - name: Install Node 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install Yarn
-        run: npm install -g yarn
-
       - name: Install tools from asdf config
         uses: ai/asdf-cache-action@v1
 
@@ -52,11 +44,8 @@ jobs:
       - name: Run the protocol
         run: bash scripts/start-protocol.sh
 
-      - name: Call a Rpc to check
-        run: bash scripts/check_rpc.sh
-
       - name: Run tests
         run: forge test -vv --no-match-test "(FFI|Fork)" --no-match-contract Fork
 
       - name: Kill the anvil nodes
-        run: bash scripts/stop_protocol.sh
+        run: bash scripts/stop-protocol.sh
