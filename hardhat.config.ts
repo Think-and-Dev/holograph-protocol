@@ -266,7 +266,7 @@ task('abi', 'Create standalone ABI files for all smart contracts')
     } else {
       recursiveDelete('./abi/' + currentEnvironment);
     }
-    extractABIs('./artifacts/contracts', './abi/' + currentEnvironment);
+    extractABIs('./artifacts/src', './abi/' + currentEnvironment);
   });
 
 /**
@@ -291,7 +291,7 @@ const config: HardhatUserConfig = {
     }),
   },
   paths: {
-    sources: 'contracts',
+    sources: 'src',
     cache: 'cache_hardhat',
     deployments: DEPLOYMENT_PATH + '/' + currentEnvironment,
   },
