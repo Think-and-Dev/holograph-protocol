@@ -1,13 +1,13 @@
 import { NetworkType } from '@holographxyz/networks';
 
 type TokenSymbol = 'hETH' | 'hBNB' | 'hAVAX' | 'hMATIC' | 'hMNT';
-type HTokenAddresses = {
+type HTokenAddressMap = {
   [network in NetworkType]: {
     [token in TokenSymbol]?: string;
   };
 };
 
-export const tokenAddresses: HTokenAddresses = {
+export const hTokenAddresses: HTokenAddressMap = {
   local: {}, // To sastify the type checker
   testnet: {
     hETH: '0xB019322549D380C6bC7CbC6628ff29455fe4C1cC',
@@ -26,7 +26,7 @@ export const tokenAddresses: HTokenAddresses = {
 };
 
 function getHTokenAddress(network: NetworkType, token: TokenSymbol): string | undefined {
-  return tokenAddresses[network][token];
+  return hTokenAddresses[network][token];
 }
 
 export { TokenSymbol, getHTokenAddress };
