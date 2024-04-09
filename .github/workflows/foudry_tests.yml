@@ -9,6 +9,9 @@ env:
   FOUNDRY_PROFILE: ci
   SKIP_DEPLOY_CONFIRMATION: true
   HOLOGRAPH_ENVIRONMENT: develop
+  LOCALHOST_DEPLOYER_SECRET: something
+  DEPLOYER: ff22437ccbedfffafa93a9f1da2e8c19c1711052799acf3b58ae5bebb5c6bd7b
+  HARDWARE_WALLET_DEPLOYER: 0x0
 
 jobs:
   run-foundry-tests:
