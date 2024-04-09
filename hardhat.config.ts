@@ -433,10 +433,6 @@ const config: HardhatUserConfig = {
       },
     ],
   },
-  hardhatHolographContractBuilder: {
-    runOnCompile: true,
-    verbose: false,
-  },
 };
 
 // Allow hardhat to use short network names
