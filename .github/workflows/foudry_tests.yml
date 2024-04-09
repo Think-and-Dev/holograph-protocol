@@ -8,6 +8,7 @@ on:
 env:
   FOUNDRY_PROFILE: ci
   SKIP_DEPLOY_CONFIRMATION: true
+  HOLOGRAPH_ENVIRONMENT: develop
 
 jobs:
   run-foundry-tests:
@@ -43,7 +44,7 @@ jobs:
         run: bash scripts/check_rpc.sh
 
       - name: Run tests
-        run: forge test --no-match-test "(FFI|Fork)" --no-match-contract Fork
+        run: forge test -vv --no-match-test "(FFI|Fork)" --no-match-contract Fork
 
       - name: Kill the anvil nodes
         run: bash scripts/stop_protocol.sh
