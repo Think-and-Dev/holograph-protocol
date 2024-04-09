@@ -38,4 +38,8 @@ else
   echo "✅ No missing natspecs detected.\n"
 fi
 
-exit 0
+# ------------------------------- Gas snapshot ------------------------------- #
+
+echo "👉 Checking gas snapshots..."
+npm run snapshot:check
+echo "✅ Gas snapshots are up to date.\n\n"
