@@ -3,20 +3,21 @@ pragma solidity 0.8.13;
 
 import {Test, Vm, console} from "forge-std/Test.sol";
 import {Constants} from "../utils/Constants.sol";
+import {DeployedSetUp} from "../utils/DeployedSetUp.t.sol";
 
-contract ValidateDeployChain1 is Test {
+contract ValidateDeployChain1 is DeployedSetUp {
   uint256 localHostFork;
   string LOCALHOST_RPC_URL = vm.envString("LOCALHOST_RPC_URL");
 
-  function setUp() public {
-    // super.setUp();
+  function setUp() public override {
+    super.setUp();
     localHostFork = vm.createFork(LOCALHOST_RPC_URL);
     vm.selectFork(localHostFork);
   }
 
   function testHolographInterfaces() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographInterfaces.sol:HolographInterfaces");
-    assertEq(address(Constants.getHolographInterfaces()).code, bytecodeDeployed);
+    assertEq(holographInterfacesDeployed.code, bytecodeDeployed);
   }
 
   // TODO: address not found
@@ -33,7 +34,7 @@ contract ValidateDeployChain1 is Test {
 
   function testCxipERC721() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("CxipERC721.sol:CxipERC721");
-    assertEq(address(Constants.getCxipERC721()).code, bytecodeDeployed);
+    assertEq(cxipERC721Deployed.code, bytecodeDeployed);
   }
 
   // TO DO: fail, not found the sc
@@ -44,22 +45,22 @@ contract ValidateDeployChain1 is Test {
 
   function testERC20Mock() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("ERC20Mock.sol:ERC20Mock");
-    assertEq(address(Constants.getERC20Mock()).code, bytecodeDeployed);
+    assertEq(erc20MockDeployed.code, bytecodeDeployed);
   }
 
   function testHolograph() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("Holograph.sol:Holograph");
-    assertEq(address(Constants.getHolograph()).code, bytecodeDeployed);
+    assertEq(holographDeployed.code, bytecodeDeployed);
   }
 
   function testHolographBridge() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographBridge.sol:HolographBridge");
-    assertEq(address(Constants.getHolographBridge()).code, bytecodeDeployed);
+    assertEq(holographBridgeDeployed.code, bytecodeDeployed);
   }
 
   function testHolographBridgeProxy() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographBridgeProxy.sol:HolographBridgeProxy");
-    assertEq(address(Constants.getHolographBridgeProxy()).code, bytecodeDeployed);
+    assertEq(holographBridgeProxyDeployed.code, bytecodeDeployed);
   }
 
   // TODO: address not found
@@ -70,57 +71,57 @@ contract ValidateDeployChain1 is Test {
 
   function testHolographERC20() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC20.sol:HolographERC20");
-    assertEq(address(Constants.getHolographERC20()).code, bytecodeDeployed);
+    assertEq(holographERC20Deployed.code, bytecodeDeployed);
   }
 
   function testHolographERC721() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC721.sol:HolographERC721");
-    assertEq(address(Constants.getHolographERC721()).code, bytecodeDeployed);
+    assertEq(holographERC721Deployed.code, bytecodeDeployed);
   }
 
   function testHolographFactory() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographFactory.sol:HolographFactory");
-    assertEq(address(Constants.getHolographFactory()).code, bytecodeDeployed);
+    assertEq(holographFactoryDeployed.code, bytecodeDeployed);
   }
 
   function testHolographFactoryProxy() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographFactoryProxy.sol:HolographFactoryProxy");
-    assertEq(address(Constants.getHolographFactoryProxy()).code, bytecodeDeployed);
+    assertEq(holographFactoryProxyDeployed.code, bytecodeDeployed);
   }
 
   function testHolographGenesis() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographGenesisLocal.sol:HolographGenesisLocal");
-    assertEq(address(Constants.getHolographGenesis()).code, bytecodeDeployed);
+    assertEq(holographGenesisDeployed.code, bytecodeDeployed);
   }
 
   function testHolographOperator() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographOperator.sol:HolographOperator");
-    assertEq(address(Constants.getHolographOperator()).code, bytecodeDeployed);
+    assertEq(holographOperatorDeployed.code, bytecodeDeployed);
   }
 
   function testHolographOperatorProxy() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographOperatorProxy.sol:HolographOperatorProxy");
-    assertEq(address(Constants.getHolographOperatorProxy()).code, bytecodeDeployed);
+    assertEq(holographOperatorProxyDeployed.code, bytecodeDeployed);
   }
 
   function testHolographRegistry() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographRegistry.sol:HolographRegistry");
-    assertEq(address(Constants.getHolographRegistry()).code, bytecodeDeployed);
+    assertEq(holographRegistryDeployed.code, bytecodeDeployed);
   }
 
   function testHolographRegistryProxy() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographRegistryProxy.sol:HolographRegistryProxy");
-    assertEq(address(Constants.getHolographRegistryProxy()).code, bytecodeDeployed);
+    assertEq(holographRegistryProxyDeployed.code, bytecodeDeployed);
   }
 
   function testHolographTreasury() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographTreasury.sol:HolographTreasury");
-    assertEq(address(Constants.getHolographTreasury()).code, bytecodeDeployed);
+    assertEq(holographTreasuryDeployed.code, bytecodeDeployed);
   }
 
   function testHolographTreasuryProxy() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographTreasuryProxy.sol:HolographTreasuryProxy");
-    assertEq(address(Constants.getHolographTreasuryProxy()).code, bytecodeDeployed);
+    assertEq(holographTreasuryProxyDeployed.code, bytecodeDeployed);
   }
 
   // TODO: address not found
@@ -155,7 +156,7 @@ contract ValidateDeployChain1 is Test {
 
   function testHolographRoyalties() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographRoyalties.sol:HolographRoyalties");
-    assertEq(address(Constants.getHolographRoyalties()).code, bytecodeDeployed);
+    assertEq(holographRoyaltiesDeployed.code, bytecodeDeployed);
   }
 
   // TODO: address not found
