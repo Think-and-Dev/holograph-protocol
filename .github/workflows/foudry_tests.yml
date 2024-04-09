@@ -39,6 +39,9 @@ jobs:
       - name: Run the protocol
         run: bash scripts/start-protocol.sh
 
+      - name: Call a Rpc to check
+        run: curl -s -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","method":"net_version","params":[],"id":1}' http://localhost:9545
+
       - name: Run tests
         run: forge test --no-match-test "(FFI|Fork)" --no-match-contract Fork
 
