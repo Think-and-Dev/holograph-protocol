@@ -106,6 +106,31 @@ contract ValidateDeployChain2 is DeployedSetUp {
 
   function testHolographTreasuryProxy() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographTreasuryProxy.sol:HolographTreasuryProxy");
-    assertEq(HolographTreasuryProxyDeployed.code, bytecodeDeployed);
+    assertEq(holographTreasuryProxyDeployed.code, bytecodeDeployed);
+  }
+
+  function testHToken() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("hToken.sol:hToken");
+    assertEq(hTokenDeployed.code, bytecodeDeployed);
+  }
+
+  function testMockERC721Receiver() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("MockERC721Receiver.sol:MockERC721Receiver");
+    assertEq(mockERC721ReceiverDeployed.code, bytecodeDeployed);
+  }
+
+  function testHolographRoyalties() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographRoyalties.sol:HolographRoyalties");
+    assertEq(holographRoyaltiesDeployed.code, bytecodeDeployed);
+  }
+
+  function testSampleERC20() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("SampleERC20.sol:SampleERC20");
+    assertEq(sampleERC20Deployed.code, bytecodeDeployed);
+  }
+
+  function testSampleERC721() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("SampleERC721.sol:SampleERC721");
+    assertEq(sampleERC721Deployed.code, bytecodeDeployed);
   }
 }

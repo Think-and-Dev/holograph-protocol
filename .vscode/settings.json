@@ -18,5 +18,6 @@
         "titleBar.inactiveBackground": "#25565d99",
         "titleBar.inactiveForeground": "#e7e7e799"
     },
-    "peacock.color": "#25565d"
+    "peacock.color": "#25565d",
+    "solidity.compileUsingRemoteVersion": "v0.8.13+commit.abaa5c0e"
 }

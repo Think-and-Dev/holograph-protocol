@@ -22,7 +22,13 @@ contract DeployedSetUp is Test {
   address holographRegistryDeployed;
   address holographRegistryProxyDeployed;
   address holographTreasuryDeployed;
-  address HolographTreasuryProxyDeployed;
+  address holographTreasuryProxyDeployed;
+
+  address hTokenDeployed;
+  address mockERC721ReceiverDeployed;
+  address holographRoyaltiesDeployed;
+  address sampleERC20Deployed;
+  address sampleERC721Deployed;
 
   function setUp() public virtual {
     holographInterfacesDeployed = Constants.getHolographInterfaces();
@@ -36,13 +42,17 @@ contract DeployedSetUp is Test {
     holographERC20Deployed = Constants.getHolographERC20();
     holographFactoryDeployed = Constants.getHolographFactory();
     holographFactoryProxyDeployed = Constants.getHolographFactoryProxy();
-
     holographGenesisDeployed = Constants.getHolographGenesis();
     holographOperatorDeployed = Constants.getHolographOperator();
     holographOperatorProxyDeployed = Constants.getHolographOperatorProxy();
     holographRegistryDeployed = Constants.getHolographRegistry();
     holographRegistryProxyDeployed = Constants.getHolographRegistryProxy();
     holographTreasuryDeployed = Constants.getHolographTreasury();
-    HolographTreasuryProxyDeployed = Constants.getHolographTreasuryProxy();
+    holographTreasuryProxyDeployed = Constants.getHolographTreasuryProxy();
+    hTokenDeployed = Constants.getHToken();
+    mockERC721ReceiverDeployed = Constants.getMockERC721Receiver();
+    holographRoyaltiesDeployed = Constants.getHolographRoyalties();
+    sampleERC20Deployed = Constants.getSampleERC20();
+    sampleERC721Deployed = Constants.getSampleERC721();
   }
 }

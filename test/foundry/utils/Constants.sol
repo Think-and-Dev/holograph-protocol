@@ -59,6 +59,7 @@ library Constants {
   function getHolographTreasury() internal pure returns (address) {
     return address(0x76c4fC0627405741Db0959E66d64c0ECeAceDC94);
   }
+
   function getHolographTreasuryProxy() internal pure returns (address) {
     return address(0x65115A3Be2Aa1F267ccD7499e720088060c7ccd2);
   }
@@ -101,6 +102,22 @@ library Constants {
 
   function getERC20Mock() internal pure returns (address) {
     return address(0x6eF2a267742D2EdA91cE4f3D875a91c599e5e079);
+  }
+
+  function getHToken() internal pure returns (address) {
+    return address(0x0533A3bfB526Af481FEA67BDC6dF1E09e91084ec);
+  }
+
+  function getMockERC721Receiver() internal pure returns (address) {
+    return address(0x01b03bC53D35925930Accb84345eA839b6c77dCF);
+  }
+
+  function getSampleERC20() internal pure returns (address) {
+    return address(0x5A919e00Ae425cebf7a836f703284026BBb51186);
+  }
+
+  function getSampleERC721() internal pure returns (address) {
+    return address(0xB94053201514E26133770eA1351959AffF0DE684);
   }
 
   function getDropsEventConfig() internal pure returns (uint256) {
