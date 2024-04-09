@@ -96,6 +96,10 @@ library Constants {
     return address(0x2869c23117e1432850a09dE5ea7eA294E8fa2431);
   }
 
+  function getCxipERC721Proxy_L2() internal pure returns (address) {
+    return address(0x56c1401d1b10BE49924e207c158618702ed90090);
+  }
+
   function getCxipERC721() internal pure returns (address) {
     return address(0xE7AD7a544fa0262256F035Da6F77e396A271eA4C);
   }
@@ -113,10 +117,18 @@ library Constants {
   }
 
   function getSampleERC20() internal pure returns (address) {
+    return address(0x5a5DbB0515Cb2af1945E731B86BB5e34E4d0d3A3);
+  }
+
+  function getSampleERC20_L2() internal pure returns (address) {
     return address(0x5A919e00Ae425cebf7a836f703284026BBb51186);
   }
 
   function getSampleERC721() internal pure returns (address) {
+    return address(0x846Af4c87F5Af1F303E5a5D215D83A611b08069c);
+  }
+
+  function getSampleERC721_L2() internal pure returns (address) {
     return address(0xB94053201514E26133770eA1351959AffF0DE684);
   }
 
