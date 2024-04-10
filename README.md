@@ -241,11 +241,9 @@ Please see the sample.env file for the environment variables that need to be con
 
 ### Compiling
 
-To build the code locally, you must run the following. You ony need to run this once. If you make changes to anything in the `src` folder, then we suggest running the command again.
-
 1. Terminal 1: `yarn clean-compile`
 
-When the project is built, the code in the `src` folder gets written to the `contracts` folder. The files in the `contracts` folder are the "real" files that are used for testing and code verification on all the scanners.
+This runs `hardhat clean` and then `hardhat compile` in sequence. Alternatively you can just run `yarn compile`.
 
 ### Deploying Holograph Protocol
 
