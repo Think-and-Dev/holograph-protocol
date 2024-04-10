@@ -19,7 +19,6 @@
   "main": "index.js",
   "files": [
     "abi",
-    "contracts",
     "deployments",
     "typechain-types"
   ],
