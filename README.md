@@ -148,7 +148,7 @@ The simplified code path for bridging out is:
 
 At step 1, a user submits their bridge request with a valid payload using the estimatedGas value computed in the previous [Estimate Gas](#estimategas) section
 
-At step 2, the code checks that the contract is a _holographable_ contract. This means it has implemented the required functions for a _Holographed_ contract. See `contracts/enforcer/HolographERC721.sol` for an example.
+At step 2, the code checks that the contract is a _holographable_ contract. This means it has implemented the required functions for a _Holographed_ contract. See `src/enforcer/HolographERC721.sol` for an example.
 
 At step 3, we call the `_bridgeOut` function on the _Holographed_ contract and apply various checks and generate a payload with information about the bridge request.
 
