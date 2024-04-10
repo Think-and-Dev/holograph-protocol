@@ -33,8 +33,8 @@ contract ValidateDeployChain2 is DeployedSetUp {
     assertEq(holographERC721Deployed.code, bytecodeDeployed);
   }
 
-  //TO DO: fail, not found the sc
-  function testCxipERC721Proxy() public {
+  //TODO fix and add test name
+  function CxipERC721Proxy() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("CxipERC721Proxy.sol:CxipERC721Proxy");
     assertEq(cxipERC721ProxyDeployed.code, bytecodeDeployed);
   }
@@ -74,8 +74,8 @@ contract ValidateDeployChain2 is DeployedSetUp {
     assertEq(holographFactoryProxyDeployed.code, bytecodeDeployed);
   }
 
-  // TODO refact local to use network
-  function testHolographGenesis() public {
+  //TODO fix and add test name
+  function HolographGenesis() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographGenesisLocal.sol:HolographGenesisLocal");
     assertEq(holographGenesisDeployed.code, bytecodeDeployed);
   }
@@ -125,12 +125,14 @@ contract ValidateDeployChain2 is DeployedSetUp {
     assertEq(holographRoyaltiesDeployed.code, bytecodeDeployed);
   }
 
-  function testSampleERC20() public {
+  //TODO fix and add test name
+  function SampleERC20() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("SampleERC20.sol:SampleERC20");
     assertEq(sampleERC20Deployed.code, bytecodeDeployed);
   }
 
-  function testSampleERC721() public {
+  //TODO fix and add test name
+  function SampleERC721() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("SampleERC721.sol:SampleERC721");
     assertEq(sampleERC721Deployed.code, bytecodeDeployed);
   }
