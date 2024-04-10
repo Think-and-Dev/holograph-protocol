@@ -139,7 +139,7 @@ contract HolographDropERC721Test is Test {
     // Setup VM
     // NOTE: These tests rely on the Holograph protocol being deployed to the local chain
     //       At the moment, the deploy pipeline is still managed by Hardhat, so we need to
-    //       first run it via `npx hardhat deploy --network localhost` or `yarn deploy:localhost` if you need two local chains before running the tests.
+    //       first run it via `npx hardhat deploy --network localhost` or `pnpm deploy:localhost` if you need two local chains before running the tests.
     uint256 forkId = vm.createFork("http://localhost:8545");
     vm.selectFork(forkId);
 
