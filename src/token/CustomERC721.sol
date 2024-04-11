@@ -250,17 +250,18 @@ contract CustomERC721 is NonReentrant, ERC721H, LazyMint, DelayedReveal, ICustom
 
   /**
    * @notice Token URI Getter, proxies to metadataRenderer
-   * @param tokenId id of token to get URI for
+   * @param _tokenId id of token to get URI for
    * @return Token URI
    */
-  function tokenURI(uint256 tokenId) external view returns (string memory) {
-    HolographERC721Interface H721 = HolographERC721Interface(holographer());
-    require(H721.exists(tokenId), "ERC721: token does not exist");
+  function tokenURI(uint256 _tokenId) public view returns (string memory) {
+    (uint256 batchId, ) = _getBatchId(_tokenId);
+    string memory batchUri = _getBaseURI(_tokenId);
 
-    // Get the base URI for the token using BatchMintMetadata feature
-    // If the function reveal has not been called, the baseURI will be encrypted
-    string memory baseURI = _getBaseURI(tokenId);
-    return bytes(baseURI).length > 0 ? string.concat(baseURI, tokenId.toString()) : "";
+    if (isEncryptedBatch(batchId)) {
+      return string(abi.encodePacked(batchUri, "0"));
+    } else {
+      return string(abi.encodePacked(batchUri, _tokenId.toString()));
+    }
   }
 
   /**
@@ -315,9 +316,7 @@ contract CustomERC721 is NonReentrant, ERC721H, LazyMint, DelayedReveal, ICustom
    * @dev This allows the user to purchase/mint a edition at the given price in the contract.
    */
   function purchase(
-    uint256 quantity,
-    string calldata encryptedBaseUri,
-    bytes calldata data
+    uint256 quantity
   ) external payable nonReentrant canMintTokens(quantity) onlyPublicSaleActive returns (uint256) {
     uint256 salePrice = _usdToWei(salesConfig.publicSalePrice);
     uint256 holographMintFeeUsd = getHolographFeeFromTreasury();
@@ -340,7 +339,7 @@ contract CustomERC721 is NonReentrant, ERC721H, LazyMint, DelayedReveal, ICustom
     }
 
     // First mint the NFTs
-    _mintNFTs(msgSender(), quantity, encryptedBaseUri, data);
+    _mintNFTs(msgSender(), quantity);
 
     HolographERC721Interface H721 = HolographERC721Interface(holographer());
     uint256 chainPrepend = H721.sourceGetChainPrepend();
@@ -372,9 +371,7 @@ contract CustomERC721 is NonReentrant, ERC721H, LazyMint, DelayedReveal, ICustom
     uint256 quantity,
     uint256 maxQuantity,
     uint256 pricePerToken,
-    bytes32[] calldata merkleProof,
-    string calldata encryptedBaseUri,
-    bytes calldata data
+    bytes32[] calldata merkleProof
   ) external payable nonReentrant canMintTokens(quantity) onlyPresaleActive returns (uint256) {
     if (
       !MerkleProof.verify(
@@ -401,7 +398,7 @@ contract CustomERC721 is NonReentrant, ERC721H, LazyMint, DelayedReveal, ICustom
     }
 
     // First mint the NFTs
-    _mintNFTs(msgSender(), quantity, encryptedBaseUri, data);
+    _mintNFTs(msgSender(), quantity);
 
     HolographERC721Interface H721 = HolographERC721Interface(holographer());
     uint256 chainPrepend = H721.sourceGetChainPrepend();
@@ -428,29 +425,46 @@ contract CustomERC721 is NonReentrant, ERC721H, LazyMint, DelayedReveal, ICustom
    */
 
   /**
+   *  We override the `lazyMint` function, and use the `_data` parameter for storing encrypted metadata
+   *  for 'delayed reveal' NFTs.
+   */
+  function lazyMint(
+    uint256 _amount,
+    string calldata _baseURIForTokens,
+    bytes calldata _data
+  ) public override onlyOwner returns (uint256 batchId) {
+    if (_data.length > 0) {
+      (bytes memory encryptedURI, bytes32 provenanceHash) = abi.decode(_data, (bytes, bytes32));
+      if (encryptedURI.length != 0 && provenanceHash != "") {
+        _setEncryptedData(nextTokenIdToLazyMint + _amount, _data);
+      }
+    }
+
+    return super.lazyMint(_amount, _baseURIForTokens, _data);
+  }
+
+  /**
    * @notice Admin mint tokens to a recipient for free
    * @param recipient recipient to mint to
    * @param quantity quantity to mint
    */
-  function adminMint(address recipient, uint256 quantity, string calldata encryptedBaseUri, bytes calldata data) external onlyOwner canMintTokens(quantity) returns (uint256) {
-    _mintNFTs(recipient, quantity, encryptedBaseUri, data);
+  function adminMint(address recipient, uint256 quantity) external onlyOwner canMintTokens(quantity) returns (uint256) {
+    _mintNFTs(recipient, quantity);
 
     return _currentTokenId;
   }
 
   /**
    * @dev Mints multiple editions to the given list of addresses.
-   * @dev TODO: Double check if we need to use arrays for encryptedBaseUris and dataArray
+   * @dev TODO: Double chFeck if we need to use arrays for encryptedBaseUris and dataArray
    * @param recipients list of addresses to send the newly minted editions to
    */
   function adminMintAirdrop(
-    address[] calldata recipients,
-    string[] calldata encryptedBaseUris, 
-    bytes[] calldata dataArray
+    address[] calldata recipients
   ) external onlyOwner canMintTokens(recipients.length) returns (uint256) {
     unchecked {
       for (uint256 i = 0; i != recipients.length; i++) {
-        _mintNFTs(recipients[i], 1, encryptedBaseUris[i], dataArray[i]);
+        _mintNFTs(recipients[i], 1);
       }
     }
 
@@ -577,12 +591,7 @@ contract CustomERC721 is NonReentrant, ERC721H, LazyMint, DelayedReveal, ICustom
     return msg.sender == _getOwner();
   }
 
-  function _mintNFTs(
-    address recipient,
-    uint256 quantity,
-    string calldata encryptedBaseUri,
-    bytes calldata data
-  ) internal {
+  function _mintNFTs(address recipient, uint256 quantity) internal {
     HolographERC721Interface H721 = HolographERC721Interface(holographer());
     uint256 chainPrepend = H721.sourceGetChainPrepend();
     uint224 tokenId = 0;
@@ -607,16 +616,6 @@ contract CustomERC721 is NonReentrant, ERC721H, LazyMint, DelayedReveal, ICustom
         i++;
       }
     }
-
-    /// @dev TODO: The encrypted baseUri is actually stored twice
-    ///                - In the encryptedData when calling `_setEncryptedData` for the delayed reveal feature => check DelayedReveal.sol::getRevealURI
-    ///                - In the baseURI when calling `lazyMint`
-    ///            We should fix it so that the encrypted baseUri is only stored once
-    // Lazy mint the NFTs to set the baseUri (encrypted) for the batch
-    // This also retrieves the batchId
-    uint256 batchId = lazyMint(quantity, encryptedBaseUri, data);
-    // Set the encrypted data (encrypted baseUri) for the batch to allow `reveal` to decrypt it
-    _setEncryptedData(batchId, bytes(encryptedBaseUri));
   }
 
   fallback() external payable override {
