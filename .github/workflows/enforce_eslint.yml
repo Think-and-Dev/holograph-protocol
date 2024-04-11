@@ -26,9 +26,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18.4.0'
-          cache: 'pnpm'
-      - name: Install pnpm
-        run: npm install -g pnpm
+      - uses: pnpm/action-setup@v3
+        name: Install pnpm
+        with:
+          version: 8
       - name: Install dependencies
         run: pnpm install
       - name: Lint Check
