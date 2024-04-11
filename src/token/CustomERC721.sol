@@ -109,7 +109,6 @@ contract CustomERC721 is NonReentrant, ERC721H, BatchMintMetadata, DelayedReveal
 
   /**
    * CONTRACT INITIALIZERS
-   * init function is used instead of constructor
    */
 
   /**
