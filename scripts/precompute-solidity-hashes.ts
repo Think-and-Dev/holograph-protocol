@@ -111,7 +111,7 @@ const processFile = async (filePath: string): Promise<void> => {
 // Main function to find and process files
 const main = async () => {
   console.log('Finding .sol files...');
-  const srcDir = path.join(__dirname, '../contracts');
+  const srcDir = path.join(__dirname, '../src');
   const files = await readDirRecursively(srcDir);
   console.log(`Found ${files.length} .sol files`);
 
