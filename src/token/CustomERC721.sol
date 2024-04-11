@@ -13,7 +13,7 @@ import {ICustomERC721} from "../interface/ICustomERC721.sol";
 import {IDropsPriceOracle} from "../drops/interface/IDropsPriceOracle.sol";
 import {HolographTreasuryInterface} from "../interface/HolographTreasuryInterface.sol";
 
-import {BatchMintMetadata} from "../extension/BatchMintMetadata.sol";
+import {LazyMint} from "../extension/LazyMint.sol";
 
 import {AddressMintDetails} from "../drops/struct/AddressMintDetails.sol";
 import {CustomERC721Configuration} from "../struct/CustomERC721Configuration.sol";
@@ -30,7 +30,7 @@ import {MerkleProof} from "../drops/library/MerkleProof.sol";
  *
  *       Do not enable or subscribe to any other events unless you modified the source code for them.
  */
-contract CustomERC721 is NonReentrant, ERC721H, BatchMintMetadata, DelayedReveal, ICustomERC721 {
+contract CustomERC721 is NonReentrant, ERC721H, LazyMint, DelayedReveal, ICustomERC721 {
   /**
    * CONTRACT VARIABLES
    * all variables, without custom storage slots, are defined here
@@ -543,6 +543,15 @@ contract CustomERC721 is NonReentrant, ERC721H, BatchMintMetadata, DelayedReveal
       return 0;
     }
     weiAmount = dropsPriceOracle.convertUsdToWei(amount);
+  }
+
+  /**
+   * @dev Checks whether NFTs can be lazy minted in the given execution context.
+   *      TODO: Validate/check if the logic is working for lazy minting
+   * @return Whether NFTs can be lazy minted.
+   */
+  function _canLazyMint() internal view override returns (bool) {
+    return _publicSaleActive() || _presaleActive();
   }
 
   /**
