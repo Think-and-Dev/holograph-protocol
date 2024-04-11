@@ -2,14 +2,13 @@ import { ethers } from 'ethers';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { LedgerSigner } from '@anders-t/ethers-ledger';
 dotenv.config();
 
 async function main() {
-  // Define the path to the contract's artifact
-  const artifactPath = path.join(
-    __dirname, // Adjust this path as necessary to point to your artifacts directory
-    '../artifacts/contracts/CustomERC721.sol/CustomERC721.json'
-  );
+  // Setup the path to the contract artifact
+  const artifactPath = path.join(__dirname, '../artifacts/src/token/CustomERC721.sol/CustomERC721.json');
 
   // Read the contract artifact
   const artifact = JSON.parse(fs.readFileSync(artifactPath, 'utf8'));
@@ -22,10 +21,17 @@ async function main() {
   const contractAddress = '';
   const providerURL = '';
 
-  // Setup ethers provider and wallet
+  // Setup ethers provider
   const provider = new ethers.providers.JsonRpcProvider(providerURL);
-  const wallet = new ethers.Wallet(privateKey, provider);
-  const contract = new ethers.Contract(contractAddress, contractABI, wallet);
+
+  let signer;
+  if (process.env.HARDWARE_WALLET_ENABLED === 'true') {
+    signer = new LedgerSigner(provider, "44'/60'/0'/0/0");
+  } else {
+    signer = new ethers.Wallet(privateKey, provider);
+  }
+
+  const contract = new ethers.Contract(contractAddress, contractABI, signer);
 
   // Example parameters for lazyMint
   const amount = 1;
