@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 import {Test, Vm, console} from "forge-std/Test.sol";
 import {Constants} from "../utils/Constants.sol";
-import {HolographERC20} from "../../../contracts/enforcer/HolographERC20.sol";
+import {HolographERC20} from "../../../src/enforcer/HolographERC20.sol";
 
 contract Erc20Enforcer is Test {
   uint256 localHostFork;
