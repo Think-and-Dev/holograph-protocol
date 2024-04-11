@@ -101,7 +101,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         };
 
         if (contract.includes('DropsPriceOracle') && contract !== 'DropsPriceOracleProxy') {
-          const contractFullName = `contracts/drops/oracle/${contract}.sol:${contract}`;
+          const contractFullName = `src/drops/oracle/${contract}.sol:${contract}`;
           options['contract'] = contractFullName;
         }
 

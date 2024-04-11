@@ -5,8 +5,8 @@ import {Test} from "../../../lib/forge-std/src/Test.sol";
 import {Vm} from "../../../lib/forge-std/src/Vm.sol";
 import {console} from "../../../lib/forge-std/src/console.sol";
 import {Constants} from "../utils/Constants.sol";
-import {HolographERC20} from "../../../contracts/enforcer/HolographERC20.sol";
-import {SampleERC20} from "../../../contracts/token/SampleERC20.sol";
+import {SampleERC20} from "../../../src/token/SampleERC20.sol";
+import {HolographERC20} from "../../../src/enforcer/HolographERC20.sol";
 
 contract Erc20Enforcer is Test {
   uint256 localHostFork;

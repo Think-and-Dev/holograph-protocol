@@ -148,7 +148,7 @@ The simplified code path for bridging out is:
 
 At step 1, a user submits their bridge request with a valid payload using the estimatedGas value computed in the previous [Estimate Gas](#estimategas) section
 
-At step 2, the code checks that the contract is a _holographable_ contract. This means it has implemented the required functions for a _Holographed_ contract. See `contracts/enforcer/HolographERC721.sol` for an example.
+At step 2, the code checks that the contract is a _holographable_ contract. This means it has implemented the required functions for a _Holographed_ contract. See `src/enforcer/HolographERC721.sol` for an example.
 
 At step 3, we call the `_bridgeOut` function on the _Holographed_ contract and apply various checks and generate a payload with information about the bridge request.
 
@@ -227,7 +227,6 @@ At step 5, the wallet sends a transaction to the `exectureJob` method on the `Ho
 3. Install dependencies with `yarn install`.
 4. Install Forge globally with `curl -L https://foundry.paradigm.xyz | bash`
 
-
 ### Environment
 
 Please see the sample.env file for the environment variables that need to be configured. There are some notable variables that are important to consider and have set for both local, testnet, and production development and deployments. So make sure these are set:
@@ -242,11 +241,9 @@ Please see the sample.env file for the environment variables that need to be con
 
 ### Compiling
 
-To build the code locally, you must run the following. You ony need to run this once. If you make changes to anything in the `src` folder, then we suggest running the command again.
-
 1. Terminal 1: `yarn clean-compile`
 
-When the project is built, the code in the `src` folder gets written to the `contracts` folder. The files in the `contracts` folder are the "real" files that are used for testing and code verification on all the scanners.
+This runs `hardhat clean` and then `hardhat compile` in sequence. Alternatively you can just run `yarn compile`.
 
 ### Deploying Holograph Protocol
 
@@ -256,6 +253,7 @@ To run the protocol locally, we actually need to run 2 networks `localhost` and 
 2. Terminal 2: `yarn deploy-x2` - Deploys protocol on both networks without compiling. The command will ask you to enter `y` to continue twice. If you get an error, make sure you ran `yarn clean-compile` at least once before!
 
 The expected output is show below. For local development, if addresses are different, please review env variables to make sure you get the correct values.
+
 ```bash
 👉 Environment: develop
 
@@ -293,15 +291,32 @@ future "Holograph" address is 0x17253175f447ca4B560a87a3F39591DFC7A021e3
 ... // more logs
 ```
 
+### Slots
+
+A note on contract slots. The protocol uses the EIP1967 standard heavily for addressing storage location via slots. We use a consistent format across the codebase
+in the form of:
+
+eip1967.<contract-name>.<storage-variable-name>
+
+Additionally we have a utility script that indentify this within the contracts directory as a pre-commit and auto-hash it into it's proper format prior to pushing updates to the repo. An example of how to add a new storage variable to a contract via a hashed slot is as followed:
+
+1. Add a variable to your contracts storage such as `bytes32 constant _interfacesSlot = precomputeslot("eip1967.Holograph.interfaces");`. Add slots below existing slots. Never add them in between existing slots.
+2. Run the `npx ts-node scripts/precompute-solidity-hashes.ts` script to update the contents of the `precompute` slot function into the output of the hash that is actually stored in the contract.
+3. Annotate the converted line with a comment so the original value is captured. See existing slot to see how we comment these values. We should be able to see what the string version of the hash is.
+4. These constants provide access to important variables at a unique location in a consistent manner.
+
+Note, that if you do not manually call the `precompute-solidity-hashes.ts` script, we have a git hook that will automatically convert it.
+
 ### Quick Environment Commands
 
-You can set up aliases locally to make development smoother. Note, that you will need to update the path to the code to the location on your own computer. 
+You can set up aliases locally to make development smoother. Note, that you will need to update the path to the code to the location on your own computer.
 
 ```shell
 alias protbuild="cd ~/path/to/protocol && yarn install && yarn clean-compile && yarn anvil"
 
 alias protdeploy="cd ~/path/to/protocol && yarn deploy-x2"
 ```
+
 Then you can run `protbuild` and then `protdeploy` to set up the project locally.
 
 ### Running tests
@@ -339,11 +354,10 @@ Please make use of the `yarn run prettier:fix` command to format the codebase in
 root
 
 ├── <a href="./config">config</a>: Network configuration files
-├── <a href="./contracts">contracts</a>: Smart contracts that power the Holograph protocol
+├── <a href="./src">contracts</a>: Smart contracts that power the Holograph protocol
 ├── <a href="./deploy">deploy</a>: Deployment scripts for the smart contracts uses <a href="https://hardhat.org/">Hardhat</a> and <a href="https://github.com/wighawag/hardhat-deploy">Hardhat Deploy</a>
 ├── <a href="./deployments">deployments</a>: Deployment build files that include contract addresses on each network
 ├── <a href="./scripts">scripts</a>: Scripts and helper utilities
-├── <a href="./src">src</a>: Source contracts that get dynamically transpiled down into the finalized output <a href="./contracts">contracts</a>
 └── <a href="./test">test</a>: Hardhat tests for the smart contracts
 </pre>
 

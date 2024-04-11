@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-/*SOLIDITY_COMPILER_VERSION*/
+pragma solidity 0.8.13;
 
 import {Admin} from "../../abstract/Admin.sol";
 import {Initializable} from "../../abstract/Initializable.sol";
@@ -29,10 +29,12 @@ contract DropsPriceOracleLineaTestnetGoerli is Admin, Initializable, IDropsPrice
   /**
    * @notice Convert USD value to native gas token value
    * @dev It is important to note that different USD stablecoins use different decimal places.
-   * @param usdAmount a 6 decimal places USD amount
    */
+  // NOTE: Temporararily return a static value while a USDC / WETH pool is not available on Linea
+  //       Keep the usdAmount parameter to match the interface
+  // solhint-disable-next-line no-unused-vars
   function convertUsdToWei(uint256 usdAmount) external pure returns (uint256 weiAmount) {
-    weiAmount = (_getUSDC(usdAmount) + _getUSDT(usdAmount)) / 2;
+    weiAmount = _returnStaticUSDC();
   }
 
   function _getUSDC(uint256 usdAmount) internal pure returns (uint256 weiAmount) {
@@ -67,5 +69,9 @@ contract DropsPriceOracleLineaTestnetGoerli is Admin, Initializable, IDropsPrice
     uint256 denominator = (y - usdAmount) * 997;
 
     weiAmount = (numerator / denominator) + 1;
+  }
+
+  function _returnStaticUSDC() internal pure returns (uint256 weiAmount) {
+    weiAmount = 300000000000000;
   }
 }

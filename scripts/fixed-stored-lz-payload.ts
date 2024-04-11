@@ -14,7 +14,7 @@ task('RETRY_PAYLOAD', 'A description for your task').setAction(async (taskArgs, 
   console.log(trustedRemote);
 
   // Use the ABI and address to get a contract instance
-  const LZEndpointMockABI = require('../artifacts/contracts/mock/LZEndpointMock.sol/LZEndpointMock.json').abi;
+  const LZEndpointMockABI = require('../artifacts/src/mock/LZEndpointMock.sol/LZEndpointMock.json').abi;
   const contractAddress = '0x93f54D755A063cE7bB9e6Ac47Eccc8e33411d706'; // Address of the LZ Endpoint contract on the destination chain
   const endpoint = new hre.ethers.Contract(contractAddress, LZEndpointMockABI, hre.ethers.provider);
 
