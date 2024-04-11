@@ -117,7 +117,11 @@ interface ICustomERC721 {
   /// @param encryptedBaseUri base uri for the nfts (to be decrypted by the reveal function)
   /// @param data additional bytes data to be used at the discretion of the consumer of the contract (LazyMint feature).
   /// @return first minted token ID
-  function purchase(uint256 quantity, string calldata encryptedBaseUri, bytes calldata data) external payable returns (uint256);
+  function purchase(
+    uint256 quantity,
+    string calldata encryptedBaseUri,
+    bytes calldata data
+  ) external payable returns (uint256);
 
   /// @notice External purchase presale function (takes a merkle proof and matches to root) (payable in eth)
   /// @param quantity to purchase
@@ -153,7 +157,7 @@ interface ICustomERC721 {
   /// @param data additional bytes data to be used at the discretion of the consumer of the contract (LazyMint feature).
   /// @return the id of the first minted NFT
   function adminMint(
-    address to, 
+    address to,
     uint256 quantity,
     string calldata encryptedBaseUri,
     bytes calldata data
