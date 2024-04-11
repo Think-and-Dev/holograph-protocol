@@ -126,14 +126,16 @@ contract ValidateDeployChain2 is DeployedSetUp {
   }
 
   //TODO fix and add test name
-  function SampleERC20() public {
+  function testFailSampleERC20() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("SampleERC20.sol:SampleERC20");
     assertEq(sampleERC20Deployed.code, bytecodeDeployed);
   }
 
   //TODO fix and add test name
-  function SampleERC721() public {
+  function testFailSampleERC721() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("SampleERC721.sol:SampleERC721");
     assertEq(sampleERC721Deployed.code, bytecodeDeployed);
   }
+
+  //TODO the remaining tests using sample erc20 and erc721
 }
