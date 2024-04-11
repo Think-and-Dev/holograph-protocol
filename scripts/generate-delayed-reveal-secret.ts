@@ -1,6 +1,10 @@
 import { ethers } from 'ethers';
 require('dotenv').config();
 
+/**
+ * This script generates a secret hash for delayed reveal NFTs.
+ * Usage: `npx ts-node scripts/generate-delayed-reveal-secret.ts`
+ */
 async function main() {
   const prefix = 'never-just-use-123';
   const chainId = '';
