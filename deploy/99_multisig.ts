@@ -19,7 +19,7 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
   global.__txNonce[hre.networkName] = await hre.ethers.provider.getTransactionCount(deployerAddress);
 
   const network: Network = networks[hre.networkName];
-  const environment: Environment = getEnvironment();
+  const environment: Environment = Environment.develop;
 
   // If we are on a mainnet or testnet, and we are deploying to a mainnet or testnet environment, then we need to set the multisig
   if (
