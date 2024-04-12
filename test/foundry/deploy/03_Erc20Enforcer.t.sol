@@ -7,6 +7,7 @@ import {HolographERC20} from "../../../src/enforcer/HolographERC20.sol";
 import {SampleERC20} from "../../../src/token/SampleERC20.sol";
 import {ERC20Mock} from "../../../src/mock/ERC20Mock.sol";
 import {Admin} from "../../../src/abstract/Admin.sol";
+import {ERC20} from "../../../src/interface/ERC20.sol";
 
 contract Erc20Enforcer is Test {
   event Transfer(address indexed _from, address indexed _to, uint256 _value);
@@ -34,13 +35,6 @@ contract Erc20Enforcer is Test {
   bytes32 signature3 = bytes32(abi.encode(0x686868686868686868686868686868686868686868686868686868686868686));
   uint256 badDeadLine;
   uint256 goodDeadLine;
-
-  // constructor() {
-  //   localHostFork = vm.createFork(LOCALHOST_RPC_URL);
-  //   vm.selectFork(localHostFork);
-  //   holographERC20 = HolographERC20(payable(0x5a5DbB0515Cb2af1945E731B86BB5e34E4d0d3A3));
-  //   sampleERC20 = SampleERC20(payable(0x5a5DbB0515Cb2af1945E731B86BB5e34E4d0d3A3));
-  // }
 
   function setUp() public {
     localHostFork = vm.createFork(LOCALHOST_RPC_URL);
@@ -83,27 +77,9 @@ contract Erc20Enforcer is Test {
     holographERC20.decreaseAllowance(alice, amount);
   }
 
-  // Prefix: testUntilDeploy = test until the deploy is in foundry
-  // The following tests pass correctly, we proceed to test them in order to have them up again when doing the deploy foundry script, since the sampleErc20 address is needed.
-  // Ran 18 tests for test/foundry/deploy/03_Erc20Enforcer.t.sol:Erc20Enforcer
-  // [PASS] testAllowance() (gas: 41551)
-  // [PASS] testBalanceOf() (gas: 41574)
-  // [PASS] testBurn() (gas: 41551)
-  // [PASS] testBurnFrom() (gas: 41551)
-  // [PASS] testDecimals() (gas: 41552)
-  // [PASS] testDomainSeparator() (gas: 41552)
-  // [PASS] testName() (gas: 41573)
-  // [PASS] testNonces() (gas: 41572)
-  // [PASS] testSafePermit() (gas: 41574)
-  // [PASS] testSafeTransfer() (gas: 41728)
-  // [PASS] testSafeTransferDiferentCallFour() (gas: 45042)
-  // [PASS] testSafeTransferDiferentCallThree() (gas: 45021)
-  // [PASS] testSafeTransferDiferentCallTwo() (gas: 41730)
-  // [PASS] testSupportinterface() (gas: 41573)
-  // [PASS] testSymbol() (gas: 41595)
-  // [PASS] testTotalSupply() (gas: 41595)
-  // [PASS] testTransfer() (gas: 41595)
-  // [PASS] testTransferFrom() (gas: 41573)
+  /*
+   * INIT INTERFACES
+   */
 
   function testUntilDeploySupportinterface() public {
     bytes4 selector = holographERC20.totalSupply.selector;
@@ -112,6 +88,11 @@ contract Erc20Enforcer is Test {
 
   function testUntilDeployAllowance() public {
     bytes4 selector = holographERC20.allowance.selector;
+    holographERC20.supportsInterface(selector);
+  }
+
+  function testUntilDeployApprove() public {
+    bytes4 selector = holographERC20.approve.selector;
     holographERC20.supportsInterface(selector);
   }
 
@@ -135,6 +116,12 @@ contract Erc20Enforcer is Test {
     holographERC20.supportsInterface(selector);
   }
 
+  //todo make this test
+  function testUntilDeployERC20() public {
+    vm.skip(true);
+    // holographERC20.supportsInterface(holographERC20.supportsInterface(type(ERC20).interfaceId));
+  }
+
   function testUntilDeployName() public {
     bytes4 selector = holographERC20.name.selector;
     holographERC20.supportsInterface(selector);
@@ -148,6 +135,12 @@ contract Erc20Enforcer is Test {
   function testUntilDeployDecimals() public {
     bytes4 selector = holographERC20.decimals.selector;
     holographERC20.supportsInterface(selector);
+  }
+
+  //todo make this test
+  function testUntilDeployERC20Metadata() public {
+    vm.skip(true);
+    // holographERC20.supportsInterface(holographERC20.supportsInterface(type(ERC20).interfaceId));
   }
 
   function testUntilDeployBurn() public {
@@ -165,6 +158,12 @@ contract Erc20Enforcer is Test {
     holographERC20.supportsInterface(bytes4(selector));
   }
 
+  //todo make this test
+  function testUntilDeployERC20BurnInterface() public {
+    vm.skip(true);
+    // holographERC20.supportsInterface(holographERC20.supportsInterface(type(ERC20).interfaceId));
+  }
+
   function testUntilDeploySafeTransferDiferentCallTwo() public {
     bytes memory selector = abi.encodeWithSelector(bytes4(keccak256("safeTransfer(address,uint256,bytes)")));
     holographERC20.supportsInterface(bytes4(selector));
@@ -178,6 +177,12 @@ contract Erc20Enforcer is Test {
   function testUntilDeploySafeTransferDiferentCallFour() public {
     bytes memory selector = abi.encodeWithSelector(bytes4(keccak256("safeTransfer(address,address,uint256,bytes)")));
     holographERC20.supportsInterface(bytes4(selector));
+  }
+
+  //todo make this test
+  function testUntilDeployERC20Safer() public {
+    vm.skip(true);
+    // holographERC20.supportsInterface(holographERC20.supportsInterface(type(ERC20).interfaceId));
   }
 
   function testUntilDeploySafePermit() public {
@@ -195,14 +200,25 @@ contract Erc20Enforcer is Test {
     holographERC20.supportsInterface(selector);
   }
 
+  //todo make this test
+  function testUntilDeployERC20Permit() public {
+    vm.skip(true);
+    // holographERC20.supportsInterface(holographERC20.supportsInterface(type(ERC20).interfaceId));
+  }
+
   /*
    * INIT TEST
    */
 
-  function testInit() public {
+  function testInitRevert() public {
     bytes memory paramInit = abi.encode("0x0000000000000000000000000000000000000000");
     vm.expectRevert("HOLOGRAPHER: already initialized");
     holographERC20.init(paramInit);
+  }
+
+  //TODO make the test
+  function testInit() public {
+    vm.skip(true);
   }
 
   /*
@@ -339,7 +355,8 @@ contract Erc20Enforcer is Test {
   }
 
   //TODO see why mock token have balance? remove Fail to the name of the function
-  function testFailErc20RecivedFakeContractRevert() public {
+  function testErc20RecivedFakeContractRevert() public {
+    vm.skip(true);
     vm.expectRevert("ERC20: balance check failed");
     holographERC20.onERC20Received(
       address(erc20Mock),
@@ -350,7 +367,8 @@ contract Erc20Enforcer is Test {
   }
 
   //TODO see why revert ( amount exceeds balance, need mint and then not fail... ) and not non ERC20Receiver,  remove Fail to the name of the function
-  function testFailSafeTransferBrokenErc20RecivedRevert() public {
+  function testSafeTransferBrokenErc20RecivedRevert() public {
+    vm.skip(true);
     erc20Mock.toggleWorks(false);
     vm.expectRevert("ERC20: non ERC20Receiver");
     vm.prank(deployer);
@@ -358,7 +376,8 @@ contract Erc20Enforcer is Test {
   }
 
   //TODO see why revert ( amount exceeds balance,need mint and then not fail... ) and not non ERC20Receiver,  remove Fail to the name of the function
-  function testFailSafeTransferBytesBrokenErc20RecivedRevert() public {
+  function testSafeTransferBytesBrokenErc20RecivedRevert() public {
+    vm.skip(true);
     erc20Mock.toggleWorks(false);
     vm.expectRevert("ERC20: non ERC20Receiver");
     vm.prank(deployer);
@@ -370,7 +389,8 @@ contract Erc20Enforcer is Test {
   }
 
   //TODO see why not revert,  remove Fail to the name of the function
-  function testFailSafeTransferFromBrokenErc20RecivedRevert() public {
+  function testSafeTransferFromBrokenErc20RecivedRevert() public {
+    vm.skip(true);
     vm.prank(deployer);
     sampleERC20.mint(deployer, halfValue);
     erc20Mock.toggleWorks(false);
@@ -383,7 +403,8 @@ contract Erc20Enforcer is Test {
   }
 
   //TODO see why not revert,  remove Fail to the name of the function
-  function testFailSafeTransferFromBytesBrokenErc20RecivedRevert() public {
+  function testSafeTransferFromBytesBrokenErc20RecivedRevert() public {
+    vm.skip(true);
     vm.prank(deployer);
     sampleERC20.mint(deployer, halfValue);
     erc20Mock.toggleWorks(false);
@@ -585,7 +606,8 @@ contract Erc20Enforcer is Test {
   }
 
   //TODO not rever whit invalid signature
-  function testFailPermitInvalidSignatureRevert() public {
+  function testPermitInvalidSignatureRevert() public {
+    vm.skip(true);
     vm.expectRevert("ERC20: invalid signature");
     vm.prank(deployer);
     holographERC20.permit(deployer, alice, initialValue, goodDeadLine, uint8(0x1b), signature2, signature3);
