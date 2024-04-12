@@ -5,7 +5,7 @@ import {Test, Vm, console} from "forge-std/Test.sol";
 import {Constants} from "../utils/Constants.sol";
 import {DeployedSetUp} from "../utils/DeployedSetUp.t.sol";
 
-contract ValidateDeployChain1 is DeployedSetUp {
+contract ValidateDeployChain1Test is DeployedSetUp {
   uint256 localHostFork;
   string LOCALHOST_RPC_URL = vm.envString("LOCALHOST_RPC_URL");
 
@@ -90,7 +90,7 @@ contract ValidateDeployChain1 is DeployedSetUp {
     assertEq(holographFactoryProxyDeployed.code, bytecodeDeployed);
   }
 
-  // TODO: bytes not match
+  //TODO bytes not match and refact to the get holograph by network
   function testFailHolographGenesis() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographGenesisLocal.sol:HolographGenesisLocal");
     assertEq(holographGenesisDeployed.code, bytecodeDeployed);
