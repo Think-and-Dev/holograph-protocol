@@ -3,10 +3,10 @@ pragma solidity 0.8.13;
 
 import {Test, Vm, console} from "forge-std/Test.sol";
 import {Constants} from "../utils/Constants.sol";
-import {HolographERC20} from "../../../contracts/enforcer/HolographERC20.sol";
-import {SampleERC20} from "../../../contracts/token/SampleERC20.sol";
-import {ERC20Mock} from "../../../contracts/mock/ERC20Mock.sol";
-import {Admin} from "../../../contracts/abstract/Admin.sol";
+import {HolographERC20} from "../../../src/enforcer/HolographERC20.sol";
+import {SampleERC20} from "../../../src/token/SampleERC20.sol";
+import {ERC20Mock} from "../../../src/mock/ERC20Mock.sol";
+import {Admin} from "../../../src/abstract/Admin.sol";
 
 contract Erc20Enforcer is Test {
   event Transfer(address indexed _from, address indexed _to, uint256 _value);
@@ -32,8 +32,8 @@ contract Erc20Enforcer is Test {
   bytes32 signature = bytes32(abi.encode(0x1111111111111111111111111111111111111111111111111111111111111111));
   bytes32 signature2 = bytes32(abi.encode(0x353535353535353535353535353535353535353535353535353535353535353));
   bytes32 signature3 = bytes32(abi.encode(0x686868686868686868686868686868686868686868686868686868686868686));
-  uint256 badDeadLine = 1700923551;
-  uint256 goodDeadLine = 1712942900;
+  uint256 badDeadLine;
+  uint256 goodDeadLine;
 
   // constructor() {
   //   localHostFork = vm.createFork(LOCALHOST_RPC_URL);
@@ -49,6 +49,8 @@ contract Erc20Enforcer is Test {
     holographERC20 = HolographERC20(payable(0x5a5DbB0515Cb2af1945E731B86BB5e34E4d0d3A3));
     sampleERC20 = SampleERC20(payable(0x5a5DbB0515Cb2af1945E731B86BB5e34E4d0d3A3));
     admin = Admin(payable(Constants.getHolographFactoryProxy()));
+    badDeadLine = uint256(block.timestamp) - 1;
+    goodDeadLine = uint256(block.timestamp);
   }
 
   function mintToAlice() public {
@@ -81,8 +83,8 @@ contract Erc20Enforcer is Test {
     holographERC20.decreaseAllowance(alice, amount);
   }
 
-  // Prefix: skipUntilDeploy = skip until the deploy is in foundry
-  // The following tests pass correctly, we proceed to skip them in order to have them up again when doing the deploy foundry script, since the sampleErc20 address is needed.
+  // Prefix: testUntilDeploy = test until the deploy is in foundry
+  // The following tests pass correctly, we proceed to test them in order to have them up again when doing the deploy foundry script, since the sampleErc20 address is needed.
   // Ran 18 tests for test/foundry/deploy/03_Erc20Enforcer.t.sol:Erc20Enforcer
   // [PASS] testAllowance() (gas: 41551)
   // [PASS] testBalanceOf() (gas: 41574)
@@ -103,92 +105,92 @@ contract Erc20Enforcer is Test {
   // [PASS] testTransfer() (gas: 41595)
   // [PASS] testTransferFrom() (gas: 41573)
 
-  function skipUntilDeploySupportinterface() public {
+  function testUntilDeploySupportinterface() public {
     bytes4 selector = holographERC20.totalSupply.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function skipUntilDeployAllowance() public {
+  function testUntilDeployAllowance() public {
     bytes4 selector = holographERC20.allowance.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function skipUntilDeployBalanceOf() public {
+  function testUntilDeployBalanceOf() public {
     bytes4 selector = holographERC20.balanceOf.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function skipUntilDeployTotalSupply() public {
+  function testUntilDeployTotalSupply() public {
     bytes4 selector = holographERC20.totalSupply.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function skipUntilDeployTransfer() public {
+  function testUntilDeployTransfer() public {
     bytes4 selector = holographERC20.transfer.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function skipUntilDeployTransferFrom() public {
+  function testUntilDeployTransferFrom() public {
     bytes4 selector = holographERC20.transferFrom.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function skipUntilDeployName() public {
+  function testUntilDeployName() public {
     bytes4 selector = holographERC20.name.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function skipUntilDeploySymbol() public {
+  function testUntilDeploySymbol() public {
     bytes4 selector = holographERC20.transferFrom.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function skipUntilDeployDecimals() public {
+  function testUntilDeployDecimals() public {
     bytes4 selector = holographERC20.decimals.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function skipUntilDeployBurn() public {
+  function testUntilDeployBurn() public {
     bytes4 selector = holographERC20.burn.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function skipUntilDeployBurnFrom() public {
+  function testUntilDeployBurnFrom() public {
     bytes4 selector = holographERC20.burnFrom.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function skipUntilDeploySafeTransfer() public {
+  function testUntilDeploySafeTransfer() public {
     bytes memory selector = abi.encodeWithSelector(bytes4(keccak256("safeTransfer(address,uint256)")));
     holographERC20.supportsInterface(bytes4(selector));
   }
 
-  function skipUntilDeploySafeTransferDiferentCallTwo() public {
+  function testUntilDeploySafeTransferDiferentCallTwo() public {
     bytes memory selector = abi.encodeWithSelector(bytes4(keccak256("safeTransfer(address,uint256,bytes)")));
     holographERC20.supportsInterface(bytes4(selector));
   }
 
-  function skipUntilDeploySafeTransferDiferentCallThree() public {
+  function testUntilDeploySafeTransferDiferentCallThree() public {
     bytes memory selector = abi.encodeWithSelector(bytes4(keccak256("safeTransfer(address,uint256,uint256)")));
     holographERC20.supportsInterface(bytes4(selector));
   }
 
-  function skipUntilDeploySafeTransferDiferentCallFour() public {
+  function testUntilDeploySafeTransferDiferentCallFour() public {
     bytes memory selector = abi.encodeWithSelector(bytes4(keccak256("safeTransfer(address,address,uint256,bytes)")));
     holographERC20.supportsInterface(bytes4(selector));
   }
 
-  function skipUntilDeploySafePermit() public {
+  function testUntilDeploySafePermit() public {
     bytes4 selector = holographERC20.permit.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function skipUntilDeployNonces() public {
+  function testUntilDeployNonces() public {
     bytes4 selector = holographERC20.nonces.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function skipUntilDeployDomainSeparator() public {
+  function testUntilDeployDomainSeparator() public {
     bytes4 selector = holographERC20.DOMAIN_SEPARATOR.selector;
     holographERC20.supportsInterface(selector);
   }
@@ -564,6 +566,9 @@ contract Erc20Enforcer is Test {
   }
 
   function testPermitEmptySignatureRevert() public {
+    console.log("block.timestamp", block.timestamp);
+    console.log("block.goodDeadLine", goodDeadLine);
+    console.log("block.badDeadLine", badDeadLine);
     vm.expectRevert("ERC20: zero address signer");
     holographERC20.permit(deployer, alice, initialValue, goodDeadLine, uint8(0x1b), zeroSignature, zeroSignature);
   }
