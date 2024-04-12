@@ -462,60 +462,45 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
   } else {
     console.log('"HolographDropERC721V2" is already registered');
   }
-  
+
   // Register CustomERC721
   const CustomERC721InitCode = generateInitCode(
-    ['tuple(address,address,uint64,uint16,tuple(uint104,uint32,uint64,uint64,uint64,uint64,bytes32))'],
+    ['tuple(address,address,string, uint64,uint16,tuple(uint104,uint32,uint64,uint64,uint64,uint64,bytes32))'],
     [
       [
         deployerAddress, // initialOwner
         deployerAddress, // fundsRecipient
+        '', // contractURI
         0, // unlimited editions
         1000, // 10% royalty
         [0, 0, 0, 0, 0, 0, '0x' + '00'.repeat(32)], // salesConfig
       ],
     ]
   );
-  const futureCustomERC721Address = await genesisDeriveFutureAddress(
-    hre,
-    salt,
-    'CustomERC721',
-    CustomERC721InitCode
-  );
+  const futureCustomERC721Address = await genesisDeriveFutureAddress(hre, salt, 'CustomERC721', CustomERC721InitCode);
   console.log('the future "CustomERC721" address is', futureCustomERC721Address);
-  const CustomERC721Hash =
-    '0x' + web3.utils.asciiToHex('CustomERC721').substring(2).padStart(64, '0');
+  const CustomERC721Hash = '0x' + web3.utils.asciiToHex('CustomERC721').substring(2).padStart(64, '0');
   console.log(`CustomERC721Hash: ${CustomERC721Hash}`);
-  if (
-    (await holographRegistry.getContractTypeAddress(CustomERC721Hash)) !== futureCustomERC721Address
-  ) {
+  if ((await holographRegistry.getContractTypeAddress(CustomERC721Hash)) !== futureCustomERC721Address) {
     const customERC721Tx = await MultisigAwareTx(
       hre,
       'HolographRegistry',
       holographRegistry,
-      await holographRegistry.populateTransaction.setContractTypeAddress(
-        CustomERC721Hash,
-        futureCustomERC721Address,
-        {
-          ...(await txParams({
-            hre,
-            from: deployerAddress,
-            to: holographRegistry,
-            data: holographRegistry.populateTransaction.setContractTypeAddress(
-              CustomERC721Hash,
-              futureCustomERC721Address
-            ),
-          })),
-        }
-      )
+      await holographRegistry.populateTransaction.setContractTypeAddress(CustomERC721Hash, futureCustomERC721Address, {
+        ...(await txParams({
+          hre,
+          from: deployerAddress,
+          to: holographRegistry,
+          data: holographRegistry.populateTransaction.setContractTypeAddress(
+            CustomERC721Hash,
+            futureCustomERC721Address
+          ),
+        })),
+      })
     );
     console.log('Transaction hash:', customERC721Tx.hash);
     await customERC721Tx.wait();
-    console.log(
-      `Registered "CustomERC721" to: ${await holographRegistry.getContractTypeAddress(
-        CustomERC721Hash
-      )}`
-    );
+    console.log(`Registered "CustomERC721" to: ${await holographRegistry.getContractTypeAddress(CustomERC721Hash)}`);
   } else {
     console.log('"CustomERC721" is already registered');
   }

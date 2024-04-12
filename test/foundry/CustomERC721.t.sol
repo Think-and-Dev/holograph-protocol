@@ -89,6 +89,7 @@ contract CustomERC721Test is ICustomERC721Errors, Test {
     CustomERC721Initializer memory initializer = CustomERC721Initializer({
       initialOwner: payable(DEFAULT_OWNER_ADDRESS),
       fundsRecipient: payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS),
+      contractURI: "https://example.com",
       editionSize: 100,
       royaltyBPS: 1000,
       salesConfiguration: saleConfig
@@ -125,7 +126,7 @@ contract CustomERC721Test is ICustomERC721Errors, Test {
     vm.recordLogs();
     factory.deployHolographableContract(config, signature, alice); // Pass the payload hash, with the signature, and signer's address
     Vm.Log[] memory entries = vm.getRecordedLogs();
-    address newDropAddress = address(uint160(uint256(entries[1].topics[1])));
+    address newDropAddress = address(uint160(uint256(entries[2].topics[1])));
 
     // Connect the drop implementation to the drop proxy address
     customErc721 = CustomERC721(payable(newDropAddress));
@@ -178,6 +179,7 @@ contract CustomERC721Test is ICustomERC721Errors, Test {
     CustomERC721Initializer memory initializer = CustomERC721Initializer({
       initialOwner: payable(DEFAULT_OWNER_ADDRESS),
       fundsRecipient: payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS),
+      contractURI: "https://example.com",
       editionSize: 100,
       royaltyBPS: 1000,
       salesConfiguration: saleConfig
@@ -214,7 +216,7 @@ contract CustomERC721Test is ICustomERC721Errors, Test {
     vm.recordLogs();
     factory.deployHolographableContract(config, signature, alice); // Pass the payload hash, with the signature, and signer's address
     Vm.Log[] memory entries = vm.getRecordedLogs();
-    address newDropAddress = address(uint160(uint256(entries[1].topics[1])));
+    address newDropAddress = address(uint160(uint256(entries[2].topics[1])));
 
     // Connect the drop implementation to the drop proxy address
     customErc721 = CustomERC721(payable(newDropAddress));
