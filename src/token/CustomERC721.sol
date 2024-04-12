@@ -428,7 +428,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, LazyMint, DelayedReveal
     uint256 _amount,
     string calldata _baseURIForTokens,
     bytes calldata _data
-  ) public override onlyOwner returns (uint256 batchId) {
+  ) public override returns (uint256 batchId) {
     if (_data.length > 0) {
       (bytes memory encryptedURI, bytes32 provenanceHash) = abi.decode(_data, (bytes, bytes32));
       if (encryptedURI.length != 0 && provenanceHash != "") {
@@ -568,13 +568,9 @@ contract CustomERC721 is NonReentrant, ContractMetadata, LazyMint, DelayedReveal
     weiAmount = dropsPriceOracle.convertUsdToWei(amount);
   }
 
-  /**
-   * @dev Checks whether NFTs can be lazy minted in the given execution context.
-   *      TODO: Validate/check if the logic is working for lazy minting
-   * @return Whether NFTs can be lazy minted.
-   */
+  /// @dev Returns whether lazy minting can be done in the given execution context.
   function _canLazyMint() internal view override returns (bool) {
-    return _publicSaleActive() || _presaleActive();
+    return ((msgSender() == _getOwner()) && _publicSaleActive()) || _presaleActive();
   }
 
   /// @dev Checks whether contract metadata can be set in the given execution context.
@@ -637,6 +633,36 @@ contract CustomERC721 is NonReentrant, ContractMetadata, LazyMint, DelayedReveal
       }
     }
   }
+
+  // TODO: We need to recreate these functions in a way that is compatible wit our _mintNFTs function
+  /// @dev Lets an account claim tokens.
+  // function claim(
+  //   address _receiver,
+  //   uint256 _quantity,
+  //   address _currency,
+  //   uint256 _pricePerToken,
+  //   bytes memory _data
+  // ) public payable virtual override {
+  //   _beforeClaim(_receiver, _quantity, _currency, _pricePerToken, _allowlistProof, _data);
+
+  //   uint256 activeConditionId = getActiveClaimConditionId();
+
+  //   verifyClaim(activeConditionId, _dropMsgSender(), _quantity, _currency, _pricePerToken, _allowlistProof);
+
+  //   // Update contract state.
+  //   claimCondition.conditions[activeConditionId].supplyClaimed += _quantity;
+  //   claimCondition.supplyClaimedByWallet[activeConditionId][_dropMsgSender()] += _quantity;
+
+  //   // If there's a price, collect price.
+  //   _collectPriceOnClaim(address(0), _quantity, _currency, _pricePerToken);
+
+  //   // Mint the relevant tokens to claimer.
+  //   uint256 startTokenId = _transferTokensOnClaim(_receiver, _quantity);
+
+  //   emit TokensClaimed(activeConditionId, _dropMsgSender(), _receiver, startTokenId, _quantity);
+
+  //   _afterClaim(_receiver, _quantity, _currency, _pricePerToken, _allowlistProof, _data);
+  // }
 
   fallback() external payable override {
     assembly {
