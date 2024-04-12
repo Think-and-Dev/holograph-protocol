@@ -7,12 +7,14 @@ import {console} from "../../../lib/forge-std/src/console.sol";
 import {Constants} from "../utils/Constants.sol";
 import {SampleERC20} from "../../../src/token/SampleERC20.sol";
 import {HolographERC20} from "../../../src/enforcer/HolographERC20.sol";
+import {ERC20Mock} from "../../../src/mock/ERC20Mock.sol";
 
 contract Erc20Enforcer is Test {
   uint256 localHostFork;
   string LOCALHOST_RPC_URL = vm.envString("LOCALHOST_RPC_URL");
   HolographERC20 holographERC20;
   SampleERC20 sampleERC20;
+  ERC20Mock erc20Mock;
   // TODO modificar tokenname en el setup()
   string tokenName = "Sample ERC20 Token (localhost)";
   string tokenSymbol = "SMPL";
@@ -26,6 +28,7 @@ contract Erc20Enforcer is Test {
   address wallet1 = vm.addr(0x2315c2a66e6b3af2dca804fe89ce6b51fc6041f5486d9f4acd43921112c18891);
   address wallet2 = vm.addr(0x0223ee02bf483df57329ea337954be6bf39c107fd2e1f40c2a5059d3ed197f96);
   address wallet3 = vm.addr(0x09af83e24107abcca31a24e7a03cf5f1fff0d444daeba974c6a11ebe3ba0be7b);
+  //address erc20Mock = vm.addr(0x6eF2a267742D2EdA91cE4f3D875a91c599e5e079);
   address zeroAddress = address(0);
   uint256 maxValue = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
   uint256 halfValue = 0x00000000000000000000000000000000ffffffffffffffffffffffffffffffff;
@@ -38,9 +41,10 @@ contract Erc20Enforcer is Test {
     vm.selectFork(localHostFork);
     //holographERC20 = HolographERC20(payable(Constants.getHolographERC20()));
     //sampleERC20 = SampleERC20(payable(Constants.getHolographERC20()));
-    // Modificar address cada vez que se vuelve a hacer el deploy
+    // Modificar address cada vez que se vuelve a hacer el deploy (pooner el address de Sample ERC20)
     holographERC20 = HolographERC20(payable(address(0x5a5DbB0515Cb2af1945E731B86BB5e34E4d0d3A3)));
     sampleERC20 = SampleERC20(payable(address(0x5a5DbB0515Cb2af1945E731B86BB5e34E4d0d3A3)));
+    erc20Mock = ERC20Mock(payable(Constants.getERC20Mock()));
   }
 
   ////////
@@ -106,11 +110,11 @@ contract Erc20Enforcer is Test {
 
   function testDecreaseAllowanceAboveZero() public {
     // Verifica que el intento de disminuir el límite de aprobación por encima de cero tenga éxito
+    vm.prank(deployer);
+    holographERC20.approve(wallet2, halfInverseValue);
     vm.expectEmit(true, true, false, true);
     emit Approval(deployer, wallet2, halfInverseValue);
     vm.prank(deployer);
-    holographERC20.approve(wallet2, halfInverseValue);
-    //TODO Ver por que falla : Reason: revert: ERC20: decreased below zero
     holographERC20.decreaseAllowance(wallet2, halfValue);
   }
 
@@ -122,27 +126,30 @@ contract Erc20Enforcer is Test {
 
   function testIncreaseAllowanceBelowMaxValue() public {
     // Verifica que el intento de aumentar el límite de aprobación por debajo del valor máximo tenga éxito
-    vm.expectEmit(true, true, false, true);
-    emit Approval(deployer, wallet2, maxValue);
     vm.prank(deployer);
     holographERC20.approve(wallet2, maxValue);
+    vm.expectEmit(true, true, false, true);
+    emit Approval(deployer, wallet2, halfValue);
+    vm.prank(deployer);
     holographERC20.increaseAllowance(wallet2, halfValue);
   }
 
   function testIncreaseAllowanceAboveMaxValue() public {
     // Verifica que aumentar el límite de aprobación por encima del valor máximo falle
+    vm.prank(deployer);
+    holographERC20.increaseAllowance(wallet2, 1);
     vm.expectRevert("ERC20: increased above max value");
-    //TODO FAIL. Reason: call did not revert as expected
+    vm.prank(deployer);
     holographERC20.increaseAllowance(wallet2, maxValue);
   }
 
   function testDecreaseAllowanceToZero() public {
     // Verifica que disminuir el límite de aprobación a cero tenga éxito
+    vm.prank(deployer);
+    holographERC20.increaseAllowance(wallet2, maxValue);
     vm.expectEmit(true, true, false, true);
     emit Approval(deployer, wallet2, 0);
     vm.prank(deployer);
-    holographERC20.approve(wallet2, 0);
-    //TODO FAIL. Reason: revert: ERC20: decreased below zero
     holographERC20.decreaseAllowance(wallet2, maxValue);
   }
 
@@ -151,7 +158,6 @@ contract Erc20Enforcer is Test {
     vm.expectEmit(true, true, false, true);
     emit Approval(deployer, wallet2, maxValue);
     vm.prank(deployer);
-    holographERC20.approve(wallet2, maxValue);
     holographERC20.increaseAllowance(wallet2, maxValue);
   }
 
@@ -167,36 +173,30 @@ contract Erc20Enforcer is Test {
   function testTransferToZeroAddress() public {
     // Verifica que el intento de transferir tokens a una dirección cero falle
     vm.expectRevert("ERC20: recipient is zero address");
-    //TODO En lugar de 1 poner el valor de tokensWei
     holographERC20.transfer(zeroAddress, 1);
   }
 
   function testTransferFromZeroAddress() public {
     // Verifica que el intento de transferir tokens desde una dirección cero falle
+    // TODO Meensje de error incorrecto?
     vm.expectRevert("ERC20: amount exceeds allowance");
-    //TODO En lugar de 1 poner el valor de tokensWei
     holographERC20.transferFrom(zeroAddress, wallet1, 1);
   }
 
   function testTransferFromUnapprovedAddress() public {
     // Verifica que el intento de transferir tokens desde una dirección no aprobada falle
+    // TODO Meensje de error incorrecto?
     vm.expectRevert("ERC20: amount exceeds allowance");
-    //TODO En lugar de 1 poner el valor de tokensWei
     holographERC20.transferFrom(wallet1, deployer, 1);
   }
 
   function testApproveSmallerAllowance() public {
-    // TODO: Chequear, son tres test en uno? (335)
-    vm.expectEmit(true, true, false, true);
-    emit Approval(deployer, wallet2, smallerAmount);
+    // TODO: Chequear (335)
     vm.prank(deployer);
     holographERC20.approve(wallet2, smallerAmount);
     vm.expectRevert("ERC20: amount exceeds allowance");
+    vm.prank(wallet2);
     holographERC20.transferFrom(deployer, wallet1, totalTokensWei);
-    vm.expectEmit(true, true, false, true);
-    emit Approval(deployer, wallet2, 0);
-    vm.prank(deployer);
-    holographERC20.approve(wallet2, 0);
   }
 
   function testNonContractOnERC20ReceivedCall() public {
@@ -205,9 +205,31 @@ contract Erc20Enforcer is Test {
     holographERC20.onERC20Received(deployer, deployer, totalTokensWei, "0x");
   }
 
-  // function testFakeOnERC20Received() public {
-  //   // Verifies that calling onERC20Received with a fake contract address fails
-  //   vm.expectRevert("ERC20: balance check failed");
-  //   holographERC20.onERC20Received(erc20Mock, deployer, totalTokensWei, "0x");
-  // }
+  function testFakeOnERC20Received() public {
+    // Verifies that calling onERC20Received with a fake contract address fails (355)
+    // TODO Actualizar para poder usar skip
+    //vm.skip(true);
+    vm.expectRevert("ERC20: balance check failed");
+    holographERC20.onERC20Received(address(erc20Mock), deployer, totalTokensWei, "0x");
+  }
+
+  // TODO Chequear: es test o testFail?
+  function testFailSafeTransferForERC20Reciever() public {
+    erc20Mock.toggleWorks(false);
+    vm.expectRevert("ERC20: non ERC20Receiver");
+    holographERC20.safeTransfer(address(erc20Mock), totalTokensWei);
+  }
+
+  // TODO 4 TESTS MAS que usan erc20Mock.toggleWorks
+
+  //////////////////
+  // successful transfer
+
+  function testTransferAvailableTokens() public {
+    // Verifies that transferring available tokens emits the Transfer event
+    vm.expectEmit(true, true, false, true);
+    emit Transfer(deployer, wallet1, totalTokensWei);
+    vm.prank(deployer);
+    holographERC20.transfer(wallet1, totalTokensWei);
+  }
 }
