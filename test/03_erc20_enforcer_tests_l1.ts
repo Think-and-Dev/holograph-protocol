@@ -50,6 +50,7 @@ describe('Testing the Holograph ERC20 Enforcer (CHAIN1)', async function () {
       it('supportsInterface supported', async function () {
         expect(await ERC20.supportsInterface(functionHash('supportsInterface(bytes4)'))).to.be.true;
       });
+      //duplicated
       it('ERC165 interface supported', async function () {
         expect(await ERC20.supportsInterface(functionHash('supportsInterface(bytes4)'))).to.be.true;
       });
