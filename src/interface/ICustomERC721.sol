@@ -115,9 +115,7 @@ interface ICustomERC721 {
   /// @notice External purchase function (payable in eth)
   /// @param quantity to purchase
   /// @return first minted token ID
-  function purchase(
-    uint256 quantity
-  ) external payable returns (uint256);
+  function purchase(uint256 quantity) external payable returns (uint256);
 
   /// @notice External purchase presale function (takes a merkle proof and matches to root) (payable in eth)
   /// @param quantity to purchase
@@ -146,17 +144,12 @@ interface ICustomERC721 {
   /// @param to address to mint to
   /// @param quantity quantity to mint
   /// @return the id of the first minted NFT
-  function adminMint(
-    address to,
-    uint256 quantity
-  ) external returns (uint256);
+  function adminMint(address to, uint256 quantity) external returns (uint256);
 
   /// @notice This is an admin mint function to mint a single nft each to a list of addresses
   /// @param to list of addresses to mint an NFT each to
   /// @return the id of the first minted NFT
-  function adminMintAirdrop(
-    address[] memory to
-  ) external returns (uint256);
+  function adminMintAirdrop(address[] memory to) external returns (uint256);
 
   /// @dev Getter for admin role associated with the contract to handle metadata
   /// @return boolean if address is admin
