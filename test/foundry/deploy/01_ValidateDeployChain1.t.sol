@@ -22,16 +22,18 @@ contract ValidateDeployChain1Test is DeployedSetUp {
   }
 
   // TODO: address not found
-  // function testCxipERC721Holographer() public {
-  //   bytes memory bytecodeDeployed = vm.getDeployedCode("Holographer.sol:Holographer");
-  //   assertEq(address(Constants.getCxipERC721Holographer()).code, bytecodeDeployed);
-  // }
+  function testCxipERC721Holographer() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("Holographer.sol:Holographer");
+    //   assertEq(address(Constants.getCxipERC721Holographer()).code, bytecodeDeployed);
+  }
 
   // TODO: address not found
-  // function testCxipERC721Enforcer() public {
-  //   bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC721.sol:HolographERC721");
-  //   assertEq(address(Constants.getCxipERC721Enforcer()).code, bytecodeDeployed);
-  // }
+  function testCxipERC721Enforcer() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC721.sol:HolographERC721");
+    //   bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC721.sol:HolographERC721");
+  }
 
   function testCxipERC721() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("CxipERC721.sol:CxipERC721");
@@ -39,10 +41,11 @@ contract ValidateDeployChain1Test is DeployedSetUp {
   }
 
   // TO DO: fail, not found the sc
-  // function testCxipERC721Proxy() public {
-  //   bytes memory bytecodeDeployed = vm.getDeployedCode("CxipERC721Proxy.sol:CxipERC721Proxy");
-  //   assertEq(address(Constants.getCxipERC721Proxy()).code, bytecodeDeployed);
-  // }
+  function testCxipERC721Proxy() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("CxipERC721Proxy.sol:CxipERC721Proxy");
+    // assertEq(address(Constants.getCxipERC721Proxy()).code, bytecodeDeployed);
+  }
 
   function testERC20Mock() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("ERC20Mock.sol:ERC20Mock");
@@ -65,10 +68,11 @@ contract ValidateDeployChain1Test is DeployedSetUp {
   }
 
   // TODO: address not found
-  // function testHolographer() public {
-  //   bytes memory bytecodeDeployed = vm.getDeployedCode("Holographer.sol:Holographer");
-  //   assertEq(address(Constants.getHolographer()).code, bytecodeDeployed);
-  // }
+  function testHolographer() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("Holographer.sol:Holographer");
+    // assertEq(address(Constants.getHolographer()).code, bytecodeDeployed);
+  }
 
   function testHolographERC20() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC20.sol:HolographERC20");
@@ -127,34 +131,39 @@ contract ValidateDeployChain1Test is DeployedSetUp {
   }
 
   // TODO: address not found
-  // function testHTokenHolographer() public {
-  //   bytes memory bytecodeDeployed = vm.getDeployedCode("Holographer.sol:Holographer");
-  //   assertEq(address(Constants.getHTokenHolographer()).code, bytecodeDeployed);
-  // }
+  function testHTokenHolographer() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("Holographer.sol:Holographer");
+    // assertEq(address(Constants.getHTokenHolographer()).code, bytecodeDeployed);
+  }
 
   // TODO: address not found
-  // function testHTokenEnforcer() public {
-  //   bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC20.sol:HolographERC20");
-  //   assertEq(address(Constants.getHTokenEnforcer()).code, bytecodeDeployed);
-  // }
+  function testHTokenEnforcer() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC20.sol:HolographERC20");
+    // assertEq(address(Constants.getHTokenEnforcer()).code, bytecodeDeployed);
+  }
 
   // TODO: address not found
-  // function testHToken() public {
-  //   bytes memory bytecodeDeployed = vm.getDeployedCode("hToken.sol:hToken");
-  //   assertEq(address(Constants.getHToken()).code, bytecodeDeployed);
-  // }
+  function testHToken() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("hToken.sol:hToken");
+    // assertEq(address(Constants.getHToken()).code, bytecodeDeployed);
+  }
 
   // TODO: address not found
-  // function testMockERC721Receiver() public {
-  //   bytes memory bytecodeDeployed = vm.getDeployedCode("MockERC721Receiver.sol:MockERC721Receiver");
-  //   assertEq(address(Constants.getMockERC721Receiver()).code, bytecodeDeployed);
-  // }
+  function testMockERC721Receiver() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("MockERC721Receiver.sol:MockERC721Receiver");
+    // assertEq(address(Constants.getMockERC721Receiver()).code, bytecodeDeployed);
+  }
 
   // TODO: address not found
-  // function testMockLZEndpoint() public {
-  //   bytes memory bytecodeDeployed = vm.getDeployedCode("MockLZEndpoint.sol:MockLZEndpoint");
-  //   assertEq(address(Constants.getMockLZEndpoint()).code, bytecodeDeployed);
-  // }
+  function testMockLZEndpoint() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("MockLZEndpoint.sol:MockLZEndpoint");
+    // assertEq(address(Constants.getMockLZEndpoint()).code, bytecodeDeployed);
+  }
 
   function testHolographRoyalties() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographRoyalties.sol:HolographRoyalties");
@@ -162,38 +171,44 @@ contract ValidateDeployChain1Test is DeployedSetUp {
   }
 
   // TODO: address not found
-  // function testSampleERC20Holographer() public {
-  //   bytes memory bytecodeDeployed = vm.getDeployedCode("Holographer.sol:Holographer");
-  //   assertEq(address(Constants.getSampleERC20Holographer()).code, bytecodeDeployed);
-  // }
+  function testSampleERC20Holographer() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("Holographer.sol:Holographer");
+    // assertEq(address(Constants.getSampleERC20Holographer()).code, bytecodeDeployed);
+  }
 
   // TODO: address not found
-  // function testSampleERC20Enforcer() public {
-  //   bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC20.sol:HolographERC20");
-  //   assertEq(address(Constants.getSampleERC20Enforcer()).code, bytecodeDeployed);
-  // }
+  function testSampleERC20Enforcer() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC20.sol:HolographERC20");
+    // assertEq(address(Constants.getSampleERC20Enforcer()).code, bytecodeDeployed);
+  }
 
   // TODO: address not found
-  // function testSampleERC20() public {
-  //   bytes memory bytecodeDeployed = vm.getDeployedCode("SampleERC20.sol:SampleERC20");
-  //   assertEq(address(Constants.getSampleERC20()).code, bytecodeDeployed);
-  // }
+  function testSampleERC20() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("SampleERC20.sol:SampleERC20");
+    // assertEq(address(Constants.getSampleERC20()).code, bytecodeDeployed);
+  }
 
   // TODO: address not found
-  // function testSampleERC721Holographer() public {
-  //   bytes memory bytecodeDeployed = vm.getDeployedCode("Holographer.sol:Holographer");
-  //   assertEq(address(Constants.getSampleERC721Holographer()).code, bytecodeDeployed);
-  // }
+  function testSampleERC721Holographer() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("Holographer.sol:Holographer");
+    // assertEq(address(Constants.getSampleERC721Holographer()).code, bytecodeDeployed);
+  }
 
   // TODO: address not found
-  // function testSampleERC721Enforcer() public {
-  //   bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC721.sol:HolographERC721");
-  //   assertEq(address(Constants.getSampleERC721Enforcer()).code, bytecodeDeployed);
-  // }
+  function testSampleERC721Enforcer() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC721.sol:HolographERC721");
+    // assertEq(address(Constants.getSampleERC721Enforcer()).code, bytecodeDeployed);
+  }
 
   // TODO: address not found
-  // function testSampleERC721() public {
-  //   bytes memory bytecodeDeployed = vm.getDeployedCode("SampleERC721.sol:SampleERC721");
-  //   assertEq(address(Constants.getSampleERC721()).code, bytecodeDeployed);
-  // }
+  function testSampleERC721() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("SampleERC721.sol:SampleERC721");
+    // assertEq(address(Constants.getSampleERC721()).code, bytecodeDeployed);
+  }
 }
