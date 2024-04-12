@@ -432,7 +432,7 @@ contract CustomERC721 is NonReentrant, ERC721H, LazyMint, DelayedReveal, ICustom
     uint256 _amount,
     string calldata _baseURIForTokens,
     bytes calldata _data
-  ) public override returns (uint256 batchId) {
+  ) public onlyOwner override returns (uint256 batchId) {
     if (_data.length > 0) {
       (bytes memory encryptedURI, bytes32 provenanceHash) = abi.decode(_data, (bytes, bytes32));
       if (encryptedURI.length != 0 && provenanceHash != "") {
