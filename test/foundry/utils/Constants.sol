@@ -111,5 +111,4 @@ library Constants {
   function getEncryptDecryptKey() internal pure returns (bytes memory) {
     return abi.encode("random_encrypt_decrypt_key");
   }
-
 }

@@ -64,8 +64,9 @@ contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
     // Compute the encrypted URI using the secret key
     bytes memory encryptedUri = customErc721.encryptDecrypt(Constants.getBaseUri(), Constants.getEncryptDecryptKey());
     // Compute the provenance hash
-    bytes32 provenanceHash = keccak256(abi.encodePacked(Constants.getBaseUri(), Constants.getEncryptDecryptKey(), block.chainid));
-    
+    bytes32 provenanceHash = keccak256(
+      abi.encodePacked(Constants.getBaseUri(), Constants.getEncryptDecryptKey(), block.chainid)
+    );
 
     vm.prank(DEFAULT_OWNER_ADDRESS);
     customErc721.lazyMint(firstBatchAmount, Constants.getPlaceholderUri(), abi.encode(encryptedUri, provenanceHash));

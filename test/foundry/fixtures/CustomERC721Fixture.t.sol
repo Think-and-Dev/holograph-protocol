@@ -122,10 +122,13 @@ contract CustomERC721Fixture is Test {
       });
   }
 
-  function setUpPurchase() internal returns (uint256 totalCost, HolographERC721 erc721Enforcer, address sourceContractAddress, uint256 nativePrice) {
+  function setUpPurchase()
+    internal
+    returns (uint256 totalCost, HolographERC721 erc721Enforcer, address sourceContractAddress, uint256 nativePrice)
+  {
     // We assume that the amount is at least one and less than or equal to the edition size given in modifier
     vm.prank(DEFAULT_OWNER_ADDRESS);
-    
+
     HolographerInterface holographerInterface = HolographerInterface(address(customErc721));
     sourceContractAddress = holographerInterface.getSourceContract();
     erc721Enforcer = HolographERC721(payable(address(customErc721)));
