@@ -45,9 +45,9 @@ async function main() {
   const amount = process.env.AMOUNT_TO_MINT as string;
   const placeholderURIForTokens = process.env.PLACEHOLDER_URI_FOR_TOKENS as string;
   const revealedUri = process.env.REVEALED_URI as string;
-  
+
   const encryptedURI = encryptDecrypt(process.env.REVEALED_URI, process.env.SECRET_KEY);
-  
+
   // abi.encodePacked(revealedURI, _key, block.chainid)
   const provenanceHash = ethers.utils.keccak256(
     ethers.utils.solidityPack(

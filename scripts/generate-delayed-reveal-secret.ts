@@ -6,10 +6,11 @@ require('dotenv').config();
  * Usage: `npx ts-node scripts/generate-delayed-reveal-secret.ts`
  */
 async function main() {
-  if (process.env.SECRET_PREFIX === undefined) throw new Error(`SECRET_PREFIX environment variable is required`); 
-  if (process.env.CHAIN_ID === undefined) throw new Error(`CHAIN_ID environment variable is required`); 
-  if (process.env.CONTRACT_ADDRESS === undefined) throw new Error(`CONTRACT_ADDRESS environment variable is required`); 
-  if (process.env.ID_FOR_DELAYED_REVEAL_NFTS === undefined) throw new Error(`ID_FOR_DELAYED_REVEAL_NFTS environment variable is required`); 
+  if (process.env.SECRET_PREFIX === undefined) throw new Error(`SECRET_PREFIX environment variable is required`);
+  if (process.env.CHAIN_ID === undefined) throw new Error(`CHAIN_ID environment variable is required`);
+  if (process.env.CONTRACT_ADDRESS === undefined) throw new Error(`CONTRACT_ADDRESS environment variable is required`);
+  if (process.env.ID_FOR_DELAYED_REVEAL_NFTS === undefined)
+    throw new Error(`ID_FOR_DELAYED_REVEAL_NFTS environment variable is required`);
 
   const prefix = process.env.SECRET_PREFIX;
   const chainId = process.env.CHAIN_ID;
