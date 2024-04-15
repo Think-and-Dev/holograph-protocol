@@ -2,7 +2,6 @@
 pragma solidity 0.8.13;
 
 import {ICustomERC721Errors} from "test/foundry/interface/ICustomERC721Errors.sol";
-
 import {CustomERC721Fixture} from "test/foundry/fixtures/CustomERC721Fixture.t.sol";
 
 import {Vm} from "forge-std/Test.sol";
@@ -23,7 +22,6 @@ contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
 
   function test_DeployHolographCustomERC721() public {
     super.deployAndSetupProtocol();
-
     assertEq(customErc721.version(), 1);
   }
 
@@ -34,12 +32,13 @@ contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
       .setUpPurchase();
 
     /* -------------------------------- Purchase -------------------------------- */
+
     vm.prank(address(TEST_ACCOUNT));
     vm.deal(address(TEST_ACCOUNT), totalCost);
     uint256 tokenId = customErc721.purchase{value: totalCost}(1);
 
     // First token ID is this long number due to the chain id prefix
-    require(erc721Enforcer.ownerOf(tokenId) == address(TEST_ACCOUNT), "Owner is wrong for new minted token");
+    require(erc721Enforcer.ownerOf(tokenId) == address(TEST_ACCOUNT), "Incorrect owner for newly minted token");
     assertEq(address(sourceContractAddress).balance, nativePrice);
 
     /* ----------------------------- Check tokenURI ----------------------------- */
@@ -79,26 +78,32 @@ contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
     assertEq(encryptedData, abi.encode(encryptedUri, provenanceHash));
 
     /* -------------------------------- Purchase -------------------------------- */
+
     vm.prank(address(TEST_ACCOUNT));
     vm.deal(address(TEST_ACCOUNT), totalCost);
     uint256 tokenId = customErc721.purchase{value: totalCost}(1);
 
+    console.log("tokenId", tokenId);
+
     // First token ID is this long number due to the chain id prefix
-    require(erc721Enforcer.ownerOf(tokenId) == address(TEST_ACCOUNT), "Owner is wrong for new minted token");
+    require(erc721Enforcer.ownerOf(tokenId) == address(TEST_ACCOUNT), "Incorrect owner for newly minted token");
     assertEq(address(sourceContractAddress).balance, nativePrice);
 
     /* ----------------------- Check tokenURI and BaseURI ----------------------- */
+
     assertEq(customErc721.tokenURI(0), string(abi.encodePacked(Constants.getPlaceholderUri(), "0")));
-    assertEq(customErc721.tokenURI(0), "https://url.com/not_revealed/0");
+    assertEq(customErc721.tokenURI(0), "https://url.com/not-revealed/0");
 
     string memory baseUri = customErc721.baseURI(0);
     assertEq(baseUri, Constants.getPlaceholderUri());
 
     /* --------------------------------- Reveal --------------------------------- */
+
     vm.prank(DEFAULT_OWNER_ADDRESS);
     customErc721.reveal(0, Constants.getEncryptDecryptKey());
 
     /* ------------------------- Check revealed tokenURI ------------------------ */
+
     assertEq(customErc721.tokenURI(0), string(abi.encodePacked(Constants.getBaseUri(), "0")));
     assertEq(customErc721.tokenURI(0), "https://url.com/uri/0");
   }

@@ -97,7 +97,7 @@ library Constants {
   }
 
   function getPresaleMerkleRoot() internal pure returns (bytes32) {
-    return keccak256("random_merkle_root");
+    return keccak256("random-merkle-root");
   }
 
   function getBaseUri() internal pure returns (bytes memory) {
@@ -105,10 +105,10 @@ library Constants {
   }
 
   function getPlaceholderUri() internal pure returns (string memory) {
-    return "https://url.com/not_revealed/";
+    return "https://url.com/not-revealed/";
   }
 
   function getEncryptDecryptKey() internal pure returns (bytes memory) {
-    return abi.encode("random_encrypt_decrypt_key");
+    return abi.encode("random-encrypt-decrypt-key");
   }
 }
