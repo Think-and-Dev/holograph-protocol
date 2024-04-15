@@ -5,6 +5,7 @@ pragma solidity 0.8.13;
 import {ERC721H} from "../abstract/ERC721H.sol";
 import {NonReentrant} from "../abstract/NonReentrant.sol";
 import {DelayedReveal} from "../abstract/DelayedReveal.sol";
+import {ContractMetadata} from "../abstract/ContractMetadata.sol";
 
 import {HolographERC721Interface} from "../interface/HolographERC721Interface.sol";
 import {HolographerInterface} from "../interface/HolographerInterface.sol";
@@ -13,7 +14,7 @@ import {ICustomERC721} from "../interface/ICustomERC721.sol";
 import {IDropsPriceOracle} from "../drops/interface/IDropsPriceOracle.sol";
 import {HolographTreasuryInterface} from "../interface/HolographTreasuryInterface.sol";
 
-import {BatchMintMetadata} from "../extension/BatchMintMetadata.sol";
+import {LazyMint} from "../extension/LazyMint.sol";
 
 import {AddressMintDetails} from "../drops/struct/AddressMintDetails.sol";
 import {CustomERC721Configuration} from "../struct/CustomERC721Configuration.sol";
@@ -23,6 +24,7 @@ import {SalesConfiguration} from "../drops/struct/SalesConfiguration.sol";
 
 import {Address} from "../drops/library/Address.sol";
 import {MerkleProof} from "../drops/library/MerkleProof.sol";
+import {Strings} from "./../drops/library/Strings.sol";
 
 /**
  * @dev This contract subscribes to the following HolographERC721 events:
@@ -30,7 +32,9 @@ import {MerkleProof} from "../drops/library/MerkleProof.sol";
  *
  *       Do not enable or subscribe to any other events unless you modified the source code for them.
  */
-contract CustomERC721 is NonReentrant, ERC721H, BatchMintMetadata, DelayedReveal, ICustomERC721 {
+contract CustomERC721 is NonReentrant, ContractMetadata, LazyMint, DelayedReveal, ERC721H, ICustomERC721 {
+  using Strings for uint256;
+
   /**
    * CONTRACT VARIABLES
    * all variables, without custom storage slots, are defined here
@@ -124,15 +128,18 @@ contract CustomERC721 is NonReentrant, ERC721H, BatchMintMetadata, DelayedReveal
   function init(bytes memory initPayload) external override returns (bytes4) {
     require(!_isInitialized(), "HOLOGRAPH: already initialized");
 
+    // to enable sourceExternalCall to work on init, we set holographer here since it's only set after init
+    assembly {
+      sstore(_holographerSlot, caller())
+    }
+
     CustomERC721Initializer memory initializer = abi.decode(initPayload, (CustomERC721Initializer));
 
     // Setup the owner role
     _setOwner(initializer.initialOwner);
 
-    // to enable sourceExternalCall to work on init, we set holographer here since it's only set after init
-    assembly {
-      sstore(_holographerSlot, caller())
-    }
+    // Setup the contract URI
+    _setupContractURI(initializer.contractURI);
 
     // Setup config variables
     config = CustomERC721Configuration({
@@ -140,6 +147,9 @@ contract CustomERC721 is NonReentrant, ERC721H, BatchMintMetadata, DelayedReveal
       royaltyBPS: initializer.royaltyBPS,
       fundsRecipient: initializer.fundsRecipient
     });
+
+    // Setup the lazy minting
+    // nextTokenIdToLazyMint = HolographERC721Interface(msg.sender).sourceGetChainPrepend() + 1;
 
     salesConfig = initializer.salesConfiguration;
 
@@ -236,25 +246,30 @@ contract CustomERC721 is NonReentrant, ERC721H, BatchMintMetadata, DelayedReveal
       });
   }
 
-  // TODO: REPLACE WITH DELAYED REVEAL FUNCTIONALITY
   /**
-   * @notice Contract URI Getter, proxies to metadataRenderer
-   * @return Contract URI
-   */
-  // function contractURI() external view returns (string memory) {
-  //   return config.metadataRenderer.contractURI();
-  // }
-  /**
-   * @notice Token URI Getter, proxies to metadataRenderer
-   * @param tokenId id of token to get URI for
+   * @dev Returns the URI for a given tokenId.
+   * @param _tokenId id of token to get URI for
    * @return Token URI
    */
-  // function tokenURI(uint256 tokenId) external view returns (string memory) {
-  //   HolographERC721Interface H721 = HolographERC721Interface(holographer());
-  //   require(H721.exists(tokenId), "ERC721: token does not exist");
+  function tokenURI(uint256 _tokenId) public view returns (string memory) {
+    (uint256 batchId, ) = _getBatchId(_tokenId);
+    string memory batchUri = _getBaseURI(_tokenId);
 
-  //   return config.metadataRenderer.tokenURI(tokenId);
-  // }
+    if (isEncryptedBatch(batchId)) {
+      return string(abi.encodePacked(batchUri, "0"));
+    } else {
+      return string(abi.encodePacked(batchUri, _tokenId.toString()));
+    }
+  }
+
+  /**
+   * @dev Returns the base URI for a given tokenId. It return the base URI corresponding to the batch the tokenId belongs to.
+   * @param _tokenId id of token to get URI for
+   * @return Token URI
+   */
+  function baseURI(uint256 _tokenId) public view returns (string memory) {
+    return _getBaseURI(_tokenId);
+  }
 
   /**
    * @notice Convert USD price to current price in native Ether units
@@ -282,9 +297,9 @@ contract CustomERC721 is NonReentrant, ERC721H, BatchMintMetadata, DelayedReveal
     }
   }
 
-  /*///////////////////////////////////////////////////////////////
-                        Delayed reveal logic
-    //////////////////////////////////////////////////////////////*/
+  /* -------------------------------------------------------------------------- */
+  /*                            Delayed Reveal Logic                            */
+  /* -------------------------------------------------------------------------- */
 
   /**
    *  @notice       Lets an authorized address reveal a batch of delayed reveal NFTs.
@@ -417,6 +432,25 @@ contract CustomERC721 is NonReentrant, ERC721H, BatchMintMetadata, DelayedReveal
    */
 
   /**
+   *  We override the `lazyMint` function, and use the `_data` parameter for storing encrypted metadata
+   *  for 'delayed reveal' NFTs.
+   */
+  function lazyMint(
+    uint256 _amount,
+    string calldata _baseURIForTokens,
+    bytes calldata _data
+  ) public override returns (uint256 batchId) {
+    if (_data.length > 0) {
+      (bytes memory encryptedURI, bytes32 provenanceHash) = abi.decode(_data, (bytes, bytes32));
+      if (encryptedURI.length != 0 && provenanceHash != "") {
+        _setEncryptedData(nextTokenIdToLazyMint + _amount, _data);
+      }
+    }
+
+    return super.lazyMint(_amount, _baseURIForTokens, _data);
+  }
+
+  /**
    * @notice Admin mint tokens to a recipient for free
    * @param recipient recipient to mint to
    * @param quantity quantity to mint
@@ -429,13 +463,14 @@ contract CustomERC721 is NonReentrant, ERC721H, BatchMintMetadata, DelayedReveal
 
   /**
    * @dev Mints multiple editions to the given list of addresses.
+   * @dev TODO: Double check if we need to use arrays for encryptedBaseUris and dataArray
    * @param recipients list of addresses to send the newly minted editions to
    */
   function adminMintAirdrop(
     address[] calldata recipients
   ) external onlyOwner canMintTokens(recipients.length) returns (uint256) {
     unchecked {
-      for (uint256 i = 0; i < recipients.length; i++) {
+      for (uint256 i = 0; i != recipients.length; i++) {
         _mintNFTs(recipients[i], 1);
       }
     }
@@ -544,6 +579,35 @@ contract CustomERC721 is NonReentrant, ERC721H, BatchMintMetadata, DelayedReveal
     weiAmount = dropsPriceOracle.convertUsdToWei(amount);
   }
 
+  /// @dev Returns whether lazy minting can be done in the given execution context.
+  function _canLazyMint() internal view override returns (bool) {
+    return ((msgSender() == _getOwner()) && _publicSaleActive()) || _presaleActive();
+  }
+
+  /// @dev Checks whether contract metadata can be set in the given execution context.
+  function _canSetContractURI() internal view override returns (bool) {
+    return msgSender() == _getOwner();
+  }
+
+  // TODO: We need to recreate these functions in a way that is compatible with HolographERC721 internal indexes
+  // Please double check this logic
+  /**
+   * Returns the total amount of tokens minted in the contract.
+   */
+  function totalMinted() external view returns (uint256) {
+    return _currentTokenId;
+  }
+
+  /// @dev The tokenId of the next NFT that will be minted / lazy minted.
+  function nextTokenIdToMint() external view returns (uint256) {
+    return nextTokenIdToLazyMint;
+  }
+
+  /// @dev The next token ID of the NFT that can be claimed.
+  function nextTokenIdToClaim() external view returns (uint256) {
+    return _currentTokenId + 1;
+  }
+
   /**
    * INTERNAL FUNCTIONS
    * state changing
@@ -551,27 +615,65 @@ contract CustomERC721 is NonReentrant, ERC721H, BatchMintMetadata, DelayedReveal
 
   /// @dev Checks whether NFTs can be revealed in the given execution context.
   function _canReveal() internal view virtual returns (bool) {
-    return msg.sender == _getOwner();
+    return msgSender() == _getOwner();
   }
 
   function _mintNFTs(address recipient, uint256 quantity) internal {
     HolographERC721Interface H721 = HolographERC721Interface(holographer());
     uint256 chainPrepend = H721.sourceGetChainPrepend();
     uint224 tokenId = 0;
-    for (uint256 i = 0; i < quantity; i++) {
-      _currentTokenId += 1;
+    for (uint256 i = 0; i != quantity; ) {
+      unchecked {
+        _currentTokenId += 1;
+      }
       while (
         H721.exists(chainPrepend + uint256(_currentTokenId)) || H721.burned(chainPrepend + uint256(_currentTokenId))
       ) {
-        _currentTokenId += 1;
+        unchecked {
+          _currentTokenId += 1;
+        }
       }
       tokenId = _currentTokenId;
       H721.sourceMint(recipient, tokenId);
 
       uint256 id = chainPrepend + uint256(tokenId);
       emit NFTMinted(recipient, tokenId, id);
+
+      unchecked {
+        i++;
+      }
     }
   }
+
+  // TODO: We need to recreate these functions in a way that is compatible wit our _mintNFTs function
+  /// @dev Lets an account claim tokens.
+  // function claim(
+  //   address _receiver,
+  //   uint256 _quantity,
+  //   address _currency,
+  //   uint256 _pricePerToken,
+  //   bytes memory _data
+  // ) public payable virtual override {
+  //   _beforeClaim(_receiver, _quantity, _currency, _pricePerToken, _allowlistProof, _data);
+
+  //   uint256 activeConditionId = getActiveClaimConditionId();
+
+  //   verifyClaim(activeConditionId, _dropMsgSender(), _quantity, _currency, _pricePerToken, _allowlistProof);
+
+  //   // Update contract state.
+  //   claimCondition.conditions[activeConditionId].supplyClaimed += _quantity;
+  //   claimCondition.supplyClaimedByWallet[activeConditionId][_dropMsgSender()] += _quantity;
+
+  //   // If there's a price, collect price.
+  //   _collectPriceOnClaim(address(0), _quantity, _currency, _pricePerToken);
+
+  //   // Mint the relevant tokens to claimer.
+  //   uint256 startTokenId = _transferTokensOnClaim(_receiver, _quantity);
+
+  //   emit TokensClaimed(activeConditionId, _dropMsgSender(), _receiver, startTokenId, _quantity);
+
+  //   _afterClaim(_receiver, _quantity, _currency, _pricePerToken, _allowlistProof, _data);
+  // }
 
   fallback() external payable override {
     assembly {

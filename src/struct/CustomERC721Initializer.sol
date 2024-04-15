@@ -11,6 +11,7 @@ import {SalesConfiguration} from "../drops/struct/SalesConfiguration.sol";
 struct CustomERC721Initializer {
   address initialOwner;
   address payable fundsRecipient;
+  string contractURI;
   uint64 editionSize;
   uint16 royaltyBPS;
   SalesConfiguration salesConfiguration;

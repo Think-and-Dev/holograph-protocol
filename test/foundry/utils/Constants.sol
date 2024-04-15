@@ -67,4 +67,48 @@ library Constants {
   function getDropsEventConfig() internal pure returns (uint256) {
     return 0x0000000000000000000000000000000000000000000000000000000000040000;
   }
+
+  /* -------------------------------------------------------------------------- */
+  /*                                CustomERC721                                */
+  /* -------------------------------------------------------------------------- */
+
+  function getPublicMintPrice() internal pure returns (uint104) {
+    return 0.1 ether;
+  }
+
+  function getMaxSalePurchasePerAddress() internal pure returns (uint32) {
+    return 5;
+  }
+
+  function getPublicSaleStart() internal view returns (uint64) {
+    return uint64(block.timestamp + 5 days);
+  }
+
+  function getPublicSaleEnd() internal view returns (uint64) {
+    return uint64(block.timestamp + 10 days);
+  }
+
+  function getPresaleStart() internal view returns (uint64) {
+    return uint64(block.timestamp + 1 days);
+  }
+
+  function getPresaleEnd() internal view returns (uint64) {
+    return uint64(block.timestamp + 5 days - 1);
+  }
+
+  function getPresaleMerkleRoot() internal pure returns (bytes32) {
+    return keccak256("random-merkle-root");
+  }
+
+  function getBaseUri() internal pure returns (bytes memory) {
+    return abi.encodePacked("https://url.com/uri/");
+  }
+
+  function getPlaceholderUri() internal pure returns (string memory) {
+    return "https://url.com/not-revealed/";
+  }
+
+  function getEncryptDecryptKey() internal pure returns (bytes memory) {
+    return abi.encode("random-encrypt-decrypt-key");
+  }
 }
