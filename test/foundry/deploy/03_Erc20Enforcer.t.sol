@@ -605,9 +605,6 @@ contract Erc20Enforcer is Test {
   }
 
   function testPermitEmptySignatureRevert() public {
-    console.log("block.timestamp", block.timestamp);
-    console.log("block.goodDeadLine", goodDeadLine);
-    console.log("block.badDeadLine", badDeadLine);
     vm.expectRevert("ERC20: zero address signer");
     holographERC20.permit(deployer, alice, initialValue, goodDeadLine, uint8(0x1b), zeroSignature, zeroSignature);
   }
