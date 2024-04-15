@@ -113,7 +113,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, LazyMint, DelayedReveal
 
   /**
    * CONTRACT INITIALIZERS
-   * init function is used instead of constructor
    */
 
   /**
