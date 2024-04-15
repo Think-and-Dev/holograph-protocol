@@ -623,7 +623,7 @@ contract Erc20Enforcer is Test {
     holographERC20.permit(deployer, alice, initialValue, goodDeadLine, uint8(0x04), zeroSignature, zeroSignature);
   }
 
-  //TODO not rever whit invalid signature
+  //TODO not revert whit invalid signature
   function testPermitInvalidSignatureRevert() public {
     vm.skip(true);
     vm.expectRevert("ERC20: invalid signature");
