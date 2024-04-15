@@ -7,6 +7,7 @@ import {CustomERC721Fixture} from "test/foundry/fixtures/CustomERC721Fixture.t.s
 
 import {Vm} from "forge-std/Test.sol";
 import {console} from "forge-std/console.sol";
+import {console2} from "forge-std/console2.sol";
 
 import {Utils} from "test/foundry/utils/Utils.sol";
 import {Constants} from "test/foundry/utils/Constants.sol";
@@ -56,6 +57,7 @@ contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
 
     (uint256 totalCost, HolographERC721 erc721Enforcer, address sourceContractAddress, uint256 nativePrice) = super
       .setUpPurchase();
+    uint256 firstBatchAmount = 5;
 
     /* -------------------------------- Lazy mint ------------------------------- */
 
@@ -63,9 +65,18 @@ contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
     bytes memory encryptedUri = customErc721.encryptDecrypt(Constants.getBaseUri(), Constants.getEncryptDecryptKey());
     // Compute the provenance hash
     bytes32 provenanceHash = keccak256(abi.encodePacked(Constants.getBaseUri(), Constants.getEncryptDecryptKey(), block.chainid));
+    
 
     vm.prank(DEFAULT_OWNER_ADDRESS);
-    customErc721.lazyMint(5, "", abi.encode(encryptedUri, provenanceHash));
+    customErc721.lazyMint(firstBatchAmount, Constants.getPlaceholderUri(), abi.encode(encryptedUri, provenanceHash));
+
+    /* --------------------------- Check onchain data --------------------------- */
+
+    // bytes memory encryptedData = customErc721.encryptedData(firstBatchAmount);
+    // string memory baseUri = customErc721.getBaseUri(0);
+
+    // console.logBytes(encryptedData);
+    // console.log(baseUri);
 
     /* -------------------------------- Purchase -------------------------------- */
     vm.prank(address(TEST_ACCOUNT));
@@ -77,7 +88,8 @@ contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
     assertEq(address(sourceContractAddress).balance, nativePrice);
 
     /* ----------------------------- Check tokenURI ----------------------------- */
-    assertEq(customErc721.tokenURI(0), "0");
+    assertEq(customErc721.tokenURI(0), string(abi.encodePacked(Constants.getPlaceholderUri(), "0")));
+    assertEq(customErc721.tokenURI(0), "https://url.com/not_revealed/0");
 
     /* --------------------------------- Reveal --------------------------------- */
     vm.prank(DEFAULT_OWNER_ADDRESS);

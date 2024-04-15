@@ -101,7 +101,11 @@ library Constants {
   }
 
   function getBaseUri() internal pure returns (bytes memory) {
-    return abi.encode("https://url.com/uri/");
+    return abi.encodePacked("https://url.com/uri/");
+  }
+
+  function getPlaceholderUri() internal pure returns (string memory) {
+    return "https://url.com/not_revealed/";
   }
 
   function getEncryptDecryptKey() internal pure returns (bytes memory) {

@@ -6,4 +6,8 @@ contract CustomERC721Handler is CustomERC721 {
     function getNextTokenIdToLazyMint() external view returns (uint256) {
         return nextTokenIdToLazyMint;
     }
+
+    function getBaseUri(uint256 tokenId) external view returns (string memory) {
+        return _getBaseURI(tokenId);
+    }
 }
