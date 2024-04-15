@@ -3,7 +3,6 @@ pragma solidity 0.8.13;
 
 import {Test, Vm} from "forge-std/Test.sol";
 
-import {CustomERC721} from "src/token/CustomERC721.sol";
 import {HolographTreasury} from "src/HolographTreasury.sol";
 import {DummyDropsPriceOracle} from "src/drops/oracle/DummyDropsPriceOracle.sol";
 import {CustomERC721Initializer} from "src/struct/CustomERC721Initializer.sol";
@@ -11,11 +10,14 @@ import {DeploymentConfig} from "src/struct/DeploymentConfig.sol";
 import {SalesConfiguration} from "src/drops/struct/SalesConfiguration.sol";
 import {Verification} from "src/struct/Verification.sol";
 import {HolographFactory} from "src/HolographFactory.sol";
+import {HolographerInterface} from "src/interface/HolographerInterface.sol";
+import {HolographERC721} from "src/enforcer/HolographERC721.sol";
 
 import {MockUser} from "../utils/MockUser.sol";
 import {Utils} from "../utils/Utils.sol";
 
 import {Constants} from "test/foundry/utils/Constants.sol";
+import {CustomERC721Handler} from "test/foundry/handler/CustomERC721Handler.sol";
 
 contract CustomERC721Fixture is Test {
   /// @notice Event emitted when the funds are withdrawn from the minting contract
@@ -27,7 +29,7 @@ contract CustomERC721Fixture is Test {
   address public alice;
   MockUser public mockUser;
 
-  CustomERC721 public customErc721;
+  CustomERC721Handler public customErc721;
   HolographTreasury public treasury;
 
   DummyDropsPriceOracle public dummyPriceOracle;
@@ -120,6 +122,34 @@ contract CustomERC721Fixture is Test {
       });
   }
 
+  function setUpPurchase() internal returns (uint256 totalCost, HolographERC721 erc721Enforcer, address sourceContractAddress, uint256 nativePrice) {
+    // We assume that the amount is at least one and less than or equal to the edition size given in modifier
+    vm.prank(DEFAULT_OWNER_ADDRESS);
+    
+    HolographerInterface holographerInterface = HolographerInterface(address(customErc721));
+    sourceContractAddress = holographerInterface.getSourceContract();
+    erc721Enforcer = HolographERC721(payable(address(customErc721)));
+
+    uint104 price = usd100;
+    nativePrice = dummyPriceOracle.convertUsdToWei(price);
+    uint256 holographFee = customErc721.getHolographFeeUsd(1);
+    uint256 nativeFee = dummyPriceOracle.convertUsdToWei(holographFee);
+
+    vm.prank(DEFAULT_OWNER_ADDRESS);
+
+    CustomERC721Handler(payable(sourceContractAddress)).setSaleConfiguration({
+      publicSaleStart: 0,
+      publicSaleEnd: type(uint64).max,
+      presaleStart: 0,
+      presaleEnd: 0,
+      publicSalePrice: price,
+      maxSalePurchasePerAddress: uint32(1),
+      presaleMerkleRoot: bytes32(0)
+    });
+
+    totalCost = (nativePrice + nativeFee);
+  }
+
   function deployAndSetupProtocol() internal {
     // Setup sale config for edition
     SalesConfiguration memory saleConfig = SalesConfiguration({
@@ -176,6 +206,6 @@ contract CustomERC721Fixture is Test {
     address newDropAddress = address(uint160(uint256(entries[2].topics[1])));
 
     // Connect the drop implementation to the drop proxy address
-    customErc721 = CustomERC721(payable(newDropAddress));
+    customErc721 = CustomERC721Handler(payable(newDropAddress));
   }
 }

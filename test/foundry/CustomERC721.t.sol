@@ -9,13 +9,11 @@ import {Vm} from "forge-std/Test.sol";
 import {console} from "forge-std/console.sol";
 
 import {Utils} from "test/foundry/utils/Utils.sol";
+import {Constants} from "test/foundry/utils/Constants.sol";
 
-import {HolographerInterface} from "src/interface/HolographerInterface.sol";
-import {CustomERC721} from "src/token/CustomERC721.sol";
 import {HolographERC721} from "src/enforcer/HolographERC721.sol";
 
 contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
-
   constructor() {}
 
   function setUp() public override {
@@ -24,46 +22,69 @@ contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
 
   function test_DeployHolographCustomERC721() public {
     super.deployAndSetupProtocol();
-    
+
     assertEq(customErc721.version(), 1);
   }
 
-  function test_Purchase() public setupTestCustomERC21(10) {
-    // We assume that the amount is at least one and less than or equal to the edition size given in modifier
-    vm.prank(DEFAULT_OWNER_ADDRESS);
+  function test_PurchaseWithoutLazyMint() public setupTestCustomERC21(10) {
+    /* ------------------------------- Test setup ------------------------------- */
 
-    HolographerInterface holographerInterface = HolographerInterface(address(customErc721));
-    address sourceContractAddress = holographerInterface.getSourceContract();
-    HolographERC721 erc721Enforcer = HolographERC721(payable(address(customErc721)));
+    (uint256 totalCost, HolographERC721 erc721Enforcer, address sourceContractAddress, uint256 nativePrice) = super
+      .setUpPurchase();
 
-    uint104 price = usd100;
-    uint256 nativePrice = dummyPriceOracle.convertUsdToWei(price);
-    uint256 holographFee = customErc721.getHolographFeeUsd(1);
-    uint256 nativeFee = dummyPriceOracle.convertUsdToWei(holographFee);
-
-    vm.prank(DEFAULT_OWNER_ADDRESS);
-
-    CustomERC721(payable(sourceContractAddress)).setSaleConfiguration({
-      publicSaleStart: 0,
-      publicSaleEnd: type(uint64).max,
-      presaleStart: 0,
-      presaleEnd: 0,
-      publicSalePrice: price,
-      maxSalePurchasePerAddress: uint32(1),
-      presaleMerkleRoot: bytes32(0)
-    });
-
-    uint256 totalCost = (nativePrice + nativeFee);
-
+    /* -------------------------------- Purchase -------------------------------- */
     vm.prank(address(TEST_ACCOUNT));
     vm.deal(address(TEST_ACCOUNT), totalCost);
-    customErc721.purchase{value: totalCost}(1);
-
-    assertEq(customErc721.saleDetails().maxSupply, 100);
-    assertEq(customErc721.saleDetails().totalMinted, 1);
+    uint256 tokenId = customErc721.purchase{value: totalCost}(1);
 
     // First token ID is this long number due to the chain id prefix
-    require(erc721Enforcer.ownerOf(FIRST_TOKEN_ID) == address(TEST_ACCOUNT), "Owner is wrong for new minted token");
+    require(erc721Enforcer.ownerOf(tokenId) == address(TEST_ACCOUNT), "Owner is wrong for new minted token");
     assertEq(address(sourceContractAddress).balance, nativePrice);
+
+    /* ----------------------------- Check tokenURI ----------------------------- */
+
+    // TokenURI call should revert because the metadata of the batch has not been set yet (need to call lazyMint before)
+    vm.expectRevert(abi.encodeWithSelector(BatchMintInvalidTokenId.selector, tokenId));
+    customErc721.tokenURI(tokenId);
+  }
+
+  /**
+   * TODO: Fix nextTokenToLazyMint
+   */
+  function test_PurchaseWithLazyMint() public setupTestCustomERC21(10) {
+    /* ------------------------------- Test setup ------------------------------- */
+
+    (uint256 totalCost, HolographERC721 erc721Enforcer, address sourceContractAddress, uint256 nativePrice) = super
+      .setUpPurchase();
+
+    /* -------------------------------- Lazy mint ------------------------------- */
+
+    // Compute the encrypted URI using the secret key
+    bytes memory encryptedUri = customErc721.encryptDecrypt(Constants.getBaseUri(), Constants.getEncryptDecryptKey());
+    // Compute the provenance hash
+    bytes32 provenanceHash = keccak256(abi.encodePacked(Constants.getBaseUri(), Constants.getEncryptDecryptKey(), block.chainid));
+
+    vm.prank(DEFAULT_OWNER_ADDRESS);
+    customErc721.lazyMint(5, "", abi.encode(encryptedUri, provenanceHash));
+
+    /* -------------------------------- Purchase -------------------------------- */
+    vm.prank(address(TEST_ACCOUNT));
+    vm.deal(address(TEST_ACCOUNT), totalCost);
+    uint256 tokenId = customErc721.purchase{value: totalCost}(1);
+
+    // First token ID is this long number due to the chain id prefix
+    require(erc721Enforcer.ownerOf(tokenId) == address(TEST_ACCOUNT), "Owner is wrong for new minted token");
+    assertEq(address(sourceContractAddress).balance, nativePrice);
+
+    /* ----------------------------- Check tokenURI ----------------------------- */
+    assertEq(customErc721.tokenURI(0), "0");
+
+    /* --------------------------------- Reveal --------------------------------- */
+    vm.prank(DEFAULT_OWNER_ADDRESS);
+    customErc721.reveal(0, Constants.getEncryptDecryptKey());
+
+    /* ------------------------- Check revealed tokenURI ------------------------ */
+    assertEq(customErc721.tokenURI(0), string(abi.encodePacked(Constants.getBaseUri(), "0")));
+    assertEq(customErc721.tokenURI(0), "https://url.com/uri/0");
   }
 }

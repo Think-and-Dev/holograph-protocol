@@ -149,6 +149,9 @@ contract CustomERC721 is NonReentrant, ContractMetadata, LazyMint, DelayedReveal
       fundsRecipient: initializer.fundsRecipient
     });
 
+    // Setup the lazy minting
+    // nextTokenIdToLazyMint = HolographERC721Interface(holographer()).sourceGetChainPrepend() + 1;
+
     salesConfig = initializer.salesConfiguration;
 
     setStatus(1);
@@ -604,7 +607,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, LazyMint, DelayedReveal
 
   /// @dev Checks whether NFTs can be revealed in the given execution context.
   function _canReveal() internal view virtual returns (bool) {
-    return msg.sender == _getOwner();
+    return msgSender() == _getOwner();
   }
 
   function _mintNFTs(address recipient, uint256 quantity) internal {

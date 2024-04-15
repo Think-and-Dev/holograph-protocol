@@ -100,4 +100,12 @@ library Constants {
     return keccak256("random_merkle_root");
   }
 
+  function getBaseUri() internal pure returns (bytes memory) {
+    return abi.encode("https://url.com/uri/");
+  }
+
+  function getEncryptDecryptKey() internal pure returns (bytes memory) {
+    return abi.encode("random_encrypt_decrypt_key");
+  }
+
 }
