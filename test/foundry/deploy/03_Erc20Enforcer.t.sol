@@ -81,42 +81,42 @@ contract Erc20Enforcer is Test {
    * INIT INTERFACES
    */
 
-  function testUntilDeploySupportinterface() public {
+  function testSupportinterface() public {
     bytes4 selector = holographERC20.totalSupply.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function testUntilDeployAllowance() public {
+  function testAllowance() public {
     bytes4 selector = holographERC20.allowance.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function testUntilDeployApprove() public {
+  function testApprove() public {
     bytes4 selector = holographERC20.approve.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function testUntilDeployBalanceOf() public {
+  function testBalanceOf() public {
     bytes4 selector = holographERC20.balanceOf.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function testUntilDeployTotalSupply() public {
+  function testTotalSupply() public {
     bytes4 selector = holographERC20.totalSupply.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function testUntilDeployTransfer() public {
+  function testTransfer() public {
     bytes4 selector = holographERC20.transfer.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function testUntilDeployTransferFrom() public {
+  function testTransferFrom() public {
     bytes4 selector = holographERC20.transferFrom.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function testUntilDeployERC20() public {
+  function testERC20() public {
     bytes4 computedId = bytes4(
       holographERC20.allowance.selector ^
         holographERC20.approve.selector ^
@@ -128,65 +128,65 @@ contract Erc20Enforcer is Test {
     assertTrue(holographERC20.supportsInterface(computedId));
   }
 
-  function testUntilDeployName() public {
+  function testName() public {
     bytes4 selector = holographERC20.name.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function testUntilDeploySymbol() public {
+  function testSymbol() public {
     bytes4 selector = holographERC20.symbol.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function testUntilDeployDecimals() public {
+  function testDecimals() public {
     bytes4 selector = holographERC20.decimals.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function testUntilDeployERC20Metadata() public {
+  function testERC20Metadata() public {
     bytes4 computedId = bytes4(
       holographERC20.name.selector ^ holographERC20.symbol.selector ^ holographERC20.decimals.selector
     );
     assertTrue(holographERC20.supportsInterface(computedId));
   }
 
-  function testUntilDeployBurn() public {
+  function testBurn() public {
     bytes4 selector = holographERC20.burn.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function testUntilDeployBurnFrom() public {
+  function testBurnFrom() public {
     bytes4 selector = holographERC20.burnFrom.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function testUntilDeployERC20BurnInterface() public {
+  function testERC20BurnInterface() public {
     bytes4 computedId = bytes4(holographERC20.burn.selector ^ holographERC20.burnFrom.selector);
     assertTrue(holographERC20.supportsInterface(computedId));
   }
 
-  function testUntilDeploySafeTransfer() public {
+  function testSafeTransfer() public {
     bytes memory selector = abi.encodeWithSelector(bytes4(keccak256("safeTransfer(address,uint256)")));
     holographERC20.supportsInterface(bytes4(selector));
   }
 
-  function testUntilDeploySafeTransferDiferentCallTwo() public {
+  function testSafeTransferDiferentCallTwo() public {
     bytes memory selector = abi.encodeWithSelector(bytes4(keccak256("safeTransfer(address,uint256,bytes)")));
     holographERC20.supportsInterface(bytes4(selector));
   }
 
-  function testUntilDeploySafeTransferDiferentCallThree() public {
+  function testSafeTransferDiferentCallThree() public {
     bytes memory selector = abi.encodeWithSelector(bytes4(keccak256("safeTransfer(address,uint256,uint256)")));
     holographERC20.supportsInterface(bytes4(selector));
   }
 
-  function testUntilDeploySafeTransferDiferentCallFour() public {
+  function testSafeTransferDiferentCallFour() public {
     bytes memory selector = abi.encodeWithSelector(bytes4(keccak256("safeTransfer(address,address,uint256,bytes)")));
     holographERC20.supportsInterface(bytes4(selector));
   }
 
   //TODO review why it fails and fix it
-  function testUntilDeployERC20Safer() public {
+  function testERC20Safer() public {
     vm.skip(true);
     bytes memory safeTransfer = abi.encodeWithSelector(bytes4(keccak256("safeTransfer(address,uint256)")));
     bytes memory safeTransferBytes = abi.encodeWithSelector(bytes4(keccak256("safeTransfer(address,uint256,bytes)")));
@@ -202,22 +202,22 @@ contract Erc20Enforcer is Test {
     // holographERC20.supportsInterface(holographERC20.supportsInterface(type(ERC20).interfaceId));
   }
 
-  function testUntilDeploySafePermit() public {
+  function testSafePermit() public {
     bytes4 selector = holographERC20.permit.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function testUntilDeployNonces() public {
+  function testNonces() public {
     bytes4 selector = holographERC20.nonces.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function testUntilDeployDomainSeparator() public {
+  function testDomainSeparator() public {
     bytes4 selector = holographERC20.DOMAIN_SEPARATOR.selector;
     holographERC20.supportsInterface(selector);
   }
 
-  function testUntilDeployERC20Permit() public {
+  function testERC20Permit() public {
     bytes4 computedId = bytes4(
       holographERC20.permit.selector ^ holographERC20.nonces.selector ^ holographERC20.DOMAIN_SEPARATOR.selector
     );
