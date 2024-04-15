@@ -12,12 +12,12 @@ import {Verification} from "src/struct/Verification.sol";
 import {HolographFactory} from "src/HolographFactory.sol";
 import {HolographerInterface} from "src/interface/HolographerInterface.sol";
 import {HolographERC721} from "src/enforcer/HolographERC721.sol";
+import {CustomERC721} from "src/token/CustomERC721.sol";
 
 import {MockUser} from "../utils/MockUser.sol";
 import {Utils} from "../utils/Utils.sol";
 
 import {Constants} from "test/foundry/utils/Constants.sol";
-import {CustomERC721Handler} from "test/foundry/handler/CustomERC721Handler.sol";
 
 contract CustomERC721Fixture is Test {
   /// @notice Event emitted when the funds are withdrawn from the minting contract
@@ -29,7 +29,7 @@ contract CustomERC721Fixture is Test {
   address public alice;
   MockUser public mockUser;
 
-  CustomERC721Handler public customErc721;
+  CustomERC721 public customErc721;
   HolographTreasury public treasury;
 
   DummyDropsPriceOracle public dummyPriceOracle;
@@ -140,7 +140,7 @@ contract CustomERC721Fixture is Test {
 
     vm.prank(DEFAULT_OWNER_ADDRESS);
 
-    CustomERC721Handler(payable(sourceContractAddress)).setSaleConfiguration({
+    CustomERC721(payable(sourceContractAddress)).setSaleConfiguration({
       publicSaleStart: 0,
       publicSaleEnd: type(uint64).max,
       presaleStart: 0,
@@ -209,6 +209,6 @@ contract CustomERC721Fixture is Test {
     address newDropAddress = address(uint160(uint256(entries[2].topics[1])));
 
     // Connect the drop implementation to the drop proxy address
-    customErc721 = CustomERC721Handler(payable(newDropAddress));
+    customErc721 = CustomERC721(payable(newDropAddress));
   }
 }

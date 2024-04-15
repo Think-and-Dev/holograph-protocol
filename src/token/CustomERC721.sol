@@ -149,7 +149,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, LazyMint, DelayedReveal
     });
 
     // Setup the lazy minting
-    // nextTokenIdToLazyMint = HolographERC721Interface(holographer()).sourceGetChainPrepend() + 1;
+    // nextTokenIdToLazyMint = HolographERC721Interface(msg.sender).sourceGetChainPrepend() + 1;
 
     salesConfig = initializer.salesConfiguration;
 
@@ -260,6 +260,15 @@ contract CustomERC721 is NonReentrant, ContractMetadata, LazyMint, DelayedReveal
     } else {
       return string(abi.encodePacked(batchUri, _tokenId.toString()));
     }
+  }
+
+  /**
+   * @dev Returns the base URI for a given tokenId. It return the base URI corresponding to the batch the tokenId belongs to.
+   * @param _tokenId id of token to get URI for
+   * @return Token URI
+   */
+  function baseURI(uint256 _tokenId) public view returns (string memory) {
+    return _getBaseURI(_tokenId);
   }
 
   /**
