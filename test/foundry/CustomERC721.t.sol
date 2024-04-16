@@ -16,8 +16,11 @@ import {HolographerInterface} from "src/interface/HolographerInterface.sol";
 import {HolographERC721Interface} from "src/interface/HolographERC721Interface.sol";
 
 import {HolographERC721} from "src/enforcer/HolographERC721.sol";
+import {Strings} from "src/library/Strings.sol";
 
 contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
+  using Strings for uint256;
+
   constructor() {}
 
   function setUp() public override {
@@ -54,9 +57,7 @@ contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
     customErc721.tokenURI(0);
   }
 
-  // /**
-  //  * TODO: Fix nextTokenToLazyMint
-  //  */
+
   function test_PurchaseWithLazyMint() public setupTestCustomERC21(10) {
     /* ------------------------------- Test setup ------------------------------- */
 
@@ -74,11 +75,16 @@ contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
     );
 
     vm.prank(DEFAULT_OWNER_ADDRESS);
-    customErc721.lazyMint(firstBatchAmount, Constants.getPlaceholderUri(), abi.encode(encryptedUri, provenanceHash));
+    uint256 batchId = customErc721.lazyMint(
+      firstBatchAmount,
+      Constants.getPlaceholderUri(),
+      abi.encode(encryptedUri, provenanceHash)
+    );
+    assertEq(batchId, chainPrepend + firstBatchAmount);
 
     /* --------------------------- Check onchain data --------------------------- */
 
-    bytes memory encryptedData = customErc721.encryptedData(firstBatchAmount);
+    bytes memory encryptedData = customErc721.encryptedData(batchId);
     assertEq(encryptedData, abi.encode(encryptedUri, provenanceHash));
 
     /* -------------------------------- Purchase -------------------------------- */
@@ -86,19 +92,17 @@ contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
     vm.prank(address(TEST_ACCOUNT));
     vm.deal(address(TEST_ACCOUNT), totalCost);
     uint256 tokenId = customErc721.purchase{value: totalCost}(1);
-
-    console.log("tokenId", tokenId);
+    assertEq(tokenId, chainPrepend);
 
     // First token ID is this long number due to the chain id prefix
     require(erc721Enforcer.ownerOf(tokenId) == address(TEST_ACCOUNT), "Incorrect owner for newly minted token");
     assertEq(address(sourceContractAddress).balance, nativePrice);
 
     /* ----------------------- Check tokenURI and BaseURI ----------------------- */
+    assertEq(customErc721.tokenURI(tokenId), string(abi.encodePacked(Constants.getPlaceholderUri(), tokenId.toString())));
+    assertEq(customErc721.tokenURI(tokenId), string(abi.encodePacked("https://url.com/not-revealed/", tokenId.toString())));
 
-    assertEq(customErc721.tokenURI(0), string(abi.encodePacked(Constants.getPlaceholderUri(), "0")));
-    assertEq(customErc721.tokenURI(0), "https://url.com/not-revealed/0");
-
-    string memory baseUri = customErc721.baseURI(0);
+    string memory baseUri = customErc721.baseURI(tokenId);
     assertEq(baseUri, Constants.getPlaceholderUri());
 
     /* --------------------------------- Reveal --------------------------------- */
@@ -107,9 +111,8 @@ contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
     customErc721.reveal(0, Constants.getEncryptDecryptKey());
 
     /* ------------------------- Check revealed tokenURI ------------------------ */
-
-    assertEq(customErc721.tokenURI(0), string(abi.encodePacked(Constants.getBaseUri(), "0")));
-    assertEq(customErc721.tokenURI(0), "https://url.com/uri/0");
+    assertEq(customErc721.tokenURI(tokenId), string(abi.encodePacked(Constants.getBaseUri(), tokenId.toString())));
+    assertEq(customErc721.tokenURI(tokenId), string(abi.encodePacked("https://url.com/uri/", tokenId.toString())));
   }
 
   // TODO: Fix this test (It's reverting but not with the matching correct price in the error message)
@@ -172,8 +175,8 @@ contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
 
     // Calls must come from the source contract via the onlySource modifier
     vm.prank(sourceContractAddress);
-    uint256 sourcChainPrepend = erc721Enforcer.sourceGetChainPrepend();
+    uint256 sourceChainPrepend = erc721Enforcer.sourceGetChainPrepend();
 
-    console.log("sourcChainPrepend", sourcChainPrepend);
+    console.log("sourceChainPrepend", sourceChainPrepend);
   }
 }

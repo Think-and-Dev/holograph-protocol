@@ -14,7 +14,7 @@ import {ICustomERC721} from "../interface/ICustomERC721.sol";
 import {IDropsPriceOracle} from "../drops/interface/IDropsPriceOracle.sol";
 import {HolographTreasuryInterface} from "../interface/HolographTreasuryInterface.sol";
 
-import {LazyMint} from "../extension/LazyMint.sol";
+import {InitializableLazyMint} from "../extension/InitializableLazyMint.sol";
 
 import {AddressMintDetails} from "../drops/struct/AddressMintDetails.sol";
 import {CustomERC721Configuration} from "../struct/CustomERC721Configuration.sol";
@@ -32,7 +32,7 @@ import {Strings} from "./../drops/library/Strings.sol";
  *
  *       Do not enable or subscribe to any other events unless you modified the source code for them.
  */
-contract CustomERC721 is NonReentrant, ContractMetadata, LazyMint, DelayedReveal, ERC721H, ICustomERC721 {
+contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, DelayedReveal, ERC721H, ICustomERC721 {
   using Strings for uint256;
 
   /**
@@ -148,14 +148,26 @@ contract CustomERC721 is NonReentrant, ContractMetadata, LazyMint, DelayedReveal
       fundsRecipient: initializer.fundsRecipient
     });
 
-    // Setup the lazy minting
-    // nextTokenIdToLazyMint = HolographERC721Interface(msg.sender).sourceGetChainPrepend() + 1;
-
     salesConfig = initializer.salesConfiguration;
 
     setStatus(1);
 
     return _init(initPayload);
+  }
+
+  /**
+   * @notice Used internally to initialize the contract instead of through a constructor
+   * @dev This function is called by the deployer/factory when creating a contract
+   */
+  function initLazyMint() external override onlyOwner returns (uint256 chainPrepend) {
+    require(!_isLazyMintInitialized(), "HOLOGRAPH: lazy mint already initialized");
+
+    // Setup the lazy minting
+    HolographERC721Interface H721 = HolographERC721Interface(holographer());
+    chainPrepend = H721.sourceGetChainPrepend() + 1;
+    nextTokenIdToLazyMint = chainPrepend;
+
+    _setLazyMintInitialized();
   }
 
   /**
@@ -252,14 +264,16 @@ contract CustomERC721 is NonReentrant, ContractMetadata, LazyMint, DelayedReveal
    * @return Token URI
    */
   function tokenURI(uint256 _tokenId) public view returns (string memory) {
-    (uint256 batchId, ) = _getBatchId(_tokenId);
+    // (uint256 batchId, ) = _getBatchId(_tokenId);
     string memory batchUri = _getBaseURI(_tokenId);
 
-    if (isEncryptedBatch(batchId)) {
-      return string(abi.encodePacked(batchUri, "0"));
-    } else {
-      return string(abi.encodePacked(batchUri, _tokenId.toString()));
-    }
+    // if (isEncryptedBatch(batchId)) {
+    //   return string(abi.encodePacked(batchUri, "0"));
+    // } else {
+    //   return string(abi.encodePacked(batchUri, _tokenId.toString()));
+    // }
+
+    return string(abi.encodePacked(batchUri, _tokenId.toString()));
   }
 
   /**
@@ -381,13 +395,11 @@ contract CustomERC721 is NonReentrant, ContractMetadata, LazyMint, DelayedReveal
     bytes32[] calldata merkleProof
   ) external payable nonReentrant canMintTokens(quantity) onlyPresaleActive returns (uint256) {
     if (
-      !MerkleProof.verify(
+      !// address, uint256, uint256
+      MerkleProof.verify(
         merkleProof,
         salesConfig.presaleMerkleRoot,
-        keccak256(
-          // address, uint256, uint256
-          abi.encode(msgSender(), maxQuantity, pricePerToken)
-        )
+        keccak256(abi.encode(msgSender(), maxQuantity, pricePerToken))
       )
     ) {
       revert Presale_MerkleNotApproved();
