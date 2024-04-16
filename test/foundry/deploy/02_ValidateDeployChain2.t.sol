@@ -59,7 +59,7 @@ contract ValidateDeployChain2Test is DeployedSetUp {
   }
 
   function testHolographERC20() public {
-    bytes memory bytecodeDeployed = vm.getDeployedCode("holographERC20.sol:holographERC20");
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC20.sol:HolographERC20");
     assertEq(holographERC20Deployed.code, bytecodeDeployed);
   }
 
