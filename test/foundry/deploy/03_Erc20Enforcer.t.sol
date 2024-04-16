@@ -116,7 +116,18 @@ contract Erc20Enforcer is Test {
     holographERC20.supportsInterface(selector);
   }
 
-  function testERC20() public {
+  function testERC20Interface() public {
+    bytes4 computedId = bytes4(
+      holographERC20.allowance.selector ^
+        holographERC20.approve.selector ^
+        holographERC20.balanceOf.selector ^
+        holographERC20.totalSupply.selector ^
+        holographERC20.transfer.selector ^
+        holographERC20.transferFrom.selector
+    );
+    assertTrue(holographERC20.supportsInterface(computedId));
+
+  function testHolographERC20Interface() public {
     bytes4 computedId = bytes4(
       holographERC20.allowance.selector ^
         holographERC20.approve.selector ^
