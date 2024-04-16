@@ -373,7 +373,7 @@ contract Erc20Enforcer is Test {
     holographERC20.transferFrom(deployer, alice, maxValue);
   }
 
-  function testErc20RecivedNonContractRevert() public {
+  function testErc20ReceivedNonContractRevert() public {
     vm.expectRevert("ERC20: operator not contract");
     holographERC20.onERC20Received(
       deployer,
@@ -384,7 +384,7 @@ contract Erc20Enforcer is Test {
   }
 
   //TODO see why mock token have balance? remove Fail to the name of the function
-  function testErc20RecivedFakeContractRevert() public {
+  function testErc20ReceivedFakeContractRevert() public {
     vm.skip(true);
     vm.expectRevert("ERC20: balance check failed");
     holographERC20.onERC20Received(
@@ -395,8 +395,8 @@ contract Erc20Enforcer is Test {
     );
   }
 
-  //TODO see why revert ( amount exceeds balance, need mint and then not fail... ) and not non ERC20Receiver,  remove Fail to the name of the function
-  function testSafeTransferBrokenErc20RecivedRevert() public {
+  //TODO see why revert ( amount exceeds balance, need mint and then not fail... ) and not non ERC20Received,  remove Fail to the name of the function
+  function testSafeTransferBrokenErc20ReceivedRevert() public {
     vm.skip(true);
     erc20Mock.toggleWorks(false);
     vm.expectRevert("ERC20: non ERC20Receiver");
@@ -405,7 +405,7 @@ contract Erc20Enforcer is Test {
   }
 
   //TODO see why revert ( amount exceeds balance,need mint and then not fail... ) and not non ERC20Receiver,  remove Fail to the name of the function
-  function testSafeTransferBytesBrokenErc20RecivedRevert() public {
+  function testSafeTransferBytesBrokenErc20ReceivedRevert() public {
     vm.skip(true);
     erc20Mock.toggleWorks(false);
     vm.expectRevert("ERC20: non ERC20Receiver");
@@ -418,7 +418,7 @@ contract Erc20Enforcer is Test {
   }
 
   //TODO see why not revert,  remove Fail to the name of the function
-  function testSafeTransferFromBrokenErc20RecivedRevert() public {
+  function testSafeTransferFromBrokenErc20ReceivedRevert() public {
     vm.skip(true);
     vm.prank(deployer);
     sampleERC20.mint(deployer, halfValue);
