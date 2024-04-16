@@ -170,7 +170,8 @@ contract CustomERC721Fixture is Test {
       initialOwner: payable(DEFAULT_OWNER_ADDRESS),
       fundsRecipient: payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS),
       contractURI: "https://example.com/metadata.json",
-      editionSize: 100,
+      countdownEnd: 2200000000, // Sunday 18 September 2039 23:06:40
+      mintTimeCost: 550, // 2_200_000_000 / 4_000_000
       royaltyBPS: 1000,
       salesConfiguration: saleConfig
     });

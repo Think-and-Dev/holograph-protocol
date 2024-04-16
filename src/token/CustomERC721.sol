@@ -141,9 +141,15 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     // Setup the contract URI
     _setupContractURI(initializer.contractURI);
 
+    if (initializer.countdownEnd % initializer.mintTimeCost != 0) {
+      revert CountdownEndMustBeDivisibleByMintTimeCost(initializer.countdownEnd, initializer.mintTimeCost);
+    }
+
     // Setup config variables
     config = CustomERC721Configuration({
-      editionSize: initializer.editionSize,
+      mintTimeCost: initializer.mintTimeCost,
+      countdownEnd: initializer.countdownEnd,
+      initialCountdownEnd: initializer.countdownEnd,
       royaltyBPS: initializer.royaltyBPS,
       fundsRecipient: initializer.fundsRecipient
     });
@@ -201,6 +207,10 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     return (_getOwner() == user);
   }
 
+  function maxSupply() public view returns (uint256) {
+    return config.initialCountdownEnd / config.mintTimeCost;
+  }
+
   /**
    * @notice Sale details
    * @return SaleDetails sale information details
@@ -217,7 +227,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
         presaleEnd: salesConfig.presaleEnd,
         presaleMerkleRoot: salesConfig.presaleMerkleRoot,
         totalMinted: _currentTokenId,
-        maxSupply: config.editionSize,
+        maxSupply: maxSupply(),
         maxSalePurchasePerAddress: salesConfig.maxSalePurchasePerAddress
       });
   }
@@ -561,14 +571,14 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
 
   /**
    * @notice Admin function to finalize and open edition sale
+   * TODO: Fix this function with the countdown feature
    */
   function finalizeOpenEdition() external onlyOwner {
-    if (config.editionSize != type(uint64).max) {
-      revert Admin_UnableToFinalizeNotOpenEdition();
-    }
-
-    config.editionSize = uint64(_currentTokenId);
-    emit OpenMintFinalized(msgSender(), config.editionSize);
+    // if (config.editionSize != type(uint64).max) {
+    //   revert Admin_UnableToFinalizeNotOpenEdition();
+    // }
+    // config.editionSize = uint64(_currentTokenId);
+    // emit OpenMintFinalized(msgSender(), config.editionSize);
   }
 
   /**
@@ -634,6 +644,10 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     HolographERC721Interface H721 = HolographERC721Interface(holographer());
     uint256 chainPrepend = H721.sourceGetChainPrepend();
     uint224 tokenId = 0;
+
+    // Subtract the time cost from the countdown
+    config.countdownEnd -= uint96(config.mintTimeCost * quantity);
+
     for (uint256 i = 0; i != quantity; ) {
       unchecked {
         _currentTokenId += 1;

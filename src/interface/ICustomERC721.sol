@@ -41,6 +41,9 @@ interface ICustomERC721 {
   /// @notice Fee payout failed
   error FeePaymentFailed();
 
+  // Init errors
+  error CountdownEndMustBeDivisibleByMintTimeCost(uint128 countdownEnd, uint128 mintTimeCost);
+
   // Admin errors
   /// @notice Royalty percentage too high
   error Setup_RoyaltyPercentageTooHigh(uint16 maxRoyaltyBPS);
