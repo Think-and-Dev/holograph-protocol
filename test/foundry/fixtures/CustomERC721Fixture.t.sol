@@ -153,7 +153,7 @@ contract CustomERC721Fixture is Test {
     totalCost = (nativePrice + nativeFee);
   }
 
-  function deployAndSetupProtocol() internal returns (uint256){
+  function deployAndSetupProtocol() internal returns (uint256) {
     // Setup sale config for edition
     SalesConfiguration memory saleConfig = SalesConfiguration({
       publicSaleStart: 0, // starts now

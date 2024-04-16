@@ -57,7 +57,6 @@ contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
     customErc721.tokenURI(0);
   }
 
-
   function test_PurchaseWithLazyMint() public setupTestCustomERC21(10) {
     /* ------------------------------- Test setup ------------------------------- */
 
@@ -99,8 +98,14 @@ contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
     assertEq(address(sourceContractAddress).balance, nativePrice);
 
     /* ----------------------- Check tokenURI and BaseURI ----------------------- */
-    assertEq(customErc721.tokenURI(tokenId), string(abi.encodePacked(Constants.getPlaceholderUri(), tokenId.toString())));
-    assertEq(customErc721.tokenURI(tokenId), string(abi.encodePacked("https://url.com/not-revealed/", tokenId.toString())));
+    assertEq(
+      customErc721.tokenURI(tokenId),
+      string(abi.encodePacked(Constants.getPlaceholderUri(), tokenId.toString()))
+    );
+    assertEq(
+      customErc721.tokenURI(tokenId),
+      string(abi.encodePacked("https://url.com/not-revealed/", tokenId.toString()))
+    );
 
     string memory baseUri = customErc721.baseURI(tokenId);
     assertEq(baseUri, Constants.getPlaceholderUri());
