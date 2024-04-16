@@ -126,6 +126,7 @@ contract Erc20Enforcer is Test {
         holographERC20.transferFrom.selector
     );
     assertTrue(holographERC20.supportsInterface(computedId));
+  }
 
   function testHolographERC20Interface() public {
     bytes4 computedId = bytes4(
@@ -177,23 +178,19 @@ contract Erc20Enforcer is Test {
   }
 
   function testSafeTransferInterface() public {
-    bytes memory selector = abi.encodeWithSelector(bytes4(keccak256("safeTransfer(address,uint256)")));
-    holographERC20.supportsInterface(bytes4(selector));
+    holographERC20.supportsInterface(bytes4(keccak256("safeTransfer(address,uint256)")));
   }
 
   function testSafeTransferInterfaceDiferentCallTwo() public {
-    bytes memory selector = abi.encodeWithSelector(bytes4(keccak256("safeTransfer(address,uint256,bytes)")));
-    holographERC20.supportsInterface(bytes4(selector));
+    holographERC20.supportsInterface(bytes4(keccak256("safeTransfer(address,uint256,bytes)")));
   }
 
   function testSafeTransferInterfaceDiferentCallThree() public {
-    bytes memory selector = abi.encodeWithSelector(bytes4(keccak256("safeTransfer(address,uint256,uint256)")));
-    holographERC20.supportsInterface(bytes4(selector));
+    holographERC20.supportsInterface(bytes4(keccak256("safeTransfer(address,uint256,uint256)")));
   }
 
   function testSafeTransferInterfaceDiferentCallFour() public {
-    bytes memory selector = abi.encodeWithSelector(bytes4(keccak256("safeTransfer(address,address,uint256,bytes)")));
-    holographERC20.supportsInterface(bytes4(selector));
+    holographERC20.supportsInterface(bytes4(keccak256("safeTransfer(address,address,uint256,bytes)")));
   }
 
   //TODO review why it fails and fix it
