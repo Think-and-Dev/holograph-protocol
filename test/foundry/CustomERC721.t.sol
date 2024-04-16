@@ -11,6 +11,10 @@ import {console2} from "forge-std/console2.sol";
 import {Utils} from "test/foundry/utils/Utils.sol";
 import {Constants} from "test/foundry/utils/Constants.sol";
 
+import {ICustomERC721} from "src/interface/ICustomERC721.sol";
+import {HolographerInterface} from "src/interface/HolographerInterface.sol";
+import {HolographERC721Interface} from "src/interface/HolographERC721Interface.sol";
+
 import {HolographERC721} from "src/enforcer/HolographERC721.sol";
 
 contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
@@ -50,9 +54,9 @@ contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
     customErc721.tokenURI(0);
   }
 
-  /**
-   * TODO: Fix nextTokenToLazyMint
-   */
+  // /**
+  //  * TODO: Fix nextTokenToLazyMint
+  //  */
   function test_PurchaseWithLazyMint() public setupTestCustomERC21(10) {
     /* ------------------------------- Test setup ------------------------------- */
 
@@ -106,5 +110,70 @@ contract CustomERC721Test is CustomERC721Fixture, ICustomERC721Errors {
 
     assertEq(customErc721.tokenURI(0), string(abi.encodePacked(Constants.getBaseUri(), "0")));
     assertEq(customErc721.tokenURI(0), "https://url.com/uri/0");
+  }
+
+  // TODO: Fix this test (It's reverting but not with the matching correct price in the error message)
+  function test_PurchaseWrongPrice() public setupTestCustomERC21(10) {
+    /* ------------------------------- Test setup ------------------------------- */
+
+    (uint256 totalCost, HolographERC721 erc721Enforcer, address sourceContractAddress, uint256 nativePrice) = super
+      .setUpPurchase();
+
+    /* -------------------------------- Purchase -------------------------------- */
+
+    uint256 amount = 1;
+    uint104 price = usd100;
+    uint256 holographFee = customErc721.getHolographFeeUsd(amount);
+    vm.prank(address(TEST_ACCOUNT));
+    vm.deal(address(TEST_ACCOUNT), totalCost - 1);
+    vm.expectRevert(abi.encodeWithSelector(ICustomERC721.Purchase_WrongPrice.selector, uint256(price + holographFee)));
+
+    customErc721.purchase{value: totalCost - 1}(amount);
+  }
+
+  function test_GetContractURI() public setupTestCustomERC21(1) {
+    (uint256 totalCost, HolographERC721 erc721Enforcer, address sourceContractAddress, uint256 nativePrice) = super
+      .setUpPurchase();
+    string memory expectedURI = "https://example.com/metadata.json";
+
+    assertEq(customErc721.contractURI(), expectedURI);
+  }
+
+  function test_SetContractURI() public setupTestCustomERC21(1) {
+    (uint256 totalCost, HolographERC721 erc721Enforcer, address sourceContractAddress, uint256 nativePrice) = super
+      .setUpPurchase();
+
+    string memory expectedURI = "https://example.com/new-metadata.json";
+
+    vm.prank(DEFAULT_OWNER_ADDRESS);
+    vm.recordLogs();
+
+    customErc721.setContractURI(expectedURI);
+    assertEq(customErc721.contractURI(), expectedURI);
+
+    Vm.Log[] memory entries = vm.getRecordedLogs();
+    assertEq(entries.length, 1);
+    assertEq(entries[0].topics[0], keccak256("ContractURIUpdated(string,string)"));
+    assertEq(abi.decode(entries[0].data, (string)), "https://example.com/metadata.json");
+
+    // TODO: Figure out how to get the second parameter from the event
+    // assertEq(abi.decode(entries[0].data, (string)), "https://example.com/new-metadata.json");
+  }
+
+  function test_GetSourceChainPrepend() public setupTestCustomERC21(1) {
+    HolographerInterface holographerInterface = HolographerInterface(address(customErc721));
+
+    // address sourceContractAddress = holographerInterface.getSourceContract();
+    // uint32 currentChain = HolographInterface(HolographerInterface(payable(address(this))).getHolograph())
+    //   .getHolographChainId();
+
+    (uint256 totalCost, HolographERC721 erc721Enforcer, address sourceContractAddress, uint256 nativePrice) = super
+      .setUpPurchase();
+
+    // Calls must come from the source contract via the onlySource modifier
+    vm.prank(sourceContractAddress);
+    uint256 sourcChainPrepend = erc721Enforcer.sourceGetChainPrepend();
+
+    console.log("sourcChainPrepend", sourcChainPrepend);
   }
 }
