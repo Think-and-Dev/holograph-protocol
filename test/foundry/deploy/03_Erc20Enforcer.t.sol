@@ -285,7 +285,7 @@ contract Erc20Enforcer is Test {
    *    Tokens Approvals
    */
 
-  function testApporvalRevertZeroAddress() public {
+  function testApprovalRevertZeroAddress() public {
     vm.expectRevert("ERC20: spender is zero address");
     holographERC20.approve(zeroAddress, maxValue);
   }
@@ -595,7 +595,7 @@ contract Erc20Enforcer is Test {
 
   //TODO buildDomainSeperator
 
-  function testPermitZeroNounce() public {
+  function testPermitZeroNonce() public {
     assertEq(holographERC20.nonces(alice), 0);
   }
 
@@ -655,6 +655,7 @@ contract Erc20Enforcer is Test {
 
   function testErc20DeployerTransferOwnerRevert() public {
     vm.expectRevert("HOLOGRAPH: owner only function");
+    vm.prank(alice);
     holographERC20.setOwner(alice);
   }
 
