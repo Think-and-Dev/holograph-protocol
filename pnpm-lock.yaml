@@ -41,6 +41,9 @@ dependencies:
   chai-ethers:
     specifier: ^0.0.1
     version: 0.0.1
+  csv-parse:
+    specifier: ^5.5.5
+    version: 5.5.5
   ganache:
     specifier: 7.8.0
     version: 7.8.0
@@ -59,6 +62,9 @@ dependencies:
   zksync-web3:
     specifier: 0.14.3
     version: 0.14.3(ethers@5.5.4)
+  zod:
+    specifier: ^3.22.4
+    version: 3.22.4
 
 devDependencies:
   '@anders-t/ethers-ledger':
@@ -66,7 +72,7 @@ devDependencies:
     version: 1.0.4
   '@defi-wonderland/natspec-smells':
     specifier: ^1.1.1
-    version: 1.1.1(typescript@4.9.5)
+    version: 1.1.1(typescript@4.9.5)(zod@3.22.4)
   '@nomicfoundation/hardhat-foundry':
     specifier: ^1.0.1
     version: 1.0.1(hardhat@2.14.0)
@@ -267,12 +273,12 @@ packages:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
 
-  /@defi-wonderland/natspec-smells@1.1.1(typescript@4.9.5):
+  /@defi-wonderland/natspec-smells@1.1.1(typescript@4.9.5)(zod@3.22.4):
     resolution: {integrity: sha512-vtOKN4j32Rxl8c1txXxs/iDlkPRmrL/UzUYWOzowe1HYH8ioPMRrsKAYVriDBLsvSi2bY06Sl3cN9SQJSbVzsA==}
     hasBin: true
     dependencies:
       fast-glob: 3.3.2
-      solc-typed-ast: 18.1.2(typescript@4.9.5)
+      solc-typed-ast: 18.1.2(typescript@4.9.5)(zod@3.22.4)
       yargs: 17.7.2
     transitivePeerDependencies:
       - debug
@@ -2166,7 +2172,7 @@ packages:
     deprecated: Use your platform's native atob() and btoa() methods instead
     dev: true
 
-  /abitype@0.7.1(typescript@4.9.5):
+  /abitype@0.7.1(typescript@4.9.5)(zod@3.22.4):
     resolution: {integrity: sha512-VBkRHTDZf9Myaek/dO3yMmOzB/y2s3Zo6nVU7yaw1G+TvCHAjwaJzNGN9yo4K5D8bU/VZXKP1EJpRhFr862PlQ==}
     peerDependencies:
       typescript: '>=4.9.4'
@@ -2176,6 +2182,7 @@ packages:
         optional: true
     dependencies:
       typescript: 4.9.5
+      zod: 3.22.4
     dev: true
 
   /abort-controller@3.0.0:
@@ -4038,6 +4045,10 @@ packages:
 
   /crypto-js@4.2.0:
     resolution: {integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==}
+
+  /csv-parse@5.5.5:
+    resolution: {integrity: sha512-erCk7tyU3yLWAhk6wvKxnyPtftuy/6Ak622gOO7BCJ05+TYffnPCJF905wmOQm+BpkX54OdAl8pveJwUdpnCXQ==}
+    dev: false
 
   /d@1.0.2:
     resolution: {integrity: sha512-MOqHvMWF9/9MX6nza0KgvFH4HpMU0EF5uUDXqX/BtxtU8NfB0QzRtJ8Oe/6SuS4kbhyzVJwjd97EA4PKrzJ8bw==}
@@ -9418,7 +9429,7 @@ packages:
       - supports-color
     dev: true
 
-  /solc-typed-ast@18.1.2(typescript@4.9.5):
+  /solc-typed-ast@18.1.2(typescript@4.9.5)(zod@3.22.4):
     resolution: {integrity: sha512-57IKzvXHcyjqdjHEdX7NQuWkPALlH8V4eJ6UUehWrzgHDVzKVOCFplwgLDRnOZ8kDMO8+Ms8sQhfrivFK+v5FA==}
     hasBin: true
     dependencies:
@@ -9431,7 +9442,7 @@ packages:
       semver: 7.6.0
       solc: 0.8.24
       src-location: 1.1.0
-      web3-eth-abi: 4.2.1(typescript@4.9.5)
+      web3-eth-abi: 4.2.1(typescript@4.9.5)(zod@3.22.4)
     transitivePeerDependencies:
       - debug
       - typescript
@@ -10981,11 +10992,11 @@ packages:
       web3-utils: 1.9.0
     dev: false
 
-  /web3-eth-abi@4.2.1(typescript@4.9.5):
+  /web3-eth-abi@4.2.1(typescript@4.9.5)(zod@3.22.4):
     resolution: {integrity: sha512-IE91WUhhiDpBtbkl/DHUoZz7z7T5FXvl3zPLkrxT+dNlOT+wni+US/67jQCLvJRbqf9ApQ26lVYry0bovFgyqA==}
     engines: {node: '>=14', npm: '>=6.12.0'}
     dependencies:
-      abitype: 0.7.1(typescript@4.9.5)
+      abitype: 0.7.1(typescript@4.9.5)(zod@3.22.4)
       web3-errors: 1.1.4
       web3-types: 1.6.0
       web3-utils: 4.2.3
@@ -11573,7 +11584,7 @@ packages:
       util: 0.12.5
       web3-errors: 1.1.4
       web3-types: 1.6.0
-      zod: 3.23.0
+      zod: 3.22.4
     dev: true
 
   /web3@1.2.1:
@@ -12011,9 +12022,8 @@ packages:
       ethers: 5.5.4
     dev: false
 
-  /zod@3.23.0:
-    resolution: {integrity: sha512-OFLT+LTocvabn6q76BTwVB0hExEBS0IduTr3cqZyMqEDbOnYmcU+y0tUAYbND4uwclpBGi4I4UUBGzylWpjLGA==}
-    dev: true
+  /zod@3.22.4:
+    resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
 
   github.com/ethereumjs/ethereumjs-abi/ee3994657fa7a427238e6ba92a84d0b529bbcde0:
     resolution: {tarball: https://codeload.github.com/ethereumjs/ethereumjs-abi/tar.gz/ee3994657fa7a427238e6ba92a84d0b529bbcde0}
