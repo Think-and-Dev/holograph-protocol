@@ -26,6 +26,8 @@ contract CustomERC721Fixture is Test {
   /// @param amount amount that was withdrawn
   event FundsWithdrawn(address indexed withdrawnBy, address indexed withdrawnTo, uint256 amount);
 
+  uint256 public chainPrepend;
+
   address public alice;
   MockUser public mockUser;
 
@@ -86,7 +88,7 @@ contract CustomERC721Fixture is Test {
   }
 
   modifier setupTestCustomERC21(uint64 editionSize) {
-    deployAndSetupProtocol();
+    chainPrepend = deployAndSetupProtocol();
 
     _;
   }
@@ -151,7 +153,7 @@ contract CustomERC721Fixture is Test {
     totalCost = (nativePrice + nativeFee);
   }
 
-  function deployAndSetupProtocol() internal {
+  function deployAndSetupProtocol() internal returns (uint256) {
     // Setup sale config for edition
     SalesConfiguration memory saleConfig = SalesConfiguration({
       publicSaleStart: 0, // starts now
@@ -208,5 +210,8 @@ contract CustomERC721Fixture is Test {
 
     // Connect the drop implementation to the drop proxy address
     customErc721 = CustomERC721(payable(newDropAddress));
+
+    vm.prank(DEFAULT_OWNER_ADDRESS);
+    return customErc721.initLazyMint();
   }
 }
