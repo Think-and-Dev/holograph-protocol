@@ -27,6 +27,10 @@ contract CustomERC721Fixture is Test {
   event FundsWithdrawn(address indexed withdrawnBy, address indexed withdrawnTo, uint256 amount);
 
   uint256 public chainPrepend;
+  uint256 totalCost;
+  HolographERC721 erc721Enforcer;
+  address sourceContractAddress;
+  uint256 nativePrice;
 
   address public alice;
   MockUser public mockUser;
@@ -87,8 +91,14 @@ contract CustomERC721Fixture is Test {
     // );
   }
 
-  modifier setupTestCustomERC21(uint64 editionSize) {
-    chainPrepend = deployAndSetupProtocol();
+  modifier setupTestCustomERC21(uint256 maxSupply) {
+    chainPrepend = deployAndSetupProtocol(maxSupply);
+
+    _;
+  }
+
+  modifier setUpPurchase() {
+    _setUpPurchase();
 
     _;
   }
@@ -122,10 +132,7 @@ contract CustomERC721Fixture is Test {
       });
   }
 
-  function setUpPurchase()
-    internal
-    returns (uint256 totalCost, HolographERC721 erc721Enforcer, address sourceContractAddress, uint256 nativePrice)
-  {
+  function _setUpPurchase() private {
     // We assume that the amount is at least one and less than or equal to the edition size given in modifier
     vm.prank(DEFAULT_OWNER_ADDRESS);
 
@@ -138,22 +145,10 @@ contract CustomERC721Fixture is Test {
     uint256 holographFee = customErc721.getHolographFeeUsd(1);
     uint256 nativeFee = dummyPriceOracle.convertUsdToWei(holographFee);
 
-    vm.prank(DEFAULT_OWNER_ADDRESS);
-
-    CustomERC721(payable(sourceContractAddress)).setSaleConfiguration({
-      publicSaleStart: 0,
-      publicSaleEnd: type(uint64).max,
-      presaleStart: 0,
-      presaleEnd: 0,
-      publicSalePrice: price,
-      maxSalePurchasePerAddress: uint32(1),
-      presaleMerkleRoot: bytes32(0)
-    });
-
     totalCost = (nativePrice + nativeFee);
   }
 
-  function deployAndSetupProtocol() internal returns (uint256) {
+  function deployAndSetupProtocol(uint256 maxSupply) internal returns (uint256) {
     // Setup sale config for edition
     SalesConfiguration memory saleConfig = SalesConfiguration({
       publicSaleStart: 0, // starts now
@@ -170,7 +165,7 @@ contract CustomERC721Fixture is Test {
       initialOwner: payable(DEFAULT_OWNER_ADDRESS),
       fundsRecipient: payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS),
       contractURI: "https://example.com/metadata.json",
-      countdownEnd: 2200000000, // Sunday 18 September 2039 23:06:40
+      countdownEnd: uint96(550 * maxSupply), // Sunday 18 September 2039 23:06:40
       mintTimeCost: 550, // 2_200_000_000 / 4_000_000
       royaltyBPS: 1000,
       salesConfiguration: saleConfig
