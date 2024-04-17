@@ -1,12 +1,12 @@
 [profile.default]
 solc_version = '0.8.13'
 optimizer = true
-optimizer_runs = 5000
+optimizer_runs = 999999
 out = 'artifacts'
 test = 'test'
 src = 'src'
 libs = ['node_modules', 'lib']
+bytecode_hash = "none"
 gas_reports = ['*']
 
-fs_permissions = [{ access = "read", path = "./artifacts"}]
-
+fs_permissions = [{ access = "read", path = "./artifacts" }]

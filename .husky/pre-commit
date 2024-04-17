@@ -4,4 +4,4 @@
 npx ts-node scripts/precompute-solidity-hashes.ts
 
 # Add any changes made by the precompute-solidity-hashes script
-git add .
+# git add .
