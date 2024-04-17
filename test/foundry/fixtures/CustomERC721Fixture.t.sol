@@ -18,6 +18,7 @@ import {MockUser} from "../utils/MockUser.sol";
 import {Utils} from "../utils/Utils.sol";
 
 import {Constants} from "test/foundry/utils/Constants.sol";
+import {DEFAULT_MINT_TIME_COST} from "test/foundry/CustomERC721/utils/Constants.sol";
 
 contract CustomERC721Fixture is Test {
   /// @notice Event emitted when the funds are withdrawn from the minting contract
@@ -165,8 +166,8 @@ contract CustomERC721Fixture is Test {
       initialOwner: payable(DEFAULT_OWNER_ADDRESS),
       fundsRecipient: payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS),
       contractURI: "https://example.com/metadata.json",
-      countdownEnd: uint96(550 * maxSupply), // Sunday 18 September 2039 23:06:40
-      mintTimeCost: 550, // 2_200_000_000 / 4_000_000
+      countdownEnd: uint96(DEFAULT_MINT_TIME_COST * maxSupply),
+      mintTimeCost: uint64(DEFAULT_MINT_TIME_COST),
       royaltyBPS: 1000,
       salesConfiguration: saleConfig
     });
