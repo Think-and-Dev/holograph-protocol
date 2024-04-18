@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.13;
-pragma abicoder v2;
 
 /// @title QuoterV2 Interface
 /// @notice Supports quoting the calculated amounts from exact input or exact output swaps.
@@ -8,6 +7,7 @@ pragma abicoder v2;
 /// @dev These functions are not marked view because they rely on calling non-view functions and reverting
 /// to compute the result. They are also not gas efficient and should not be called on-chain.
 interface IQuoterV2 {
+  // NOTE: At the moment we are only implementing the quoteExactOutputSingle function
   // /// @notice Returns the amount out received for a given exact input swap without executing the swap
   // /// @param path The path of the swap, i.e. each token pair and the pool fee
   // /// @param amountIn The amount of the first token to swap
