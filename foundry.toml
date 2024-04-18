@@ -76,3 +76,13 @@ runs = 256
 depth = 5
 # call_override = false
 dictionary_weight = 40
+=======
+optimizer_runs = 999999
+out = 'artifacts'
+test = 'test'
+src = 'src'
+libs = ['node_modules', 'lib']
+bytecode_hash = "none"
+gas_reports = ['*']
+
+fs_permissions = [{ access = "read", path = "./artifacts" }]
