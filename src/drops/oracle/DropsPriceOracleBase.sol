@@ -6,7 +6,7 @@ import {Initializable} from "../../abstract/Initializable.sol";
 import {IQuoterV2} from "../../interface/IQuoterV2.sol";
 
 contract DropsPriceOracleBase is Admin, Initializable {
-  IQuoterV2 public immutable quoterV2; // Immutable reference to the Quoter V2 interface
+  IQuoterV2 public quoterV2; // Immutable reference to the Quoter V2 interface
 
   address public constant WETH9 = 0x4200000000000000000000000000000000000006; // WETH address on Base mainnet
   address public constant USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913; // USDC address on Base mainnet
@@ -14,13 +14,7 @@ contract DropsPriceOracleBase is Admin, Initializable {
   // Set the pool fee to 0.3% (the lowest option)
   uint24 public constant poolFee = 3000;
 
-  /**
-   * @dev Constructor for initializing the quoterV2 immutable variable
-   * @param _quoterV2 Address of the IQuoterV2 implementation
-   */
-  constructor(IQuoterV2 _quoterV2) {
-    quoterV2 = _quoterV2;
-  }
+  constructor() {}
 
   /**
    * @notice Used internally to initialize the contract instead of through a constructor
@@ -31,8 +25,13 @@ contract DropsPriceOracleBase is Admin, Initializable {
     assembly {
       sstore(_adminSlot, origin())
     }
+
     _setInitialized();
     return Initializable.init.selector;
+  }
+
+  function setQuoter(IQuoterV2 _quoterV2) public onlyAdmin {
+    quoterV2 = _quoterV2;
   }
 
   /**
@@ -41,6 +40,7 @@ contract DropsPriceOracleBase is Admin, Initializable {
    * @param usdAmount in USDC (6 decimal places)
    */
   function convertUsdToWei(uint256 usdAmount) external returns (uint256 weiAmount) {
+    require(address(quoterV2) != address(0), "Quoter not set");
     IQuoterV2.QuoteExactOutputSingleParams memory params = IQuoterV2.QuoteExactOutputSingleParams({
       tokenIn: WETH9, // WETH address
       tokenOut: USDC, // USDC address

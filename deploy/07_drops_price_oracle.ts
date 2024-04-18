@@ -1,7 +1,7 @@
 declare var global: any;
 import path from 'path';
 
-import { BigNumber, ethers } from 'ethers';
+import { BigNumber, Contract, ethers } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { DeployFunction, DeployOptions } from '@holographxyz/hardhat-deploy-holographed/types';
@@ -151,6 +151,79 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
       console.log('"DropsPriceOracleProxy" reference updated.');
     } else {
       console.log('"DropsPriceOracleProxy" references correct version of "' + targetDropsPriceOracle + '".');
+    }
+  }
+
+  if (network.key === 'base') {
+    console.log('Checking the quoter address on the base network');
+    const priceOracleContract = (
+      (await hre.ethers.getContract('DropsPriceOracleMantleTestnet', deployerAddress)) as Contract
+    ).attach(futureDropsPriceOracleProxyAddress);
+
+    // Retrieve the current 'quoterV2' address, convert it to lowercase and compare it to the expected address.
+    if (
+      (await priceOracleContract.quoterV2()).toLowerCase() !==
+      '0x3d4e44eb1374240ce5f1b871ab261cd16335b76a'.toLowerCase()
+    ) {
+      console.log('Quoter address not set to expected address, updating...');
+
+      // Prepare transaction settings using proper parameters and structure
+      const setQuoterTxData = await priceOracleContract.populateTransaction.setQuoter(
+        '0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a'
+      );
+
+      // If using a multisig or special transaction processor, adjust this call to fit that scenario
+      const priceOracleContractTx = await MultisigAwareTx(hre, 'DropsPriceOracleBase', priceOracleContract, {
+        ...(await txParams({
+          hre,
+          from: deployerAddress,
+          to: priceOracleContract.address,
+          data: setQuoterTxData.data,
+        })),
+      });
+
+      console.log('Transaction hash:', priceOracleContractTx.hash);
+      await priceOracleContractTx.wait();
+    } else {
+      console.log('Quoter address is already set correctly.');
+    }
+  }
+
+  if (network.key === 'base' || network.key === 'baseTestnetSepolia') {
+    console.log('Checking the quoter address on the base network');
+
+    // NOTE: The quoter address is different for the base network and the base testnet
+    //       If we switch more networks to use the Quoter in their price oracles we will need to update this
+    const quoterAddress =
+      network.key === 'base'
+        ? '0x3d4e44eb1374240ce5f1b871ab261cd16335b76a'
+        : '0xC5290058841028F1614F3A6F0F5816cAd0df5E27';
+
+    const priceOracleContract = (
+      (await hre.ethers.getContract('DropsPriceOracleMantleTestnet', deployerAddress)) as Contract
+    ).attach(futureDropsPriceOracleProxyAddress);
+
+    // Retrieve the current 'quoterV2' address, convert it to lowercase and compare it to the expected address.
+    if ((await priceOracleContract.quoterV2()).toLowerCase() !== quoterAddress) {
+      console.log('Quoter address not set to expected address, updating...');
+
+      // Prepare transaction settings using proper parameters and structure
+      const setQuoterTxData = await priceOracleContract.populateTransaction.setQuoter(quoterAddress);
+
+      // If using a multisig or special transaction processor, adjust this call to fit that scenario
+      const priceOracleContractTx = await MultisigAwareTx(hre, 'DropsPriceOracleBase', priceOracleContract, {
+        ...(await txParams({
+          hre,
+          from: deployerAddress,
+          to: priceOracleContract.address,
+          data: setQuoterTxData.data,
+        })),
+      });
+
+      console.log('Transaction hash:', priceOracleContractTx.hash);
+      await priceOracleContractTx.wait();
+    } else {
+      console.log('Quoter address is already set correctly.');
     }
   }
 
