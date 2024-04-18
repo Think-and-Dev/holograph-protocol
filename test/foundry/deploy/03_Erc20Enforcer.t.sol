@@ -8,6 +8,7 @@ import {SampleERC20} from "../../../src/token/SampleERC20.sol";
 import {ERC20Mock} from "../../../src/mock/ERC20Mock.sol";
 import {Admin} from "../../../src/abstract/Admin.sol";
 import {ERC20} from "../../../src/interface/ERC20.sol";
+import {PermitSigUtils} from "../utils/PermitSigUtils.sol";
 
 contract Erc20Enforcer is Test {
   event Transfer(address indexed _from, address indexed _to, uint256 _value);
@@ -20,8 +21,10 @@ contract Erc20Enforcer is Test {
   SampleERC20 sampleERC20;
   ERC20Mock erc20Mock;
   Admin admin;
+  PermitSigUtils permitSigUtils;
   uint16 tokenDecimals = 18;
-  address deployer = vm.addr(0xff22437ccbedfffafa93a9f1da2e8c19c1711052799acf3b58ae5bebb5c6bd7b);
+  uint256 privateKeyDeployer = 0xff22437ccbedfffafa93a9f1da2e8c19c1711052799acf3b58ae5bebb5c6bd7b;
+  address deployer = vm.addr(privateKeyDeployer);
   address alice = vm.addr(1);
   address bob = vm.addr(2);
   uint256 initialValue = 1;
@@ -31,8 +34,8 @@ contract Erc20Enforcer is Test {
   bytes zeroBytes = bytes(abi.encode("0x0000000000000000000000000000000000000000"));
   bytes32 zeroSignature = bytes32(abi.encode(0x0000000000000000000000000000000000000000000000000000000000000000));
   bytes32 signature = bytes32(abi.encode(0x1111111111111111111111111111111111111111111111111111111111111111));
-  bytes32 signature2 = bytes32(abi.encode(0x353535353535353535353535353535353535353535353535353535353535353));
-  bytes32 signature3 = bytes32(abi.encode(0x686868686868686868686868686868686868686868686868686868686868686));
+  bytes32 signature2 = bytes32(abi.encode(0x35353535353535353535353535353535353535353535353535353535353535));
+  bytes32 signature3 = bytes32(abi.encode(0x68686868686868686868686868686868686868686868686868686868686868));
   uint256 badDeadLine;
   uint256 goodDeadLine;
 
@@ -45,6 +48,27 @@ contract Erc20Enforcer is Test {
     admin = Admin(payable(Constants.getHolographFactoryProxy()));
     badDeadLine = uint256(block.timestamp) - 1;
     goodDeadLine = uint256(block.timestamp);
+    permitSigUtils = new PermitSigUtils(holographERC20.DOMAIN_SEPARATOR());
+  }
+
+  function buildDomainSeparator(
+    string memory name,
+    string memory version,
+    address contractAddress
+  ) public view returns (bytes32) {
+    bytes32 nameHash = keccak256(bytes(name));
+    bytes32 versionHash = keccak256(bytes(version));
+    bytes32 typeHash = keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
+    return
+      keccak256(
+        abi.encodePacked(
+          typeHash,
+          nameHash,
+          versionHash,
+          uint256(block.chainid),
+          address(Constants.getHolographERC20())
+        )
+      );
   }
 
   function mintToAlice() public {
@@ -599,7 +623,14 @@ contract Erc20Enforcer is Test {
    *    Permit
    */
 
-  //TODO buildDomainSeperator
+  function testCheckDomainSeparator() public {
+    // TODO Check
+    vm.skip(true);
+    assertEq(
+      holographERC20.DOMAIN_SEPARATOR(),
+      buildDomainSeparator("Sample ERC20 Token", "1", address(holographERC20))
+    );
+  }
 
   function testPermitZeroNonce() public {
     assertEq(holographERC20.nonces(alice), 0);
@@ -626,15 +657,36 @@ contract Erc20Enforcer is Test {
     holographERC20.permit(deployer, alice, initialValue, goodDeadLine, uint8(0x04), zeroSignature, zeroSignature);
   }
 
-  //TODO not revert whit invalid signature
   function testPermitInvalidSignatureRevert() public {
-    vm.skip(true);
     vm.expectRevert("ERC20: invalid signature");
     vm.prank(deployer);
     holographERC20.permit(deployer, alice, initialValue, goodDeadLine, uint8(0x1b), signature2, signature3);
   }
 
-  //TODO add sucess Permit
+  function testValidSignature() public {
+    PermitSigUtils.Permit memory permit = PermitSigUtils.Permit({
+      owner: deployer,
+      spender: alice,
+      value: maxValue,
+      nonce: holographERC20.nonces(alice),
+      deadline: goodDeadLine
+    });
+    bytes32 digest = permitSigUtils.getTypedDataHash(permit);
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, digest);
+    vm.expectEmit(true, true, false, true);
+    emit Approval(deployer, alice, maxValue);
+    holographERC20.permit(permit.owner, permit.spender, permit.value, permit.deadline, v, r, s);
+  }
+
+  function testPermitAllowance() public {
+    testValidSignature();
+    assertEq(holographERC20.allowance(deployer, alice), maxValue);
+  }
+
+  function testPermitNonces() public {
+    testValidSignature();
+    assertEq(holographERC20.nonces(deployer), 1);
+  }
 
   /*
    * ERC20 TEST
@@ -671,6 +723,14 @@ contract Erc20Enforcer is Test {
     emit OwnershipTransferred(address(admin), address(deployer));
     vm.prank(deployer);
     admin.adminCall(address(holographERC20), data);
+  }
+
+  function testTransferOwnership() public {
+    testErc20DeployerTransferOwner();
+    vm.expectEmit(true, true, false, true);
+    emit OwnershipTransferred(address(deployer), address(admin));
+    vm.prank(deployer);
+    holographERC20.setOwner(address(admin));
   }
 
   /*
