@@ -41,7 +41,7 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
       ],
     ]
   );
-  
+
   const futureCustomERC721Address = await genesisDeriveFutureAddress(hre, salt, 'CustomERC721', CustomERC721InitCode);
   console.log('the future "CustomERC721" address is', futureCustomERC721Address);
 
