@@ -3,9 +3,9 @@ pragma solidity 0.8.13;
 
 import {Admin} from "../../abstract/Admin.sol";
 import {Initializable} from "../../abstract/Initializable.sol";
-import {IQuoterV2} from "../interface/IQuoterV2.sol";
+import {IQuoterV2} from "../../interface/IQuoterV2.sol";
 
-contract UniswapV3Oracle is Admin, Initializable {
+contract DropsPriceOracleBase is Admin, Initializable {
   IQuoterV2 public immutable quoterV2; // Immutable reference to the Quoter V2 interface
 
   address public constant WETH9 = 0x4200000000000000000000000000000000000006; // WETH address on Base mainnet
