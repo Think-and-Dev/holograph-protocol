@@ -104,6 +104,49 @@ contract DropsPriceOracleBaseTest is Test {
     assertTrue(isWithinMargin, "Conversion with random rates should be within margin of error");
   }
 
+  function testExtremeRateFluctuations() public {
+    uint256 usdAmount = 100e6; // 100 USDC
+    uint256[] memory extremeRates = new uint256[](2);
+    extremeRates[0] = 1; // Extremely low rate, almost worthless
+    extremeRates[1] = 1e30; // Extremely high rate, unrealistic
+
+    for (uint i = 0; i < extremeRates.length; i++) {
+      vm.assume(extremeRates[i] > 0); // Ensuring non-zero to avoid div by zero errors
+      uint256 expectedWeiAmount = usdAmount * extremeRates[i];
+      quoterV2.setMockedQuote(expectedWeiAmount, uint160(extremeRates[i]), 0, 0);
+      uint256 actualWeiAmount = oracle.convertUsdToWei(usdAmount);
+      assertEq(actualWeiAmount, expectedWeiAmount, "Should handle extreme rate correctly");
+    }
+  }
+
+  function testUnauthorizedAccessToSetQuoter() public {
+    address unauthorizedAddress = address(0xDead);
+    vm.prank(unauthorizedAddress);
+    vm.expectRevert("HOLOGRAPH: admin only function");
+    oracle.setQuoter(IQuoterV2(address(1))); // Attempt to set with an arbitrary address
+  }
+
+  function testResponseToInaccurateQuoteData() public {
+    uint256 usdAmount = 100e6; // 100 USDC
+    uint256 inaccurateQuote = 0; // Inaccurate quote simulating a failure in the external system
+
+    quoterV2.setMockedQuote(inaccurateQuote, uint160(0.0025 ether), 0, 0);
+    uint256 actualWeiAmount = oracle.convertUsdToWei(usdAmount);
+    assertEq(actualWeiAmount, inaccurateQuote, "Should reflect the inaccurate quote accurately");
+  }
+
+  function testDifferentTokenDecimals() public {
+    // Assume oracle can handle tokens with different decimals
+    uint256 usdAmount = 100e6; // 100 USDC with 6 decimals
+    uint256 etherAmount = 1e18; // 1 Ether with 18 decimals
+
+    // Mocked quote for USDC to ETH conversion
+    quoterV2.setMockedQuote(etherAmount, uint160(0.0025 ether), 0, 0);
+
+    uint256 actualWeiAmount = oracle.convertUsdToWei(usdAmount);
+    assertEq(actualWeiAmount, etherAmount, "Conversion should handle different decimals accurately.");
+  }
+
   function testRevertIfQuoterNotSet() public {
     // Setup oracle with a zero address for the quoter
     vm.prank(oracle.getAdmin());
