@@ -575,18 +575,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   }
 
   /**
-   * @notice Admin function to finalize and open edition sale
-   * TODO: Fix this function with the countdown feature
-   */
-  function finalizeOpenEdition() external onlyOwner {
-    // if (config.editionSize != type(uint64).max) {
-    //   revert Admin_UnableToFinalizeNotOpenEdition();
-    // }
-    // config.editionSize = uint64(_currentTokenId);
-    // emit OpenMintFinalized(msgSender(), config.editionSize);
-  }
-
-  /**
    * INTERNAL FUNCTIONS
    * non state changing
    */
@@ -594,7 +582,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   function getMintTimeCost() external view returns (uint64) {
     return config.mintTimeCost;
   }
-  
+
   function getCountdownEnd() external view returns (uint96) {
     return config.countdownEnd;
   }
@@ -687,36 +675,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
       }
     }
   }
-
-  // TODO: We need to recreate these functions in a way that is compatible wit our _mintNFTs function
-  /// @dev Lets an account claim tokens.
-  // function claim(
-  //   address _receiver,
-  //   uint256 _quantity,
-  //   address _currency,
-  //   uint256 _pricePerToken,
-  //   bytes memory _data
-  // ) public payable virtual override {
-  //   _beforeClaim(_receiver, _quantity, _currency, _pricePerToken, _allowlistProof, _data);
-
-  //   uint256 activeConditionId = getActiveClaimConditionId();
-
-  //   verifyClaim(activeConditionId, _dropMsgSender(), _quantity, _currency, _pricePerToken, _allowlistProof);
-
-  //   // Update contract state.
-  //   claimCondition.conditions[activeConditionId].supplyClaimed += _quantity;
-  //   claimCondition.supplyClaimedByWallet[activeConditionId][_dropMsgSender()] += _quantity;
-
-  //   // If there's a price, collect price.
-  //   _collectPriceOnClaim(address(0), _quantity, _currency, _pricePerToken);
-
-  //   // Mint the relevant tokens to claimer.
-  //   uint256 startTokenId = _transferTokensOnClaim(_receiver, _quantity);
-
-  //   emit TokensClaimed(activeConditionId, _dropMsgSender(), _receiver, startTokenId, _quantity);
-
-  //   _afterClaim(_receiver, _quantity, _currency, _pricePerToken, _allowlistProof, _data);
-  // }
 
   fallback() external payable override {
     assembly {
