@@ -76,7 +76,6 @@ runs = 256
 depth = 5
 # call_override = false
 dictionary_weight = 40
-=======
 optimizer_runs = 999999
 out = 'artifacts'
 test = 'test'
