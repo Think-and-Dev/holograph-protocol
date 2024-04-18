@@ -28,18 +28,20 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
 
   // Deploy the CustomERC721 custom contract source
   const CustomERC721InitCode = generateInitCode(
-    ['tuple(address,address,string,uint64,uint16,tuple(uint104,uint32,uint64,uint64,uint64,uint64,bytes32))'],
+    ['tuple(uint64,uint96,address,address,string,uint16,tuple(uint104,uint32,uint64,uint64,uint64,uint64,bytes32))'],
     [
       [
+        550,
+        2200000000,
         deployerAddress, // initialOwner
         deployerAddress, // fundsRecipient
         '', // contractURI
-        0, // 1000 editions
         1000, // 10% royalty
         [0, 0, 0, 0, 0, 0, '0x' + '00'.repeat(32)], // salesConfig
       ],
     ]
   );
+
   const futureCustomERC721Address = await genesisDeriveFutureAddress(hre, salt, 'CustomERC721', CustomERC721InitCode);
   console.log('the future "CustomERC721" address is', futureCustomERC721Address);
 

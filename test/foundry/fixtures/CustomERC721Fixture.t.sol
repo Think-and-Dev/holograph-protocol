@@ -18,6 +18,7 @@ import {MockUser} from "../utils/MockUser.sol";
 import {Utils} from "../utils/Utils.sol";
 
 import {Constants} from "test/foundry/utils/Constants.sol";
+import {DEFAULT_MINT_TIME_COST} from "test/foundry/CustomERC721/utils/Constants.sol";
 
 contract CustomERC721Fixture is Test {
   /// @notice Event emitted when the funds are withdrawn from the minting contract
@@ -26,37 +27,34 @@ contract CustomERC721Fixture is Test {
   /// @param amount amount that was withdrawn
   event FundsWithdrawn(address indexed withdrawnBy, address indexed withdrawnTo, uint256 amount);
 
-  uint256 public chainPrepend;
-
-  address public alice;
-  MockUser public mockUser;
-
-  CustomERC721 public customErc721;
-  HolographTreasury public treasury;
-
-  DummyDropsPriceOracle public dummyPriceOracle;
-
-  uint104 constant usd10 = 10 * (10 ** 6); // 10 USD (6 decimal places)
-  uint104 constant usd100 = 100 * (10 ** 6); // 100 USD (6 decimal places)
-  uint104 constant usd1000 = 1000 * (10 ** 6); // 1000 USD (6 decimal places)
-
+  /* -------------------------------- Addresses ------------------------------- */
+  address sourceContractAddress;
   address public constant DEFAULT_OWNER_ADDRESS = address(0x1);
   address payable public constant DEFAULT_FUNDS_RECIPIENT_ADDRESS = payable(address(0x2));
   address payable public constant HOLOGRAPH_TREASURY_ADDRESS = payable(address(0x3));
   address payable constant TEST_ACCOUNT = payable(address(0x888));
   address public constant MEDIA_CONTRACT = address(0x666);
+  address public alice;
+  address public initialOwner = address(uint160(uint256(keccak256("initialOwner"))));
+  address public fundsRecipient = address(uint160(uint256(keccak256("fundsRecipient"))));
+
+  /* -------------------------------- Contracts ------------------------------- */
+  HolographERC721 erc721Enforcer;
+  MockUser public mockUser;
+  CustomERC721 public customErc721;
+  HolographTreasury public treasury;
+  DummyDropsPriceOracle public dummyPriceOracle;
+
+  /* ---------------------------- Test environment ---------------------------- */
+  uint256 nativePrice;
+  uint256 public chainPrepend;
+  uint256 totalCost;
+  uint104 constant usd10 = 10 * (10 ** 6); // 10 USD (6 decimal places)
+  uint104 constant usd100 = 100 * (10 ** 6); // 100 USD (6 decimal places)
+  uint104 constant usd1000 = 1000 * (10 ** 6); // 1000 USD (6 decimal places)
 
   uint256 public constant FIRST_TOKEN_ID =
     115792089183396302089269705419353877679230723318366275194376439045705909141505; // large 256 bit number due to chain id prefix
-
-  struct Configuration {
-    uint64 editionSize;
-    uint16 royaltyBPS;
-    address payable fundsRecipient;
-  }
-
-  address public initialOwner = address(uint160(uint256(keccak256("initialOwner"))));
-  address public fundsRecipient = address(uint160(uint256(keccak256("fundsRecipient"))));
 
   constructor() {}
 
@@ -87,8 +85,14 @@ contract CustomERC721Fixture is Test {
     // );
   }
 
-  modifier setupTestCustomERC21(uint64 editionSize) {
-    chainPrepend = deployAndSetupProtocol();
+  modifier setupTestCustomERC21(uint256 maxSupply) {
+    chainPrepend = deployAndSetupProtocol(maxSupply);
+
+    _;
+  }
+
+  modifier setUpPurchase() {
+    _setUpPurchase();
 
     _;
   }
@@ -122,10 +126,7 @@ contract CustomERC721Fixture is Test {
       });
   }
 
-  function setUpPurchase()
-    internal
-    returns (uint256 totalCost, HolographERC721 erc721Enforcer, address sourceContractAddress, uint256 nativePrice)
-  {
+  function _setUpPurchase() private {
     // We assume that the amount is at least one and less than or equal to the edition size given in modifier
     vm.prank(DEFAULT_OWNER_ADDRESS);
 
@@ -138,22 +139,10 @@ contract CustomERC721Fixture is Test {
     uint256 holographFee = customErc721.getHolographFeeUsd(1);
     uint256 nativeFee = dummyPriceOracle.convertUsdToWei(holographFee);
 
-    vm.prank(DEFAULT_OWNER_ADDRESS);
-
-    CustomERC721(payable(sourceContractAddress)).setSaleConfiguration({
-      publicSaleStart: 0,
-      publicSaleEnd: type(uint64).max,
-      presaleStart: 0,
-      presaleEnd: 0,
-      publicSalePrice: price,
-      maxSalePurchasePerAddress: uint32(1),
-      presaleMerkleRoot: bytes32(0)
-    });
-
     totalCost = (nativePrice + nativeFee);
   }
 
-  function deployAndSetupProtocol() internal returns (uint256) {
+  function deployAndSetupProtocol(uint256 maxSupply) internal returns (uint256) {
     // Setup sale config for edition
     SalesConfiguration memory saleConfig = SalesConfiguration({
       publicSaleStart: 0, // starts now
@@ -170,7 +159,8 @@ contract CustomERC721Fixture is Test {
       initialOwner: payable(DEFAULT_OWNER_ADDRESS),
       fundsRecipient: payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS),
       contractURI: "https://example.com/metadata.json",
-      editionSize: 100,
+      countdownEnd: uint96(DEFAULT_MINT_TIME_COST * maxSupply),
+      mintTimeCost: uint64(DEFAULT_MINT_TIME_COST),
       royaltyBPS: 1000,
       salesConfiguration: saleConfig
     });
@@ -213,5 +203,15 @@ contract CustomERC721Fixture is Test {
 
     vm.prank(DEFAULT_OWNER_ADDRESS);
     return customErc721.initLazyMint();
+  }
+
+  function _purchaseAllSupply() internal {    
+    for (uint256 i = 0; i < customErc721.maxSupply(); i++) {
+      address user = address(uint160(uint256(keccak256(abi.encodePacked(i)))));
+      vm.startPrank(address(user));
+      vm.deal(address(user), totalCost);
+      customErc721.purchase{value: totalCost}(1);
+      vm.stopPrank();
+    }
   }
 }

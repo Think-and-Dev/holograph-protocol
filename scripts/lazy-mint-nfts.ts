@@ -9,7 +9,8 @@ dotenv.config();
 async function main() {
   // Check for required environment variables
   if (process.env.PRIVATE_KEY === undefined) throw new Error(`PRIVATE_KEY environment variable is required`);
-  if (process.env.AMOUNT_TO_MINT === undefined) throw new Error(`AMOUNT_TO_MINT environment variable is required`);
+  if (process.env.AMOUNT_TO_LAZY_MINT === undefined)
+    throw new Error(`AMOUNT_TO_LAZY_MINT environment variable is required`);
   if (process.env.PLACEHOLDER_URI_FOR_TOKENS === undefined)
     throw new Error(`PLACEHOLDER_URI_FOR_TOKENS environment variable is required`);
   if (process.env.REVEALED_URI === undefined) throw new Error(`REVEALED_URI environment variable is required`);
@@ -42,7 +43,7 @@ async function main() {
   const contract = new ethers.Contract(contractAddress, contractABI, signer);
 
   // LazyMint parameters
-  const amount = process.env.AMOUNT_TO_MINT as string;
+  const amount = process.env.AMOUNT_TO_LAZY_MINT as string;
   const placeholderURIForTokens = process.env.PLACEHOLDER_URI_FOR_TOKENS as string;
   const revealedUri = process.env.REVEALED_URI as string;
 
