@@ -26,8 +26,6 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
   // Salt is used for deterministic address generation
   const salt = hre.deploymentSalt;
 
-  console.log("****");
-
   // Deploy the CustomERC721 custom contract source
   const CustomERC721InitCode = generateInitCode(
     ['tuple(uint64,uint96,address,address,string,uint16,tuple(uint104,uint32,uint64,uint64,uint64,uint64,bytes32))'],
@@ -43,7 +41,7 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
       ],
     ]
   );
-  console.log("**wefwef**");
+  
   const futureCustomERC721Address = await genesisDeriveFutureAddress(hre, salt, 'CustomERC721', CustomERC721InitCode);
   console.log('the future "CustomERC721" address is', futureCustomERC721Address);
 

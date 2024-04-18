@@ -465,15 +465,24 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
 
   // Register CustomERC721
   const CustomERC721InitCode = generateInitCode(
-    ['tuple(address,address,string, uint64,uint16,tuple(uint104,uint32,uint64,uint64,uint64,uint64,bytes32))'],
+    ['tuple(uint64,uint96,address,address,string,uint16,tuple(uint104,uint32,uint64,uint64,uint64,uint64,bytes32))'],
     [
       [
+        550,
+        2200000000,
         deployerAddress, // initialOwner
         deployerAddress, // fundsRecipient
         '', // contractURI
-        0, // unlimited editions
         1000, // 10% royalty
-        [0, 0, 0, 0, 0, 0, '0x' + '00'.repeat(32)], // salesConfig
+        [
+          0, // publicSalePrice
+          0, // maxSalePurchasePerAddress
+          0, // publicSaleStart
+          0, // publicSaleEnd
+          0, // presaleStart
+          0, // presaleEnd
+          '0x' + '00'.repeat(32), // presaleMerkleRoot
+        ], // salesConfig
       ],
     ]
   );
