@@ -40,6 +40,8 @@ interface ICustomERC721 {
   error Presale_TooManyForAddress();
   /// @notice Fee payout failed
   error FeePaymentFailed();
+  /// @notice The countdown has been completed
+  error Purchase_CountdownCompleted();
 
   // Init errors
   error CountdownEndMustBeDivisibleByMintTimeCost(uint128 countdownEnd, uint128 mintTimeCost);

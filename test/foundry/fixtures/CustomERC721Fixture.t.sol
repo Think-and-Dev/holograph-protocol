@@ -27,41 +27,34 @@ contract CustomERC721Fixture is Test {
   /// @param amount amount that was withdrawn
   event FundsWithdrawn(address indexed withdrawnBy, address indexed withdrawnTo, uint256 amount);
 
-  uint256 public chainPrepend;
-  uint256 totalCost;
-  HolographERC721 erc721Enforcer;
+  /* -------------------------------- Addresses ------------------------------- */
   address sourceContractAddress;
-  uint256 nativePrice;
-
-  address public alice;
-  MockUser public mockUser;
-
-  CustomERC721 public customErc721;
-  HolographTreasury public treasury;
-
-  DummyDropsPriceOracle public dummyPriceOracle;
-
-  uint104 constant usd10 = 10 * (10 ** 6); // 10 USD (6 decimal places)
-  uint104 constant usd100 = 100 * (10 ** 6); // 100 USD (6 decimal places)
-  uint104 constant usd1000 = 1000 * (10 ** 6); // 1000 USD (6 decimal places)
-
   address public constant DEFAULT_OWNER_ADDRESS = address(0x1);
   address payable public constant DEFAULT_FUNDS_RECIPIENT_ADDRESS = payable(address(0x2));
   address payable public constant HOLOGRAPH_TREASURY_ADDRESS = payable(address(0x3));
   address payable constant TEST_ACCOUNT = payable(address(0x888));
   address public constant MEDIA_CONTRACT = address(0x666);
+  address public alice;
+  address public initialOwner = address(uint160(uint256(keccak256("initialOwner"))));
+  address public fundsRecipient = address(uint160(uint256(keccak256("fundsRecipient"))));
+
+  /* -------------------------------- Contracts ------------------------------- */
+  HolographERC721 erc721Enforcer;
+  MockUser public mockUser;
+  CustomERC721 public customErc721;
+  HolographTreasury public treasury;
+  DummyDropsPriceOracle public dummyPriceOracle;
+
+  /* ---------------------------- Test environment ---------------------------- */
+  uint256 nativePrice;
+  uint256 public chainPrepend;
+  uint256 totalCost;
+  uint104 constant usd10 = 10 * (10 ** 6); // 10 USD (6 decimal places)
+  uint104 constant usd100 = 100 * (10 ** 6); // 100 USD (6 decimal places)
+  uint104 constant usd1000 = 1000 * (10 ** 6); // 1000 USD (6 decimal places)
 
   uint256 public constant FIRST_TOKEN_ID =
     115792089183396302089269705419353877679230723318366275194376439045705909141505; // large 256 bit number due to chain id prefix
-
-  struct Configuration {
-    uint64 editionSize;
-    uint16 royaltyBPS;
-    address payable fundsRecipient;
-  }
-
-  address public initialOwner = address(uint160(uint256(keccak256("initialOwner"))));
-  address public fundsRecipient = address(uint160(uint256(keccak256("fundsRecipient"))));
 
   constructor() {}
 
@@ -210,5 +203,15 @@ contract CustomERC721Fixture is Test {
 
     vm.prank(DEFAULT_OWNER_ADDRESS);
     return customErc721.initLazyMint();
+  }
+
+  function _purchaseAllSupply() internal {    
+    for (uint256 i = 0; i < customErc721.maxSupply(); i++) {
+      address user = address(uint160(uint256(keccak256(abi.encodePacked(i)))));
+      vm.startPrank(address(user));
+      vm.deal(address(user), totalCost);
+      customErc721.purchase{value: totalCost}(1);
+      vm.stopPrank();
+    }
   }
 }
