@@ -357,6 +357,11 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
       // The error will display what the correct price should be
       revert Purchase_WrongPrice((salesConfig.publicSalePrice + holographMintFeeUsd) * quantity);
     }
+
+    if (config.countdownEnd < config.mintTimeCost * quantity) {
+      revert Purchase_CountdownCompleted();
+    }
+
     uint256 remainder = msg.value - (salePrice * quantity);
 
     // If max purchase per address == 0 there is no limit.
@@ -585,6 +590,18 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
    * INTERNAL FUNCTIONS
    * non state changing
    */
+
+  function getMintTimeCost() external view returns (uint64) {
+    return config.mintTimeCost;
+  }
+  
+  function getCountdownEnd() external view returns (uint96) {
+    return config.countdownEnd;
+  }
+
+  function getInitialCountdownEnd() external view returns (uint96) {
+    return config.initialCountdownEnd;
+  }
 
   function _presaleActive() internal view returns (bool) {
     return salesConfig.presaleStart <= block.timestamp && salesConfig.presaleEnd > block.timestamp;
