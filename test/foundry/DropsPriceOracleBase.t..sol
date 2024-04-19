@@ -22,24 +22,24 @@ contract DropsPriceOracleBaseTest is Test {
     oracle.init(new bytes(0)); // Ensure initialization is proper and only done once
   }
 
-  function testInitialSetup() public {
+  function test_InitialSetup() public {
     // Check if the oracle's quoterV2 address is not the zero address
     assertTrue(address(oracle.quoterV2()) != address(0), "QuoterV2 should be set");
   }
 
-  function testPreventReinitialization() public {
+  function test_PreventReinitialization() public {
     // Expect a revert when calling init function again
     vm.expectRevert("HOLOGRAPH: already initialized");
     oracle.init(new bytes(0));
   }
 
-  function testInitializationConstants() public {
+  function test_InitializationConstants() public {
     assertEq(oracle.WETH9(), 0x4200000000000000000000000000000000000006, "WETH9 address is incorrect");
     assertEq(oracle.USDC(), 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913, "USDC address is incorrect");
     assertEq(oracle.poolFee(), 3000, "Pool fee is incorrect");
   }
 
-  function testConvertUsdToWei() public {
+  function test_ConvertUsdToWei() public {
     uint256 usdAmount = 2500000000000000; // Example amount
     uint256 expectedWeiAmount = 0.0025 ether; // Expected result
     quoterV2.setMockedQuote(expectedWeiAmount, uint160(expectedWeiAmount), 0, 0);
@@ -48,7 +48,7 @@ contract DropsPriceOracleBaseTest is Test {
     assertEq(actualWeiAmount, expectedWeiAmount, "Conversion should be accurate.");
   }
 
-  function testConvertUsdToFuzzedWei(uint256 usdAmount) public {
+  function test_ConvertUsdToFuzzedWei(uint256 usdAmount) public {
     // Skip very large numbers to avoid overflows in the test
     vm.assume(usdAmount < 1e10);
 
@@ -67,7 +67,7 @@ contract DropsPriceOracleBaseTest is Test {
     assertEq(actualWeiAmount, expectedWeiAmount, "Fuzzed conversion from USDC to wei should be accurate");
   }
 
-  function testSpecificRates() public {
+  function test_SpecificRates() public {
     uint256 usdAmount = 100e6; // 100 USDC
     uint256[] memory testRates = new uint256[](3);
     testRates[0] = 0.0025 ether; // Given rate
@@ -82,7 +82,7 @@ contract DropsPriceOracleBaseTest is Test {
     }
   }
 
-  function testFuzzingWithRandomRates(uint256 usdAmount, uint256 rate) public {
+  function test_FuzzingWithRandomRates(uint256 usdAmount, uint256 rate) public {
     // We'll skip very high rates to avoid overflows
     vm.assume(rate < 1e18);
 
@@ -104,7 +104,7 @@ contract DropsPriceOracleBaseTest is Test {
     assertTrue(isWithinMargin, "Conversion with random rates should be within margin of error");
   }
 
-  function testExtremeRateFluctuations() public {
+  function test_ExtremeRateFluctuations() public {
     uint256 usdAmount = 100e6; // 100 USDC
     uint256[] memory extremeRates = new uint256[](2);
     extremeRates[0] = 1; // Extremely low rate, almost worthless
@@ -119,14 +119,14 @@ contract DropsPriceOracleBaseTest is Test {
     }
   }
 
-  function testUnauthorizedAccessToSetQuoter() public {
+  function test_UnauthorizedAccessToSetQuoter() public {
     address unauthorizedAddress = address(0xDead);
     vm.prank(unauthorizedAddress);
     vm.expectRevert("HOLOGRAPH: admin only function");
     oracle.setQuoter(IQuoterV2(address(1))); // Attempt to set with an arbitrary address
   }
 
-  function testResponseToInaccurateQuoteData() public {
+  function test_ResponseToInaccurateQuoteData() public {
     uint256 usdAmount = 100e6; // 100 USDC
     uint256 inaccurateQuote = 0; // Inaccurate quote simulating a failure in the external system
 
@@ -135,7 +135,7 @@ contract DropsPriceOracleBaseTest is Test {
     assertEq(actualWeiAmount, inaccurateQuote, "Should reflect the inaccurate quote accurately");
   }
 
-  function testDifferentTokenDecimals() public {
+  function test_DifferentTokenDecimals() public {
     // Assume oracle can handle tokens with different decimals
     uint256 usdAmount = 100e6; // 100 USDC with 6 decimals
     uint256 etherAmount = 1e18; // 1 Ether with 18 decimals
@@ -147,7 +147,7 @@ contract DropsPriceOracleBaseTest is Test {
     assertEq(actualWeiAmount, etherAmount, "Conversion should handle different decimals accurately.");
   }
 
-  function testRevertIfQuoterNotSet() public {
+  function test_RevertIfQuoterNotSet() public {
     // Setup oracle with a zero address for the quoter
     vm.prank(oracle.getAdmin());
     oracle.setQuoter(IQuoterV2(address(0)));
@@ -157,7 +157,7 @@ contract DropsPriceOracleBaseTest is Test {
     oracle.convertUsdToWei(1e6);
   }
 
-  function testRevertIfNonAdminSetsQuoter() public {
+  function test_RevertIfNonAdminSetsQuoter() public {
     vm.expectRevert("HOLOGRAPH: admin only function");
     oracle.setQuoter(IQuoterV2(address(0)));
   }
