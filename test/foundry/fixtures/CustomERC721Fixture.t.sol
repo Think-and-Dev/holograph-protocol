@@ -200,9 +200,6 @@ contract CustomERC721Fixture is Test {
 
     // Connect the drop implementation to the drop proxy address
     customErc721 = CustomERC721(payable(newDropAddress));
-
-    vm.prank(DEFAULT_OWNER_ADDRESS);
-    return customErc721.initLazyMint();
   }
 
   function _purchaseAllSupply() internal {    

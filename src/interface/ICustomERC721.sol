@@ -19,6 +19,8 @@ interface ICustomERC721 {
   error Withdraw_FundsSendFailure();
   /// @notice Mint fee send failure
   error MintFee_FundsSendFailure();
+  /// @notice Lazy mint initialization failed
+  error LazyMint_AlreadyInitialized();
 
   /// @notice Call to external metadata renderer failed.
   error ExternalMetadataRenderer_CallFailed();

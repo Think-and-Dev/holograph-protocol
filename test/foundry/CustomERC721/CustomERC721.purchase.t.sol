@@ -57,17 +57,22 @@ contract CustomERC721PurchaseTest is CustomERC721Fixture, ICustomERC721Errors {
     // Compute the provenance hash
     bytes32 provenanceHash = keccak256(abi.encodePacked(DEFAULT_BASE_URI, DEFAULT_ENCRYPT_DECRYPT_KEY, block.chainid));
 
+    /// @dev TODO: the lazy mint should be done in the contract initialization
     vm.prank(DEFAULT_OWNER_ADDRESS);
     uint256 batchId = customErc721.lazyMint(
       firstBatchAmount,
       DEFAULT_PLACEHOLDER_URI,
       abi.encode(encryptedUri, provenanceHash)
     );
-    assertEq(batchId, chainPrepend + firstBatchAmount);
+
+    vm.prank(DEFAULT_OWNER_ADDRESS);
+    chainPrepend = customErc721.initLazyMint();
+
+    assertEq(batchId + chainPrepend, chainPrepend + firstBatchAmount);
 
     /* --------------------------- Check onchain data --------------------------- */
 
-    bytes memory encryptedData = customErc721.encryptedData(batchId);
+    bytes memory encryptedData = customErc721.encryptedData(batchId + chainPrepend);
     assertEq(encryptedData, abi.encode(encryptedUri, provenanceHash));
 
     /* -------------------------------- Purchase -------------------------------- */
