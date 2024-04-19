@@ -646,7 +646,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
 
   /// @dev Returns whether lazy minting can be done in the given execution context.
   function _canLazyMint() internal view override returns (bool) {
-    return ((msgSender() == _getOwner()) && _publicSaleActive()) || _presaleActive();
+    return !_isInitialized() || ((msgSender() == _getOwner()) && _publicSaleActive()) || _presaleActive();
   }
 
   /// @dev Checks whether contract metadata can be set in the given execution context.
