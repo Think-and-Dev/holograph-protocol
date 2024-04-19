@@ -154,78 +154,61 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
     }
   }
 
-  if (network.key === 'base') {
-    console.log('Checking the quoter address on the base network');
-    const priceOracleContract = (
-      (await hre.ethers.getContract('DropsPriceOracleMantleTestnet', deployerAddress)) as Contract
-    ).attach(futureDropsPriceOracleProxyAddress);
-
-    // Retrieve the current 'quoterV2' address, convert it to lowercase and compare it to the expected address.
-    if (
-      (await priceOracleContract.quoterV2()).toLowerCase() !==
-      '0x3d4e44eb1374240ce5f1b871ab261cd16335b76a'.toLowerCase()
-    ) {
-      console.log('Quoter address not set to expected address, updating...');
-
-      // Prepare transaction settings using proper parameters and structure
-      const setQuoterTxData = await priceOracleContract.populateTransaction.setQuoter(
-        '0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a'
-      );
-
-      // If using a multisig or special transaction processor, adjust this call to fit that scenario
-      const priceOracleContractTx = await MultisigAwareTx(hre, 'DropsPriceOracleBase', priceOracleContract, {
-        ...(await txParams({
-          hre,
-          from: deployerAddress,
-          to: priceOracleContract.address,
-          data: setQuoterTxData.data,
-        })),
-      });
-
-      console.log('Transaction hash:', priceOracleContractTx.hash);
-      await priceOracleContractTx.wait();
-    } else {
-      console.log('Quoter address is already set correctly.');
-    }
-  }
+  /* -------------------------------------------------------------------------- */
+  /*                                    Base                                    */
+  /* -------------------------------------------------------------------------- */
 
   if (network.key === 'base' || network.key === 'baseTestnetSepolia') {
-    console.log('Checking the quoter address on the base network');
+    console.log(`Checking the quoter address on ${network.key} network`);
 
-    // NOTE: The quoter address is different for the base network and the base testnet
-    //       If we switch more networks to use the Quoter in their price oracles we will need to update this
-    const quoterAddress =
-      network.key === 'base'
-        ? '0x3d4e44eb1374240ce5f1b871ab261cd16335b76a'
-        : '0xC5290058841028F1614F3A6F0F5816cAd0df5E27';
+    // Define the expected quoter address for each network
+    const expectedQuoterAddresses = {
+      base: '0x3d4e44eb1374240ce5f1b871ab261cd16335b76a',
+      baseTestnetSepolia: '0xC5290058841028F1614F3A6F0F5816cAd0df5E27',
+    };
 
-    const priceOracleContract = (
-      (await hre.ethers.getContract('DropsPriceOracleMantleTestnet', deployerAddress)) as Contract
-    ).attach(futureDropsPriceOracleProxyAddress);
+    // Get the expected quoter address based on the current network
+    const quoterAddress = expectedQuoterAddresses[network.key];
 
-    // Retrieve the current 'quoterV2' address, convert it to lowercase and compare it to the expected address.
-    if ((await priceOracleContract.quoterV2()).toLowerCase() !== quoterAddress) {
+    const priceOracleContractProxy = await hre.ethers.getContract('DropsPriceOracleProxy', deployerAddress);
+
+    const priceOracleContract = (await hre.ethers.getContractAt(
+      'DropsPriceOracleBaseTestnetSepolia',
+      priceOracleContractProxy.address,
+      deployerAddress
+    )) as Contract;
+
+    // Retrieve the current 'quoterV2' address and convert it to lowercase
+    const currentQuoterAddress = (await priceOracleContract.quoterV2()).toLowerCase();
+
+    // Compare the current quoter address with the expected address
+    if (currentQuoterAddress !== quoterAddress) {
       console.log('Quoter address not set to expected address, updating...');
 
-      // Prepare transaction settings using proper parameters and structure
-      const setQuoterTxData = await priceOracleContract.populateTransaction.setQuoter(quoterAddress);
+      const setQuoterTx = await MultisigAwareTx(
+        hre,
+        'DropsPriceOracleBaseTestnetSepolia',
+        priceOracleContract,
+        await priceOracleContract.populateTransaction.setQuoter(quoterAddress, {
+          ...(await txParams({
+            hre,
+            from: deployerAddress,
+            to: priceOracleContract.address,
+            data: priceOracleContract.populateTransaction.setQuoter(quoterAddress),
+          })),
+        })
+      );
 
-      // If using a multisig or special transaction processor, adjust this call to fit that scenario
-      const priceOracleContractTx = await MultisigAwareTx(hre, 'DropsPriceOracleBase', priceOracleContract, {
-        ...(await txParams({
-          hre,
-          from: deployerAddress,
-          to: priceOracleContract.address,
-          data: setQuoterTxData.data,
-        })),
-      });
-
-      console.log('Transaction hash:', priceOracleContractTx.hash);
-      await priceOracleContractTx.wait();
+      console.log('Transaction hash:', setQuoterTx.hash);
+      await setQuoterTx.wait();
     } else {
       console.log('Quoter address is already set correctly.');
     }
   }
+
+  /* -------------------------------------------------------------------------- */
+  /*                                   Mantle                                   */
+  /* -------------------------------------------------------------------------- */
 
   if (network.key === 'mantleTestnet') {
     console.log('Checking token price ratio on mantle testnet');
@@ -253,6 +236,10 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
       console.log('price ratio is set');
     }
   }
+
+  /* -------------------------------------------------------------------------- */
+  /*                                  Localhost                                 */
+  /* -------------------------------------------------------------------------- */
 
   // We manually inject drops price oracle proxy on local deployments
   // this is to accomodate the fact that drops price oracle proxy is hardcoded in the contract

@@ -11,8 +11,8 @@ contract DropsPriceOracleBaseTestnetSepolia is Admin, Initializable {
   address public constant WETH9 = 0x4200000000000000000000000000000000000006; // WETH address on Base mainnet
   address public constant USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913; // USDC address on Base mainnet
 
-  // Set the pool fee to 0.3% (the lowest option)
-  uint24 public constant poolFee = 3000;
+  // Set the pool fee to 0.05% (the lowest option)
+  uint24 public constant poolFee = 500;
 
   constructor() {}
 
@@ -30,8 +30,8 @@ contract DropsPriceOracleBaseTestnetSepolia is Admin, Initializable {
     return Initializable.init.selector;
   }
 
-  function setQuoter(IQuoterV2 _quoterV2) public onlyAdmin {
-    quoterV2 = _quoterV2;
+  function setQuoter(address _quoterV2Address) public onlyAdmin {
+    quoterV2 = IQuoterV2(_quoterV2Address);
   }
 
   /**
@@ -41,10 +41,11 @@ contract DropsPriceOracleBaseTestnetSepolia is Admin, Initializable {
    */
   function convertUsdToWei(uint256 usdAmount) external returns (uint256 weiAmount) {
     require(address(quoterV2) != address(0), "Quoter not set");
+
     IQuoterV2.QuoteExactOutputSingleParams memory params = IQuoterV2.QuoteExactOutputSingleParams({
       tokenIn: WETH9, // WETH address
       tokenOut: USDC, // USDC address
-      fee: poolFee, // Representing 0.3% pool fee
+      fee: poolFee, // Representing 0.05% pool fee
       amount: usdAmount, // USDC (USDC has 6 decimals)
       sqrtPriceLimitX96: 0 // No specific price limit
     });
@@ -53,5 +54,9 @@ contract DropsPriceOracleBaseTestnetSepolia is Admin, Initializable {
       .quoteExactOutputSingle(params);
 
     return amountIn; // this is the amount in wei to convert to the USDC value
+  }
+
+  function version() external pure returns (uint32) {
+    return 1;
   }
 }
