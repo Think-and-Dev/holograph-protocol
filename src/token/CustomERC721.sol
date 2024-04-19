@@ -145,6 +145,19 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
       revert CountdownEndMustBeDivisibleByMintTimeCost(initializer.countdownEnd, initializer.mintTimeCost);
     }
 
+    // Init the lazy mints
+    for (uint256 i = 0; i < initializer.lazyMintsConfigurations.length; ) {
+      lazyMint(
+        initializer.lazyMintsConfigurations[i]._amount,
+        initializer.lazyMintsConfigurations[i]._baseURIForTokens,
+        initializer.lazyMintsConfigurations[i]._data
+      );
+
+      unchecked {
+        i++;
+      }
+    }
+
     // Setup config variables
     config = CustomERC721Configuration({
       mintTimeCost: initializer.mintTimeCost,
@@ -485,11 +498,12 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   /**
    *  We override the `lazyMint` function, and use the `_data` parameter for storing encrypted metadata
    *  for 'delayed reveal' NFTs.
+   *  TODO: Should we keep this function public ? (lazy mints are done in the init function)
    */
   function lazyMint(
     uint256 _amount,
-    string calldata _baseURIForTokens,
-    bytes calldata _data
+    string memory _baseURIForTokens,
+    bytes memory _data
   ) public override returns (uint256 batchId) {
     if (_data.length > 0) {
       (bytes memory encryptedURI, bytes32 provenanceHash) = abi.decode(_data, (bytes, bytes32));

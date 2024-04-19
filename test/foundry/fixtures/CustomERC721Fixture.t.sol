@@ -8,6 +8,7 @@ import {DummyDropsPriceOracle} from "src/drops/oracle/DummyDropsPriceOracle.sol"
 import {CustomERC721Initializer} from "src/struct/CustomERC721Initializer.sol";
 import {DeploymentConfig} from "src/struct/DeploymentConfig.sol";
 import {SalesConfiguration} from "src/drops/struct/SalesConfiguration.sol";
+import {LazyMintConfiguration} from "src/drops/struct/LazyMintConfiguration.sol";
 import {Verification} from "src/struct/Verification.sol";
 import {HolographFactory} from "src/HolographFactory.sol";
 import {HolographerInterface} from "src/interface/HolographerInterface.sol";
@@ -162,7 +163,8 @@ contract CustomERC721Fixture is Test {
       countdownEnd: uint96(DEFAULT_MINT_TIME_COST * maxSupply),
       mintTimeCost: uint64(DEFAULT_MINT_TIME_COST),
       royaltyBPS: 1000,
-      salesConfiguration: saleConfig
+      salesConfiguration: saleConfig,
+      lazyMintsConfigurations: new LazyMintConfiguration[](0)
     });
 
     // Get deployment config, hash it, and then sign it

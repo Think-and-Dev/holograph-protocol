@@ -56,6 +56,7 @@ contract CustomERC721PurchaseTest is CustomERC721Fixture, ICustomERC721Errors {
     bytes memory encryptedUri = customErc721.encryptDecrypt(abi.encodePacked(DEFAULT_BASE_URI), DEFAULT_ENCRYPT_DECRYPT_KEY);
     // Compute the provenance hash
     bytes32 provenanceHash = keccak256(abi.encodePacked(DEFAULT_BASE_URI, DEFAULT_ENCRYPT_DECRYPT_KEY, block.chainid));
+    console.logBytes(abi.encode(encryptedUri, provenanceHash));
 
     /// @dev TODO: the lazy mint should be done in the contract initialization
     vm.prank(DEFAULT_OWNER_ADDRESS);
