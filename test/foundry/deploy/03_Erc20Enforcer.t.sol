@@ -379,11 +379,13 @@ contract Erc20Enforcer is Test {
 
   function testTransferFromZeroAddressRevert() public {
     vm.expectRevert("ERC20: amount exceeds allowance");
+    vm.prank(deployer);
     holographERC20.transferFrom(zeroAddress, alice, maxValue);
   }
 
   function testTransferFromNotAprrovalAddressRevert() public {
     vm.expectRevert("ERC20: amount exceeds allowance");
+    vm.prank(alice);
     holographERC20.transferFrom(deployer, alice, maxValue);
   }
 
@@ -531,7 +533,7 @@ contract Erc20Enforcer is Test {
     emit Transfer(address(deployer), address(alice), initialValue);
     vm.prank(alice);
     holographERC20.transferFrom(address(deployer), address(alice), initialValue);
-    //check allowance alice = 0
+    //check allowance alice = 0. A separate test should be done to verify the decrease in alowance.
     assertEq(holographERC20.allowance(deployer, alice), 0);
   }
 
@@ -606,6 +608,7 @@ contract Erc20Enforcer is Test {
 
   function testBurnFromNotApproveRevert() public {
     vm.expectRevert("ERC20: amount exceeds allowance");
+    vm.prank(alice);
     holographERC20.burnFrom(deployer, initialValue);
   }
 
