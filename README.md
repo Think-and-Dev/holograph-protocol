@@ -1,10 +1,9 @@
 <div align="center">
-  <a href="https://holograph.xyz"><img alt="Holograph" src="https://user-images.githubusercontent.com/21043504/188220186-9c7f55e0-143a-41b4-a6b8-90e8bd54bfd9.png" width=600></a>
+  <a href="https://holograph.xyz"><img alt="Holograph" src="./docs/holograph-protocol-v2.png" width=600></a>
   <br />
   <h1>Holograph Protocol V2</h1>
 </div>
-<p align="center">
-</p>
+
 
 ## Table of Contents
 
@@ -20,7 +19,7 @@
 
 ## Description
 
-Holograph is an omnichain tokenization protocol. Issuers use Holograph to mint natively composable tokens that can be transferred across blockchains without wrapping. Holograph works by burning tokens on the source chain, sending a message via a messaging protocol to the destination chain, and then reminting the same number of tokens to the same contract address. This unifies liquidity, eliminates slippage, and reserves fungibility across blockchains.
+Holograph is an omnichain tokenization protocol. Asset issuers use Holograph to mint natively composable omnichain tokens. Holograph works by burning tokens on the source chain, sending a message via a messaging protocol to the destination chain, and then reminting the same number of tokens to the same contract address. This unifies liquidity, eliminates slippage, and preserves fungibility across blockchains.
 
 ## Version
 
@@ -148,7 +147,7 @@ The simplified code path for bridging out is:
 
 At step 1, a user submits their bridge request with a valid payload using the estimatedGas value computed in the previous [Estimate Gas](#estimategas) section
 
-At step 2, the code checks that the contract is a _holographable_ contract. This means it has implemented the required functions for a _Holographed_ contract. See `contracts/enforcer/HolographERC721.sol` for an example.
+At step 2, the code checks that the contract is a _holographable_ contract. This means it has implemented the required functions for a _Holographed_ contract. See `src/enforcer/HolographERC721.sol` for an example.
 
 At step 3, we call the `_bridgeOut` function on the _Holographed_ contract and apply various checks and generate a payload with information about the bridge request.
 
@@ -222,9 +221,9 @@ At step 5, the wallet sends a transaction to the `exectureJob` method on the `Ho
 
 1. This project uses [asdf](https://asdf-vm.com/) for versions management. Install following plugins
    - Install [asdf Node plugin](https://github.com/asdf-vm/asdf-nodejs): `asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git`
-   - Install [asdf yarn plugin](https://github.com/twuni/asdf-yarn): `asdf plugin-add yarn`
+   - Install [asdf pnpm plugin](https://github.com/jonathanmorley/asdf-pnpm): `asdf plugin-add pnpm`
 2. Run `asdf install` after to have the correct tool versions.
-3. Install dependencies with `yarn install`.
+3. Install dependencies with `pnpm install`.
 4. Install Forge globally with `curl -L https://foundry.paradigm.xyz | bash`
 
 ### Environment
@@ -241,18 +240,16 @@ Please see the sample.env file for the environment variables that need to be con
 
 ### Compiling
 
-To build the code locally, you must run the following. You ony need to run this once. If you make changes to anything in the `src` folder, then we suggest running the command again.
+1. Terminal 1: `pnpm clean-compile`
 
-1. Terminal 1: `yarn clean-compile`
-
-When the project is built, the code in the `src` folder gets written to the `contracts` folder. The files in the `contracts` folder are the "real" files that are used for testing and code verification on all the scanners.
+This runs `hardhat clean` and then `hardhat compile` in sequence. Alternatively you can just run `pnpm compile`.
 
 ### Deploying Holograph Protocol
 
-To run the protocol locally, we actually need to run 2 networks `localhost` and `localhost2`. The `yarn anvil` command will run the blockchains locally. Then the second command will deploy the entire Holograph Protocol to each network.
+To run the protocol locally, we actually need to run 2 networks `localhost` and `localhost2`. The `pnpm anvil` command will run the blockchains locally. Then the second command will deploy the entire Holograph Protocol to each network.
 
-1. Terminal 1: `yarn anvil` - This runs `localhost` and `localhost2` blockchain networks
-2. Terminal 2: `yarn deploy-x2` - Deploys protocol on both networks without compiling. The command will ask you to enter `y` to continue twice. If you get an error, make sure you ran `yarn clean-compile` at least once before!
+1. Terminal 1: `pnpm anvil` - This runs `localhost` and `localhost2` blockchain networks
+2. Terminal 2: `pnpm deploy-x2` - Deploys protocol on both networks without compiling. The command will ask you to enter `y` to continue twice. If you get an error, make sure you ran `pnpm clean-compile` at least once before!
 
 The expected output is show below. For local development, if addresses are different, please review env variables to make sure you get the correct values.
 
@@ -314,9 +311,9 @@ Note, that if you do not manually call the `precompute-solidity-hashes.ts` scrip
 You can set up aliases locally to make development smoother. Note, that you will need to update the path to the code to the location on your own computer.
 
 ```shell
-alias protbuild="cd ~/path/to/protocol && yarn install && yarn clean-compile && yarn anvil"
+alias protbuild="cd ~/path/to/protocol && pnpm install && pnpm clean-compile && pnpm anvil"
 
-alias protdeploy="cd ~/path/to/protocol && yarn deploy-x2"
+alias protdeploy="cd ~/path/to/protocol && pnpm deploy-x2"
 ```
 
 Then you can run `protbuild` and then `protdeploy` to set up the project locally.
@@ -327,18 +324,18 @@ Then you can run `protbuild` and then `protdeploy` to set up the project locally
 
 There are two sets of tests. The main test suite uses Hardhat. To run them start your local chains that the contracts will be deployed to using:
 
-`yarn anvil`
+`pnpm anvil`
 
 Keep in mind that two networks are spun up in order to facilitate the multichain tests that bridge from one network to the other.
 Next run the hardhat tests with:
 
-`yarn test`
+`pnpm test`
 
 The newer tests for Drops use Foundry. Please make sure you have Foundry installed by following the instructions [here](https://github.com/foundry-rs/foundry).
 
 Currently, the Foundry tests require "forking" from a local chain that has the rest of the Holograph protocol contracts already deployed. To do this, with the local anvil chains still running from the `anvil` command mentioned above, run deploy with:
 
-`yarn deploy:localhost`
+`pnpm deploy:localhost`
 
 Then you can run the Foundry tests with:
 
@@ -348,7 +345,7 @@ Then you can run the Foundry tests with:
 
 **Before pushing your work to the repo, make sure to prepare your code**
 
-Please make use of the `yarn run prettier:fix` command to format the codebase into a universal style.
+Please make use of the `pnpm run prettier:fix` command to format the codebase into a universal style.
 
 ## Directory Structure
 
@@ -356,11 +353,10 @@ Please make use of the `yarn run prettier:fix` command to format the codebase in
 root
 
 ├── <a href="./config">config</a>: Network configuration files
-├── <a href="./contracts">contracts</a>: Smart contracts that power the Holograph protocol
+├── <a href="./src">contracts</a>: Smart contracts that power the Holograph protocol
 ├── <a href="./deploy">deploy</a>: Deployment scripts for the smart contracts uses <a href="https://hardhat.org/">Hardhat</a> and <a href="https://github.com/wighawag/hardhat-deploy">Hardhat Deploy</a>
 ├── <a href="./deployments">deployments</a>: Deployment build files that include contract addresses on each network
 ├── <a href="./scripts">scripts</a>: Scripts and helper utilities
-├── <a href="./src">src</a>: Source contracts that get dynamically transpiled down into the finalized output <a href="./contracts">contracts</a>
 └── <a href="./test">test</a>: Hardhat tests for the smart contracts
 </pre>
 
@@ -414,9 +410,9 @@ Our primary experimentation branch is [`experimental`](https://github.com/hologr
 3. Clean Repo
    1. Remove temp folders: [node_modules, artifacts, cache, cache_hardhat, dist, typechain-types, ganache]
 4. Run Tests
-   1. run `yarn clean-compile`
-   2. run `yarn anvil` - terminal 1
-   3. run `yarn deploy` - terminal 2
+   1. run `pnpm clean-compile`
+   2. run `pnpm anvil` - terminal 1
+   3. run `pnpm deploy` - terminal 2
 5. Run Deployments per environment, per supported network
 6. Validate Contracts on each network
 

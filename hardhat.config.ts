@@ -13,6 +13,9 @@ import { TASK_COMPILE_SOLIDITY_GET_SOURCE_PATHS } from 'hardhat/builtin-tasks/ta
 
 import { types, task, HardhatUserConfig } from 'hardhat/config';
 import './scripts/bridge-htokens';
+import './scripts/h-token-balance';
+import './scripts/extract-native-token';
+import '@holographxyz/hardhat-holograph-contract-builder';
 import { BigNumber, ethers } from 'ethers';
 import { Environment, getEnvironment } from '@holographxyz/environment';
 import { NetworkType, Network, Networks, networks } from '@holographxyz/networks';
@@ -161,74 +164,11 @@ task('deploy', 'Deploy contracts').setAction(async (args, hre, runSuper) => {
   return runSuper(args);
 });
 
-/**
- * Task to get the native token from the hToken contract
- * @param contract The address of the hToken contract
- * @param recipient The address of the recipient
- * @param amount The amount of hTokens to extract
- *
- * Run this task with:
- * npx hardhat extractNativeToken --contract [hTokenContractAddress] --recipient [recipientAddress] --amount [amount] --network [networkName]
- */
-
-task('extractNativeToken', 'Calls the extractNativeToken function in the hToken contract')
-  .addParam('contract', 'The address of the hToken contract')
-  .addParam('recipient', 'The address of the recipient')
-  .addParam('amount', 'The amount of hTokens to extract')
-  .setAction(async ({ contract, recipient, amount }, hre: HardhatRuntimeEnvironment) => {
-    const signer = (await hre.ethers.getSigners())[0]; // Get the first signer
-    // Get the contract's ABI from the compiled artifacts
-    const hTokenArtifact = await hre.artifacts.readArtifact('hToken');
-    const hTokenContract = new ethers.Contract(contract, hTokenArtifact.abi, signer);
-
-    // Convert amount to wei (or the equivalent smallest unit for other tokens)
-    const amountInWei = ethers.utils.parseEther(amount);
-
-    const tx = await hTokenContract.extractNativeToken(recipient, amountInWei);
-    console.log(`Transaction hash: ${tx.hash}`);
-
-    await tx.wait(); // Wait for the transaction to be mined
-    console.log(`Transaction confirmed in block: ${tx.blockNumber}`);
-  });
-
-/**
- * Task to get the hToken Balance
- * @param contract The address of the hToken contract
- * @param recipient The address of the recipient
- *
- * Run this task with:
- * npx hardhat hTokenBalance --contract [hTokenContractAddress] --recipient [recipientAddress] --network [networkName]
- */
-
-task('hTokenBalance', 'Calls the extractNativeToken function in the hToken contract')
-  .addParam('contract', 'The address of the hToken contract')
-  .addParam('recipient', 'The address of the recipient')
-  .setAction(async ({ contract, recipient, amount }, hre: HardhatRuntimeEnvironment) => {
-    const signer = (await hre.ethers.getSigners())[0]; // Get the first signer
-
-    // Get the contract's ABI from the compiled artifacts
-    const hTokenArtifact = await hre.artifacts.readArtifact('hToken');
-    const balanceOfAbi = {
-      inputs: [{ internalType: 'address', name: 'account', type: 'address' }],
-      name: 'balanceOf',
-      outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-      stateMutability: 'view',
-      type: 'function',
-    };
-    hTokenArtifact.abi.push(balanceOfAbi);
-
-    // singer address does not matter. We are only reading
-    const hTokenContract = new ethers.Contract(contract, hTokenArtifact.abi, signer);
-
-    const balanceOf = await hTokenContract.balanceOf(recipient);
-    console.log(`hTokens available: ${balanceOf.toString()} wei or ${ethers.utils.formatEther(balanceOf)} ETH`);
-  });
-
 task('abi', 'Create standalone ABI files for all smart contracts')
   .addOptionalParam('silent', 'Provide less details in the output', false, types.boolean)
   .setAction(async (args, hre) => {
     if (!fs.existsSync('./artifacts')) {
-      throw new Error('The directory "artifacts" was not found. Make sure you run "yarn compile" first.');
+      throw new Error('The directory "artifacts" was not found. Make sure you run "pnpm compile" first.');
     }
     const recursiveDelete = function (dir: string) {
       const files = fs.readdirSync(dir, { withFileTypes: true });
@@ -266,7 +206,7 @@ task('abi', 'Create standalone ABI files for all smart contracts')
     } else {
       recursiveDelete('./abi/' + currentEnvironment);
     }
-    extractABIs('./artifacts/contracts', './abi/' + currentEnvironment);
+    extractABIs('./artifacts/src', './abi/' + currentEnvironment);
   });
 
 /**
@@ -291,7 +231,7 @@ const config: HardhatUserConfig = {
     }),
   },
   paths: {
-    sources: 'contracts',
+    sources: 'src',
     cache: 'cache_hardhat',
     deployments: DEPLOYMENT_PATH + '/' + currentEnvironment,
   },

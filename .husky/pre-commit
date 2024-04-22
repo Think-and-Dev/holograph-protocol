@@ -43,3 +43,4 @@ fi
 echo "👉 Checking gas snapshots..."
 npm run snapshot:check
 echo "✅ Gas snapshots are up to date.\n\n"
+
