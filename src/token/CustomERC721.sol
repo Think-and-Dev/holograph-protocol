@@ -665,7 +665,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   /**
    *  We override the `lazyMint` function, and use the `_data` parameter for storing encrypted metadata
    *  for 'delayed reveal' NFTs.
-   *  TODO: Should we keep this function public ? (lazy mints are done in the init function)
    */
   function lazyMint(
     uint256 _amount,
