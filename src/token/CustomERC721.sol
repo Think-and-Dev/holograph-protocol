@@ -500,26 +500,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
    */
 
   /**
-   *  We override the `lazyMint` function, and use the `_data` parameter for storing encrypted metadata
-   *  for 'delayed reveal' NFTs.
-   *  TODO: Should we keep this function public ? (lazy mints are done in the init function)
-   */
-  function lazyMint(
-    uint256 _amount,
-    string memory _baseURIForTokens,
-    bytes memory _data
-  ) internal override returns (uint256 batchId) {
-    if (_data.length > 0) {
-      (bytes memory encryptedURI, bytes32 provenanceHash) = abi.decode(_data, (bytes, bytes32));
-      if (encryptedURI.length != 0 && provenanceHash != "") {
-        _setEncryptedData(nextTokenIdToLazyMint + _amount, _data);
-      }
-    }
-
-    return super.lazyMint(_amount, _baseURIForTokens, _data);
-  }
-
-  /**
    * @notice Admin mint tokens to a recipient for free
    * @param recipient recipient to mint to
    * @param quantity quantity to mint
@@ -681,6 +661,26 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
    * INTERNAL FUNCTIONS
    * state changing
    */
+
+  /**
+   *  We override the `lazyMint` function, and use the `_data` parameter for storing encrypted metadata
+   *  for 'delayed reveal' NFTs.
+   *  TODO: Should we keep this function public ? (lazy mints are done in the init function)
+   */
+  function lazyMint(
+    uint256 _amount,
+    string memory _baseURIForTokens,
+    bytes memory _data
+  ) internal override returns (uint256 batchId) {
+    if (_data.length > 0) {
+      (bytes memory encryptedURI, bytes32 provenanceHash) = abi.decode(_data, (bytes, bytes32));
+      if (encryptedURI.length != 0 && provenanceHash != "") {
+        _setEncryptedData(nextTokenIdToLazyMint + _amount, _data);
+      }
+    }
+
+    return super.lazyMint(_amount, _baseURIForTokens, _data);
+  }
 
   /// @dev Checks whether NFTs can be revealed in the given execution context.
   function _canReveal() internal view virtual returns (bool) {
