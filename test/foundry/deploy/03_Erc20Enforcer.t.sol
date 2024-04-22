@@ -77,31 +77,59 @@ contract Erc20Enforcer is Test {
       );
   }
 
+  /*
+   * HELPER FUNCTIONS
+   */
+
+  /**
+   * @notice Mints the specified `initialValue` to the address `alice`
+   * @dev This test function mints the specified `initialValue` to the address `alice` using the `mint` function of the `sampleERC20` contract.
+   */
   function mintToAlice() public {
     vm.prank(deployer);
     sampleERC20.mint(alice, initialValue);
   }
 
+  /**
+   * @notice Mints the specified `initialValue` to the deployer address
+   * @dev This test function mints the specified `initialValue` to the deployer address using the `mint` function of the `sampleERC20` contract.
+   */
   function mintToDeployer() public {
     vm.prank(deployer);
     sampleERC20.mint(deployer, initialValue);
   }
 
+  /**
+   * @notice Approves `amount` tokens for `alice` from the deployer address
+   * @dev This test function approves `amount` tokens for `alice` from the deployer address using the `approve` function of the `holographERC20` contract.
+   */
   function approvalToAlice(uint256 amount) public {
     vm.prank(deployer);
     holographERC20.approve(alice, amount);
   }
 
+  /**
+   * @notice Approves `amount` tokens for `bob` from the deployer address
+   * @dev This test function approves `amount` tokens for `bob` from the deployer address using the `approve` function of the `holographERC20` contract.
+   */
   function approvalToBob(uint256 amount) public {
     vm.prank(deployer);
     holographERC20.approve(bob, amount);
   }
 
+  /**
+   * @notice Increases the allowance of `alice` by `amount` tokens from the deployer address
+   * @dev This test function increases the allowance of `alice` by `amount` tokens from the deployer address using the `increaseAllowance` function of the `holographERC20` contract.
+   */
   function increaseAllowanceToAlice(uint256 amount) public {
     vm.prank(deployer);
     holographERC20.increaseAllowance(alice, amount);
   }
 
+  /**
+   * @notice Decreases the allowance of `alice` by `amount` tokens from the deployer address
+   * @dev This test function decreases the allowance of `alice` by `amount` tokens from the deployer address using the `decreaseAllowance` function of the `holographERC20` contract.
+   */
   function decreaseAllowanceToAlice(uint256 amount) public {
     vm.prank(deployer);
     holographERC20.decreaseAllowance(alice, amount);
