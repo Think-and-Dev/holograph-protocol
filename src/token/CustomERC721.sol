@@ -638,8 +638,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     return msgSender() == _getOwner();
   }
 
-  // TODO: We need to recreate these functions in a way that is compatible with HolographERC721 internal indexes
-  // Please double check this logic
   /**
    * Returns the total amount of tokens minted in the contract.
    */
