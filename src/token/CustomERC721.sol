@@ -177,8 +177,12 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   /**
    * @notice Initialize the lazy minting for the contract
    * @dev This function also synchronizes the metadata with the prepended tokenID 
+   * @dev This function should be called after the contract is initialized
    */
-  function initLazyMint() external override onlyOwner returns (uint256 chainPrepend) {
+  function syncLazyMint() external override onlyOwner returns (uint256 chainPrepend) {
+    // Check if the contract is initialized
+    if(!_isInitialized()) revert NotInitialized();
+    // Check if the lazy minting is already initialized
     if(_isLazyMintInitialized()) revert LazyMint_AlreadyInitialized();
 
     // Setup the lazy minting
@@ -504,7 +508,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     uint256 _amount,
     string memory _baseURIForTokens,
     bytes memory _data
-  ) public override returns (uint256 batchId) {
+  ) internal override returns (uint256 batchId) {
     if (_data.length > 0) {
       (bytes memory encryptedURI, bytes32 provenanceHash) = abi.decode(_data, (bytes, bytes32));
       if (encryptedURI.length != 0 && provenanceHash != "") {

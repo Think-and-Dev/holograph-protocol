@@ -112,5 +112,5 @@ interface LazyMintInitializableInterface {
    * @notice Used internally to initialize the contract instead of through a constructor
    * @dev This function is called by the deployer/factory when creating a contract
    */
-  function initLazyMint() external returns (uint256);
+  function syncLazyMint() external returns (uint256);
 }

@@ -33,7 +33,7 @@ abstract contract LazyMint is ILazyMint, BatchMintMetadata {
     uint256 _amount,
     string memory _baseURIForTokens,
     bytes memory _data
-  ) public virtual override returns (uint256 batchId) {
+  ) internal virtual returns (uint256 batchId) {
     if (!_canLazyMint()) {
       revert LazyMintUnauthorized();
     }
