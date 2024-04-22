@@ -8,8 +8,8 @@ import {IQuoterV2} from "../../interface/IQuoterV2.sol";
 contract DropsPriceOracleBaseTestnetSepolia is Admin, Initializable {
   IQuoterV2 public quoterV2; // Immutable reference to the Quoter V2 interface
 
-  address public constant WETH9 = 0x4200000000000000000000000000000000000006; // WETH address on Base mainnet
-  address public constant USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913; // USDC address on Base mainnet
+  address public constant WETH9 = 0x4200000000000000000000000000000000000006; // WETH address on Base Sepolia testnet
+  address public constant USDC = 0x036CbD53842c5426634e7929541eC2318f3dCF7e; // USDC address on Base Sepolia testnet
 
   // Set the pool fee to 0.05% (the lowest option)
   uint24 public constant poolFee = 500;
@@ -54,9 +54,5 @@ contract DropsPriceOracleBaseTestnetSepolia is Admin, Initializable {
       .quoteExactOutputSingle(params);
 
     return amountIn; // this is the amount in wei to convert to the USDC value
-  }
-
-  function version() external pure returns (uint32) {
-    return 1;
   }
 }
