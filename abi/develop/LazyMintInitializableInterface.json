@@ -1,7 +1,7 @@
 [
   {
     "inputs": [],
-    "name": "initLazyMint",
+    "name": "syncLazyMint",
     "outputs": [
       {
         "internalType": "uint256",

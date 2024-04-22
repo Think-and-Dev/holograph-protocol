@@ -29,34 +29,5 @@
     ],
     "name": "TokensLazyMinted",
     "type": "event"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "baseURIForTokens",
-        "type": "string"
-      },
-      {
-        "internalType": "bytes",
-        "name": "extraData",
-        "type": "bytes"
-      }
-    ],
-    "name": "lazyMint",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "batchId",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
   }
 ]

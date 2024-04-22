@@ -133,12 +133,22 @@
   },
   {
     "inputs": [],
+    "name": "LazyMint_AlreadyInitialized",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "MintFee_FundsSendFailure",
     "type": "error"
   },
   {
     "inputs": [],
     "name": "Mint_SoldOut",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotInitialized",
     "type": "error"
   },
   {
@@ -834,19 +844,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "initLazyMint",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "chainPrepend",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -914,35 +911,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "_baseURIForTokens",
-        "type": "string"
-      },
-      {
-        "internalType": "bytes",
-        "name": "_data",
-        "type": "bytes"
-      }
-    ],
-    "name": "lazyMint",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "batchId",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1360,6 +1328,19 @@
       }
     ],
     "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "syncLazyMint",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "chainPrepend",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

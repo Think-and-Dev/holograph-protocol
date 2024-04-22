@@ -64,12 +64,22 @@
   },
   {
     "inputs": [],
+    "name": "LazyMint_AlreadyInitialized",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "MintFee_FundsSendFailure",
     "type": "error"
   },
   {
     "inputs": [],
     "name": "Mint_SoldOut",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotInitialized",
     "type": "error"
   },
   {
