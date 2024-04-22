@@ -5,9 +5,9 @@
 # ---------------------------------------------------------------------------- #
 
 # Compile the protocol
-yarn clean-compile
+pnpm clean-compile
 # Start the anvil nodes in the background
-yarn anvil &
+pnpm anvil &
 
 # ---------------------------------------------------------------------------- #
 #          Deploy the protocol when the anvil nodes are up and running         #
@@ -33,4 +33,4 @@ while [ $success -eq 0 ]; do
 done
 
 export SKIP_DEPLOY_CONFIRMATION=true
-yarn deploy-x2
+pnpm deploy-x2
