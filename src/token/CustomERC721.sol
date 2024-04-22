@@ -176,22 +176,22 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
 
   /**
    * @notice Initialize the lazy minting for the contract
-   * @dev This function also synchronizes the metadata with the prepended tokenID 
+   * @dev This function also synchronizes the metadata with the prepended tokenID
    * @dev This function should be called after the contract is initialized
    */
   function syncLazyMint() external override onlyOwner returns (uint256 chainPrepend) {
     // Check if the contract is initialized
-    if(!_isInitialized()) revert NotInitialized();
+    if (!_isInitialized()) revert NotInitialized();
     // Check if the lazy minting is already initialized
-    if(_isLazyMintInitialized()) revert LazyMint_AlreadyInitialized();
+    if (_isLazyMintInitialized()) revert LazyMint_AlreadyInitialized();
 
     // Setup the lazy minting
     HolographERC721Interface H721 = HolographERC721Interface(holographer());
     chainPrepend = H721.sourceGetChainPrepend() + 1;
-    
+
     // Sync batch metadata with the prepended tokenID
     uint256 batchIdsLength = batchIds.length;
-    for(uint256 i = 0; i < batchIdsLength; i++) {
+    for (uint256 i = 0; i < batchIdsLength; i++) {
       /* --------------------- Update storage with the prepend -------------------- */
 
       // Store the baseURI for the prepended tokenID
@@ -209,7 +209,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
       delete batchFrozen[batchIds[i]];
       // Clear the encrypted data for the original tokenID
       _setEncryptedData(batchIds[i], "");
-      
+
       // Update the batchId to the prepended tokenID
       batchIds[i] += chainPrepend;
     }
