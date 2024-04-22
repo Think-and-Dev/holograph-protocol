@@ -465,7 +465,9 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
 
   // Register CustomERC721
   const CustomERC721InitCode = generateInitCode(
-    ['tuple(uint64,uint96,address,address,string,uint16,tuple(uint104,uint32,uint64,uint64,uint64,uint64,bytes32))'],
+    [
+      'tuple(uint64,uint96,address,address,string,uint16,tuple(uint104,uint32,uint64,uint64,uint64,uint64,bytes32),tuple(uint256,string,bytes)[])',
+    ],
     [
       [
         550,
@@ -483,6 +485,18 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
           0, // presaleEnd
           '0x' + '00'.repeat(32), // presaleMerkleRoot
         ], // salesConfig
+        [
+          [
+            5,
+            'https://placeholder-uri1.com/',
+            '0x00000000000000000000000000000000000000000000000000000000000000406fb73a8c26bf89ea9a8fa8c927042b0c602dc7dffb4614376384cbe15ebc45b40000000000000000000000000000000000000000000000000000000000000014d74bef972bcac96c0d83b64734870bfe84912893000000000000000000000000',
+          ],
+          [
+            5,
+            'https://placeholder-uri2.com/',
+            '0x00000000000000000000000000000000000000000000000000000000000000406fb73a8c26bf89ea9a8fa8c927042b0c602dc7dffb4614376384cbe15ebc45b40000000000000000000000000000000000000000000000000000000000000014d74bef972bcac96c0d83b64734870bfe84912893000000000000000000000000',
+          ],
+        ],
       ],
     ]
   );

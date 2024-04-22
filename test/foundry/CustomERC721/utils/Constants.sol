@@ -14,7 +14,10 @@ bytes32 constant DEFAULT_PRESALE_MERKLE_ROOT = keccak256("random-merkle-root");
 /* ----------------------------- Collection data ---------------------------- */
 
 string constant DEFAULT_BASE_URI = "https://url.com/uri/";
+string constant DEFAULT_BASE_URI_2 = "https://url.com/uri2/";
 string constant DEFAULT_PLACEHOLDER_URI = "https://url.com/not-revealed/";
+string constant DEFAULT_PLACEHOLDER_URI_2 = "https://url.com/not-revealed-2/";
 bytes constant DEFAULT_ENCRYPT_DECRYPT_KEY = abi.encode("random-encrypt-decrypt-key");
+bytes constant DEFAULT_ENCRYPT_DECRYPT_KEY_2 = abi.encode("random-encrypt-decrypt-key-2");
 uint256 constant DEFAULT_MAX_SUPPLY = 4_000_000;
 uint256 constant DEFAULT_MINT_TIME_COST = 550;

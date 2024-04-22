@@ -125,7 +125,7 @@ abstract contract InitializableLazyMint is LazyMint, LazyMintInitializableInterf
    * @notice Used internally to initialize the contract instead of through a constructor
    * @dev This function is called by the deployer/factory when creating a contract
    */
-  function initLazyMint() external virtual returns (uint256);
+  function syncLazyMint() external virtual returns (uint256);
 
   function _isLazyMintInitialized() internal view returns (bool lazyMintInitialized) {
     assembly {

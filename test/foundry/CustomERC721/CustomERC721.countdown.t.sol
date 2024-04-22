@@ -12,17 +12,10 @@ import {DEFAULT_MAX_SUPPLY, DEFAULT_MINT_TIME_COST} from "test/foundry/CustomERC
 
 contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
   using Strings for uint256;
-  uint256 internal fuzzingMaxSupply;
 
   constructor() {}
 
   function setUp() public override {
-    try vm.envUint("FUZZING_MAX_SUPPLY") returns (uint256 result) {
-      fuzzingMaxSupply = result;
-    } catch {
-      fuzzingMaxSupply = 100;
-    }
-
     super.setUp();
   }
 

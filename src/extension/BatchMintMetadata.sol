@@ -7,7 +7,7 @@ pragma solidity ^0.8.0;
  *  @title   Batch-mint Metadata
  *  @notice  The `BatchMintMetadata` is a contract extension for any base NFT contract. It lets the smart contract
  *           using this extension set metadata for `n` number of NFTs all at once. This is enabled by storing a single
- *           base URI for a batch of `n` NFTs, where the metadata for each NFT in a relevant batch is `baseURI/tokenId`.
+ *           base URI for a batch of `n` NFTs, where the metadata for each NFT in a relevant batch is `baseURIs/tokenId`.
  */
 
 contract BatchMintMetadata {
@@ -20,11 +20,11 @@ contract BatchMintMetadata {
   /// @dev Metadata frozen
   error BatchMintMetadataFrozen(uint256 batchId);
 
-  /// @dev Largest tokenId of each batch of tokens with the same baseURI + 1 {ex: batchId 100 at position 0 includes tokens 0-99}
-  uint256[] private batchIds;
+  /// @dev Largest tokenId of each batch of tokens with the same baseURIs + 1 {ex: batchId 100 at position 0 includes tokens 0-99}
+  uint256[] internal batchIds;
 
   /// @dev Mapping from id of a batch of tokens => to base URI for the respective batch of tokens.
-  mapping(uint256 => string) private baseURI;
+  mapping(uint256 => string) internal baseURIs;
 
   /// @dev Mapping from id of a batch of tokens => to whether the base URI for the respective batch of tokens is frozen.
   mapping(uint256 => bool) public batchFrozen;
@@ -41,7 +41,7 @@ contract BatchMintMetadata {
 
   /**
    *  @notice         Returns the count of batches of NFTs.
-   *  @dev            Each batch of tokens has an in ID and an associated `baseURI`.
+   *  @dev            Each batch of tokens has an in ID and an associated `baseURIs`.
    *                  See {batchIds}.
    */
   function getBaseURICount() public view returns (uint256) {
@@ -77,14 +77,14 @@ contract BatchMintMetadata {
     revert BatchMintInvalidTokenId(_tokenId);
   }
 
-  /// @dev Returns the baseURI for a token. The intended metadata URI for the token is baseURI + tokenId.
+  /// @dev Returns the baseURIs for a token. The intended metadata URI for the token is baseURIs + tokenId.
   function _getBaseURI(uint256 _tokenId) internal view returns (string memory) {
     uint256 numOfTokenBatches = getBaseURICount();
     uint256[] memory indices = batchIds;
 
     for (uint256 i = 0; i < numOfTokenBatches; i += 1) {
       if (_tokenId < indices[i]) {
-        return baseURI[indices[i]];
+        return baseURIs[indices[i]];
       }
     }
 
@@ -109,35 +109,35 @@ contract BatchMintMetadata {
   }
 
   /// @dev Sets the base URI for the batch of tokens with the given batchId.
-  function _setBaseURI(uint256 _batchId, string memory _baseURI) internal {
+  function _setBaseURI(uint256 _batchId, string memory _baseURIs) internal {
     if (batchFrozen[_batchId]) {
       revert BatchMintMetadataFrozen(_batchId);
     }
-    baseURI[_batchId] = _baseURI;
+    baseURIs[_batchId] = _baseURIs;
     emit BatchMetadataUpdate(_getBatchStartId(_batchId), _batchId);
   }
 
   /// @dev Freezes the base URI for the batch of tokens with the given batchId.
   function _freezeBaseURI(uint256 _batchId) internal {
-    string memory baseURIForBatch = baseURI[_batchId];
-    if (bytes(baseURIForBatch).length == 0) {
+    string memory baseURIsForBatch = baseURIs[_batchId];
+    if (bytes(baseURIsForBatch).length == 0) {
       revert BatchMintInvalidBatchId(_batchId);
     }
     batchFrozen[_batchId] = true;
     emit MetadataFrozen();
   }
 
-  /// @dev Mints a batch of tokenIds and associates a common baseURI to all those Ids.
+  /// @dev Mints a batch of tokenIds and associates a common baseURIs to all those Ids.
   function _batchMintMetadata(
     uint256 _startId,
     uint256 _amountToMint,
-    string memory _baseURIForTokens
+    string memory _baseURIsForTokens
   ) internal returns (uint256 nextTokenIdToMint, uint256 batchId) {
     batchId = _startId + _amountToMint;
     nextTokenIdToMint = batchId;
 
     batchIds.push(batchId);
 
-    baseURI[batchId] = _baseURIForTokens;
+    baseURIs[batchId] = _baseURIsForTokens;
   }
 }

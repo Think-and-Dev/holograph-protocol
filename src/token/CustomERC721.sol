@@ -145,6 +145,19 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
       revert CountdownEndMustBeDivisibleByMintTimeCost(initializer.countdownEnd, initializer.mintTimeCost);
     }
 
+    // Init the lazy mints
+    for (uint256 i = 0; i < initializer.lazyMintsConfigurations.length; ) {
+      lazyMint(
+        initializer.lazyMintsConfigurations[i]._amount,
+        initializer.lazyMintsConfigurations[i]._baseURIForTokens,
+        initializer.lazyMintsConfigurations[i]._data
+      );
+
+      unchecked {
+        i++;
+      }
+    }
+
     // Setup config variables
     config = CustomERC721Configuration({
       mintTimeCost: initializer.mintTimeCost,
@@ -162,16 +175,44 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   }
 
   /**
-   * @notice Used internally to initialize the contract instead of through a constructor
-   * @dev This function is called by the deployer/factory when creating a contract
+   * @notice Initialize the lazy minting for the contract
+   * @dev This function also synchronizes the metadata with the prepended tokenID
+   * @dev This function should be called after the contract is initialized
    */
-  function initLazyMint() external override onlyOwner returns (uint256 chainPrepend) {
-    require(!_isLazyMintInitialized(), "HOLOGRAPH: lazy mint already initialized");
+  function syncLazyMint() external override onlyOwner returns (uint256 chainPrepend) {
+    // Check if the contract is initialized
+    if (!_isInitialized()) revert NotInitialized();
+    // Check if the lazy minting is already initialized
+    if (_isLazyMintInitialized()) revert LazyMint_AlreadyInitialized();
 
     // Setup the lazy minting
     HolographERC721Interface H721 = HolographERC721Interface(holographer());
     chainPrepend = H721.sourceGetChainPrepend() + 1;
-    nextTokenIdToLazyMint = chainPrepend;
+
+    // Sync batch metadata with the prepended tokenID
+    uint256 batchIdsLength = batchIds.length;
+    for (uint256 i = 0; i < batchIdsLength; i++) {
+      /* --------------------- Update storage with the prepend -------------------- */
+
+      // Store the baseURI for the prepended tokenID
+      baseURIs[batchIds[i] + chainPrepend] = baseURIs[batchIds[i]];
+      // Store the frozen status for the prepended tokenID
+      batchFrozen[batchIds[i] + chainPrepend] = batchFrozen[batchIds[i]];
+      // Store the encrypted data for the prepended tokenID
+      _setEncryptedData(batchIds[i] + chainPrepend, encryptedData[batchIds[i]]);
+
+      /* ---------------------------- Clearing storage ---------------------------- */
+
+      // Clear the baseURI for the original tokenID
+      delete baseURIs[batchIds[i]];
+      // Clear the frozen status for the original tokenID
+      delete batchFrozen[batchIds[i]];
+      // Clear the encrypted data for the original tokenID
+      _setEncryptedData(batchIds[i], "");
+
+      // Update the batchId to the prepended tokenID
+      batchIds[i] += chainPrepend;
+    }
 
     _setLazyMintInitialized();
   }
@@ -459,25 +500,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
    */
 
   /**
-   *  We override the `lazyMint` function, and use the `_data` parameter for storing encrypted metadata
-   *  for 'delayed reveal' NFTs.
-   */
-  function lazyMint(
-    uint256 _amount,
-    string calldata _baseURIForTokens,
-    bytes calldata _data
-  ) public override returns (uint256 batchId) {
-    if (_data.length > 0) {
-      (bytes memory encryptedURI, bytes32 provenanceHash) = abi.decode(_data, (bytes, bytes32));
-      if (encryptedURI.length != 0 && provenanceHash != "") {
-        _setEncryptedData(nextTokenIdToLazyMint + _amount, _data);
-      }
-    }
-
-    return super.lazyMint(_amount, _baseURIForTokens, _data);
-  }
-
-  /**
    * @notice Admin mint tokens to a recipient for free
    * @param recipient recipient to mint to
    * @param quantity quantity to mint
@@ -608,7 +630,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
 
   /// @dev Returns whether lazy minting can be done in the given execution context.
   function _canLazyMint() internal view override returns (bool) {
-    return ((msgSender() == _getOwner()) && _publicSaleActive()) || _presaleActive();
+    return !_isInitialized() || ((msgSender() == _getOwner()) && _publicSaleActive()) || _presaleActive();
   }
 
   /// @dev Checks whether contract metadata can be set in the given execution context.
@@ -639,6 +661,25 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
    * INTERNAL FUNCTIONS
    * state changing
    */
+
+  /**
+   *  We override the `lazyMint` function, and use the `_data` parameter for storing encrypted metadata
+   *  for 'delayed reveal' NFTs.
+   */
+  function lazyMint(
+    uint256 _amount,
+    string memory _baseURIForTokens,
+    bytes memory _data
+  ) internal override returns (uint256 batchId) {
+    if (_data.length > 0) {
+      (bytes memory encryptedURI, bytes32 provenanceHash) = abi.decode(_data, (bytes, bytes32));
+      if (encryptedURI.length != 0 && provenanceHash != "") {
+        _setEncryptedData(nextTokenIdToLazyMint + _amount, _data);
+      }
+    }
+
+    return super.lazyMint(_amount, _baseURIForTokens, _data);
+  }
 
   /// @dev Checks whether NFTs can be revealed in the given execution context.
   function _canReveal() internal view virtual returns (bool) {
