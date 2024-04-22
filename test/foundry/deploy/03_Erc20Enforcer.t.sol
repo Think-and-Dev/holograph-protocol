@@ -106,7 +106,7 @@ contract Erc20Enforcer is Test {
    */
 
   function testSupportinterface() public {
-    bytes4 selector = holographERC20.totalSupply.selector;
+    bytes4 selector = holographERC20.supportsInterface.selector;
     holographERC20.supportsInterface(selector);
   }
 
