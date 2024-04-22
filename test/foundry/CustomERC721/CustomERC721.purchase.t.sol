@@ -22,13 +22,12 @@ contract CustomERC721PurchaseTest is CustomERC721Fixture, ICustomERC721Errors {
   }
 
   function test_DeployHolographCustomERC721() public {
-    super.deployAndSetupProtocol(DEFAULT_MAX_SUPPLY);
+    super.deployAndSetupProtocol(DEFAULT_MAX_SUPPLY, false);
     assertEq(customErc721.version(), 1);
   }
 
   function test_Purchase() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) setUpPurchase {
     /* -------------------------------- Purchase -------------------------------- */
-
     vm.prank(address(TEST_ACCOUNT));
     vm.deal(address(TEST_ACCOUNT), totalCost);
     uint256 tokenId = customErc721.purchase{value: totalCost}(1);
