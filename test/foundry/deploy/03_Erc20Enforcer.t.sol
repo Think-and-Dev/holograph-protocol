@@ -45,6 +45,12 @@ contract Erc20Enforcer is Test {
   uint256 badDeadLine;
   uint256 goodDeadLine;
 
+  /**
+   * @notice Initializes the test environment and sets up contract instances
+   * @dev This function initializes the test environment by creating a fork of the local blockchain, setting the fork, and
+   * instantiating contract instances for ERC20Mock, HolographERC20, SampleERC20, and Admin. It also sets up some initial
+   * values for deadlines and creates a new instance of PermitSigUtils.
+   */
   function setUp() public {
     localHostFork = vm.createFork(LOCALHOST_RPC_URL);
     vm.selectFork(localHostFork);
@@ -57,6 +63,15 @@ contract Erc20Enforcer is Test {
     permitSigUtils = new PermitSigUtils(holographERC20.DOMAIN_SEPARATOR());
   }
 
+  /**
+   * @notice Computes the EIP-712 domain separator for the Holograph ERC20 Enforcer contract
+   * @dev This function computes the EIP-712 domain separator for the Holograph ERC20 Enforcer contract by hashing the name,
+   * version, chain ID, and contract address using the `keccak256` function.
+   * @param name The name of the contract
+   * @param version The version of the contract
+   * @param contractAddress The address of the contract
+   * @return The computed EIP-712 domain separator
+   */
   function buildDomainSeparator(
     string memory name,
     string memory version,
