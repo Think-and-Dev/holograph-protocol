@@ -29,7 +29,8 @@ git add .
 ## check for env feature flag for natspec-smells. Default to true
 if [ "$SKIP_NATSPEC_SMELLS" = "true" ]; then
   echo "👉 Skipping natspec-smells check..."
-  echo "✅ natspec-smells check skipped.\n"
+  echo "⛔️ WARNING: natspec-smells check has been skipped. THIS IS NOT THE RECOMMENDED PRACTICE."
+
   exit 0
 else
   echo "👉 Checking for missing natspecs..."
