@@ -40,19 +40,18 @@ contract DropsPriceOracleBaseTestnetSepolia is Admin, Initializable {
    * @param usdAmount in USDC (6 decimal places)
    */
   function convertUsdToWei(uint256 usdAmount) external returns (uint256 weiAmount) {
-    require(address(quoterV2) != address(0), "Quoter not set");
-
-    IQuoterV2.QuoteExactOutputSingleParams memory params = IQuoterV2.QuoteExactOutputSingleParams({
-      tokenIn: WETH9, // WETH address
-      tokenOut: USDC, // USDC address
-      fee: poolFee, // Representing 0.05% pool fee
-      amount: usdAmount, // USDC (USDC has 6 decimals)
-      sqrtPriceLimitX96: 0 // No specific price limit
-    });
-
-    (uint256 amountIn, uint160 sqrtPriceX96After, uint32 initializedTicksCrossed, uint256 gasEstimate) = quoterV2
-      .quoteExactOutputSingle(params);
-
-    return amountIn; // this is the amount in wei to convert to the USDC value
+    // NOTE: The following code is commented out because the QuoterV2 contract is not properly wired up to a functional Uniswap V3 pool on the Sepolia testnet
+    // require(address(quoterV2) != address(0), "Quoter not set");
+    // IQuoterV2.QuoteExactOutputSingleParams memory params = IQuoterV2.QuoteExactOutputSingleParams({
+    //   tokenIn: WETH9, // WETH address
+    //   tokenOut: USDC, // USDC address
+    //   fee: poolFee, // Representing 0.05% pool fee
+    //   amount: usdAmount, // USDC (USDC has 6 decimals)
+    //   sqrtPriceLimitX96: 0 // No specific price limit
+    // });
+    // (uint256 amountIn, uint160 sqrtPriceX96After, uint32 initializedTicksCrossed, uint256 gasEstimate) = quoterV2
+    //   .quoteExactOutputSingle(params);
+    // return amountIn; // this is the amount in wei to convert to the USDC value
+    weiAmount = 3097578139223040;
   }
 }
