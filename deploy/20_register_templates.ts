@@ -464,27 +464,20 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
   }
 
   // Register CustomERC721
+
+  // Deploy the CustomERC721 custom contract source
   const CustomERC721InitCode = generateInitCode(
     [
-      'tuple(uint64,uint96,address,address,string,uint16,tuple(uint104,uint32,uint64,uint64,uint64,uint64,bytes32),tuple(uint256,string,bytes)[])',
+      'tuple(uint40,uint32,uint24,address,string,tuple(uint104,uint24,uint64,uint64,bytes32),tuple(uint256,string,bytes)[])',
     ],
     [
       [
-        550,
-        2200000000,
+        1718822400, // Epoch time for June 3, 2024
+        4173120, // Total number of ten-minute intervals until Oct 8, 2103
+        60, // Duration of each interval
         deployerAddress, // initialOwner
-        deployerAddress, // fundsRecipient
         '', // contractURI
-        1000, // 10% royalty
-        [
-          0, // publicSalePrice
-          0, // maxSalePurchasePerAddress
-          0, // publicSaleStart
-          0, // publicSaleEnd
-          0, // presaleStart
-          0, // presaleEnd
-          '0x' + '00'.repeat(32), // presaleMerkleRoot
-        ], // salesConfig
+        [0, 0, 0, 0, '0x' + '00'.repeat(32)], // salesConfig
         [
           [
             5,
@@ -500,6 +493,7 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
       ],
     ]
   );
+
   const futureCustomERC721Address = await genesisDeriveFutureAddress(hre, salt, 'CustomERC721', CustomERC721InitCode);
   console.log('the future "CustomERC721" address is', futureCustomERC721Address);
   const CustomERC721Hash = '0x' + web3.utils.asciiToHex('CustomERC721').substring(2).padStart(64, '0');
