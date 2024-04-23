@@ -51,6 +51,14 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   /// @dev This storage variable is set only once in the init and can be considered as immutable
   uint256 public MINT_INTERVAL;
 
+  /// @notice Getter for the end date
+  /// @dev This storage variable is set only once in the init and can be considered as immutable
+  uint256 public END_DATE;
+
+  /// @notice Getter for the initial end date
+  /// @dev This storage variable is set only once in the init and can be considered as immutable
+  uint256 public INITIAL_END_DATE;
+
   /**
    * @dev Address of the price oracle proxy
    */
@@ -166,6 +174,11 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     INITIAL_MAX_SUPPLY = initializer.initialMaxSupply;
     // Set the mint interval
     MINT_INTERVAL = initializer.mintInterval;
+
+    // Set the end dates
+    uint256 endDate = initializer.startDate + initializer.initialMaxSupply * initializer.mintInterval;
+    END_DATE = endDate;
+    INITIAL_END_DATE = endDate;
 
     salesConfig = initializer.salesConfiguration;
 
@@ -409,9 +422,14 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     }
 
     // Check if the countdown has ended
-    if (_currentTokenId + quantity > currentMaxSupply()) {
+    // NOTE: Plus 1 because if block.timestamp - END_DATE < MINT_INTERVAL && block.timestamp - END_DATE > 0 
+    //       we should still allow the mint.
+    if (block.timestamp > END_DATE - MINT_INTERVAL * (quantity + 1)) {
       revert Purchase_CountdownCompleted();
     }
+
+    // Update the end date by removing the quantity of mints times the mint interval
+    END_DATE = END_DATE - quantity * MINT_INTERVAL;
 
     uint256 remainder = msg.value - (salePrice * quantity);
 
