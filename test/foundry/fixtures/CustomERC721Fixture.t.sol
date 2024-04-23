@@ -174,6 +174,8 @@ contract CustomERC721Fixture is Test {
     uint256 nativeFee = dummyPriceOracle.convertUsdToWei(holographFee);
 
     totalCost = (nativePrice + nativeFee);
+
+    vm.warp(customErc721.START_DATE());
   }
 
   function deployAndSetupProtocol(uint256 maxSupply, bool skipLazyMintSync) internal returns (uint256) {
