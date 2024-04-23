@@ -50,7 +50,10 @@
     "lint:fix": "eslint . --ext .ts --config .eslintrc --fix",
     "prettier:check": "prettier --ignore-unknown --check \"deploy/**/*.ts\" \"test/**/*.ts\" \"scripts/**/*.ts\"",
     "prettier:fix": "prettier --loglevel error --ignore-path .gitignore --ignore-path **/lib --write .",
-    "prettier:deployments": "hardhat deploymentsPrettier"
+    "prettier:deployments": "hardhat deploymentsPrettier",
+    "natspec": "npx natspec-smells &> natspec-smells.report.txt",
+    "snapshot": "FOUNDRY_PROFILE=ci forge snapshot --no-match-test \"(FFI|Fork|Fuzz)\" --offline",
+    "snapshot:check": "FOUNDRY_PROFILE=ci forge snapshot --no-match-test \"(FFI|Fork|Fuzz)\" --check --offline"
   },
   "dependencies": {
     "@ethersproject/abstract-provider": "^5.7.0",
@@ -73,7 +76,8 @@
   },
   "devDependencies": {
     "@anders-t/ethers-ledger": "^1.0.4",
-    "@nomicfoundation/hardhat-foundry": "1.0.1",
+    "@defi-wonderland/natspec-smells": "^1.1.1",
+    "@nomicfoundation/hardhat-foundry": "^1.0.1",
     "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers@^0.3.0-beta.13",
     "@nomiclabs/hardhat-etherscan": "3.1.7",
     "@nomiclabs/hardhat-waffle": "2.0.5",
