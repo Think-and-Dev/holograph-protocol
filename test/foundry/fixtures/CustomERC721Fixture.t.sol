@@ -113,13 +113,13 @@ contract CustomERC721Fixture is Test {
     }
   }
 
-  modifier setupTestCustomERC21(uint256 maxSupply) {
+  modifier setupTestCustomERC21(uint32 maxSupply) {
     chainPrepend = deployAndSetupProtocol(maxSupply, false);
 
     _;
   }
 
-  modifier setupTestCustomERC21WithoutLazyMintSync(uint256 maxSupply) {
+  modifier setupTestCustomERC21WithoutLazyMintSync(uint32 maxSupply) {
     chainPrepend = deployAndSetupProtocol(maxSupply, true);
 
     _;
@@ -178,7 +178,7 @@ contract CustomERC721Fixture is Test {
     vm.warp(customErc721.START_DATE());
   }
 
-  function deployAndSetupProtocol(uint256 maxSupply, bool skipLazyMintSync) internal returns (uint256) {
+  function deployAndSetupProtocol(uint32 maxSupply, bool skipLazyMintSync) internal returns (uint256) {
     // Setup sale config for edition
     CustomERC721SalesConfiguration memory saleConfig = CustomERC721SalesConfiguration({
       presaleStart: 0, // never starts
@@ -191,7 +191,7 @@ contract CustomERC721Fixture is Test {
     // Create initializer
     CustomERC721Initializer memory initializer = CustomERC721Initializer({
       startDate: DEFAULT_START_DATE,
-      initialMaxSupply: DEFAULT_MAX_SUPPLY,
+      initialMaxSupply: maxSupply,
       mintInterval: DEFAULT_MINT_INTERVAL,
       initialOwner: payable(DEFAULT_OWNER_ADDRESS),
       contractURI: "https://example.com/metadata.json",
@@ -242,7 +242,7 @@ contract CustomERC721Fixture is Test {
   }
 
   function _purchaseAllSupply() internal {
-    for (uint256 i = 0; i < customErc721.maxSupply(); i++) {
+    for (uint256 i = 0; i < customErc721.currentMaxSupply(); i++) {
       address user = address(uint160(uint256(keccak256(abi.encodePacked(i)))));
       vm.startPrank(address(user));
       vm.deal(address(user), totalCost);

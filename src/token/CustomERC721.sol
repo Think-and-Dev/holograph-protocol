@@ -17,7 +17,6 @@ import {HolographTreasuryInterface} from "../interface/HolographTreasuryInterfac
 import {InitializableLazyMint} from "../extension/InitializableLazyMint.sol";
 
 import {AddressMintDetails} from "../drops/struct/AddressMintDetails.sol";
-import {CustomERC721Configuration} from "../struct/CustomERC721Configuration.sol";
 import {CustomERC721Initializer} from "../struct/CustomERC721Initializer.sol";
 import {CustomERC721SaleDetails} from "src/struct/CustomERC721SaleDetails.sol";
 import {CustomERC721SalesConfiguration} from "src/struct/CustomERC721SalesConfiguration.sol";
@@ -64,11 +63,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
 
   /// @dev Gas limit for transferring funds
   uint256 private constant STATIC_GAS_LIMIT = 210_000;
-
-  /**
-   * @notice Configuration for NFT minting contract storage
-   */
-  CustomERC721Configuration public config;
 
   /**
    * @notice Sales configuration
@@ -254,14 +248,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     return (_getOwner() == user);
   }
 
-  function maxSupply() public view returns (uint256) {
-    return config.initialCountdownEnd / config.mintTimeCost;
-  }
-
-  function currentEndDate() public view returns (uint96) {
-    return config.countdownEnd;
-  }
-
   function currentMaxSupply() public view returns (uint256) {
     if (block.timestamp <= START_DATE) {
       return INITIAL_MAX_SUPPLY;
@@ -288,7 +274,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
         presaleEnd: salesConfig.presaleEnd,
         presaleMerkleRoot: salesConfig.presaleMerkleRoot,
         totalMinted: _currentTokenId,
-        maxSupply: maxSupply(),
+        maxSupply: currentMaxSupply(),
         maxSalePurchasePerAddress: salesConfig.maxSalePurchasePerAddress
       });
   }
@@ -573,48 +559,9 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   }
 
   /**
-   * @notice This withdraws native tokens from the contract to the contract owner.
-   */
-  function withdraw() external override nonReentrant {
-    if (config.fundsRecipient == address(0)) {
-      revert("Funds Recipient address not set");
-    }
-    address sender = msgSender();
-
-    // Get the contract balance
-    uint256 funds = address(this).balance;
-
-    // Check if withdraw is allowed for sender
-    if (sender != config.fundsRecipient && sender != _getOwner()) {
-      revert Access_WithdrawNotAllowed();
-    }
-
-    // Payout recipient
-    (bool successFunds, ) = config.fundsRecipient.call{value: funds, gas: STATIC_GAS_LIMIT}("");
-    if (!successFunds) {
-      revert Withdraw_FundsSendFailure();
-    }
-
-    // Emit event for indexing
-    emit FundsWithdrawn(sender, config.fundsRecipient, funds);
-  }
-
-  /**
    * INTERNAL FUNCTIONS
    * non state changing
    */
-
-  function getMintTimeCost() external view returns (uint64) {
-    return config.mintTimeCost;
-  }
-
-  function getCountdownEnd() external view returns (uint96) {
-    return config.countdownEnd;
-  }
-
-  function getInitialCountdownEnd() external view returns (uint96) {
-    return config.initialCountdownEnd;
-  }
 
   function _presaleActive() internal view returns (bool) {
     return salesConfig.presaleStart <= block.timestamp && salesConfig.presaleEnd > block.timestamp;
@@ -691,9 +638,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     HolographERC721Interface H721 = HolographERC721Interface(holographer());
     uint256 chainPrepend = H721.sourceGetChainPrepend();
     uint224 tokenId = 0;
-
-    // Subtract the time cost from the countdown
-    config.countdownEnd -= uint96(config.mintTimeCost * quantity);
 
     for (uint256 i = 0; i != quantity; ) {
       unchecked {
