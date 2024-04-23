@@ -8,7 +8,7 @@ import {CustomERC721Fixture} from "test/foundry/fixtures/CustomERC721Fixture.t.s
 
 import {Strings} from "src/library/Strings.sol";
 
-import {DEFAULT_MAX_SUPPLY, DEFAULT_MINT_TIME_COST} from "test/foundry/CustomERC721/utils/Constants.sol";
+import {DEFAULT_MAX_SUPPLY, DEFAULT_MINT_INTERVAL} from "test/foundry/CustomERC721/utils/Constants.sol";
 
 contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
   using Strings for uint256;
@@ -21,24 +21,24 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
 
   function test_getMintTimeCost() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) setUpPurchase {
     uint64 mintTimeCost = customErc721.getMintTimeCost();
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
+    assertEq(mintTimeCost, DEFAULT_MINT_INTERVAL, "Mint time cost should be DEFAULT_MINT_INTERVAL");
   }
 
   function test_getCountdownEnd() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) setUpPurchase {
     uint96 countdownEnd = customErc721.getCountdownEnd();
-    assertEq(countdownEnd, DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST");
+    assertEq(countdownEnd, DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL");
   }
 
   function test_getInitialCountdownEnd() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) setUpPurchase {
     uint96 initialCountdownEnd = customErc721.getInitialCountdownEnd();
-    assertEq(initialCountdownEnd, DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST, "Initial countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST");
+    assertEq(initialCountdownEnd, DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL, "Initial countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL");
   }
 
   function test_SubCountdown() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) setUpPurchase {
     /* -------------------------- Initialization checks ------------------------- */
     (uint64 mintTimeCost, uint96 countdownEnd, uint96 initialCountdownEnd, , ) = customErc721.config();
-    assertEq(countdownEnd, DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST");
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
+    assertEq(countdownEnd, DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL");
+    assertEq(mintTimeCost, DEFAULT_MINT_INTERVAL, "Mint time cost should be DEFAULT_MINT_INTERVAL");
     assertTrue(initialCountdownEnd == countdownEnd, "Initial countdown end should be equal to countdown end");
     assertTrue(countdownEnd % mintTimeCost == 0, "Countdown end should be divisible by mint time cost");
 
@@ -50,8 +50,8 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
 
     /* ----------------------------- Countdown checks ---------------------------- */
     (mintTimeCost, countdownEnd, initialCountdownEnd, , ) = customErc721.config();
-    assertEq(countdownEnd, DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST - mintTimeCost, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST - mint time cost");
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
+    assertEq(countdownEnd, DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL - mintTimeCost, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL - mint time cost");
+    assertEq(mintTimeCost, DEFAULT_MINT_INTERVAL, "Mint time cost should be DEFAULT_MINT_INTERVAL");
     assertTrue(
       initialCountdownEnd == countdownEnd + mintTimeCost,
       "Initial countdown end should be equal to countdown end + mint time cost"
@@ -62,8 +62,8 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
   function test_SubCountdownMultiplePurchase() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) setUpPurchase {
     /* -------------------------- Initialization checks ------------------------- */
     (uint64 mintTimeCost, uint96 countdownEnd, uint96 initialCountdownEnd, , ) = customErc721.config();
-    assertEq(countdownEnd, DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST");
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
+    assertEq(countdownEnd, DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL");
+    assertEq(mintTimeCost, DEFAULT_MINT_INTERVAL, "Mint time cost should be DEFAULT_MINT_INTERVAL");
     assertTrue(initialCountdownEnd == countdownEnd, "Initial countdown end should be equal to countdown end");
     assertTrue(countdownEnd % mintTimeCost == 0, "Countdown end should be divisible by mint time cost");
 
@@ -77,10 +77,10 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
     (mintTimeCost, countdownEnd, initialCountdownEnd, , ) = customErc721.config();
     assertEq(
       countdownEnd,
-      DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST - mintTimeCost * amountToPurchase,
-      "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST - mint time cost * purchased amount"
+      DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL - mintTimeCost * amountToPurchase,
+      "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL - mint time cost * purchased amount"
     );
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
+    assertEq(mintTimeCost, DEFAULT_MINT_INTERVAL, "Mint time cost should be DEFAULT_MINT_INTERVAL");
     assertTrue(
       initialCountdownEnd == countdownEnd + mintTimeCost * amountToPurchase,
       "Initial countdown end should be equal to countdown end + mint time cost * purchased amount"
@@ -91,8 +91,8 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
   function test_CantExceedMaxSupply() public setupTestCustomERC21(2000) setUpPurchase {
     /* -------------------------- Initialization checks ------------------------- */
     (uint64 mintTimeCost, uint96 countdownEnd, uint96 initialCountdownEnd, , ) = customErc721.config();
-    assertEq(countdownEnd, 2000 * DEFAULT_MINT_TIME_COST, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST");
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
+    assertEq(countdownEnd, 2000 * DEFAULT_MINT_INTERVAL, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL");
+    assertEq(mintTimeCost, DEFAULT_MINT_INTERVAL, "Mint time cost should be DEFAULT_MINT_INTERVAL");
     assertTrue(initialCountdownEnd == countdownEnd, "Initial countdown end should be equal to countdown end");
     assertTrue(countdownEnd % mintTimeCost == 0, "Countdown end should be divisible by mint time cost");
 
@@ -103,10 +103,10 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
     (mintTimeCost, countdownEnd, initialCountdownEnd, , ) = customErc721.config();
     assertEq(
       countdownEnd,
-      customErc721.maxSupply() * DEFAULT_MINT_TIME_COST - mintTimeCost * customErc721.maxSupply(),
-      "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST - mint time cost * purchased amount"
+      customErc721.maxSupply() * DEFAULT_MINT_INTERVAL - mintTimeCost * customErc721.maxSupply(),
+      "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL - mint time cost * purchased amount"
     );
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
+    assertEq(mintTimeCost, DEFAULT_MINT_INTERVAL, "Mint time cost should be DEFAULT_MINT_INTERVAL");
     assertEq(
       initialCountdownEnd, countdownEnd + mintTimeCost * customErc721.maxSupply(),
       "Initial countdown end should be equal to countdown end + mint time cost * purchased amount"
@@ -138,8 +138,8 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
 
     /* -------------------------- Initialization checks ------------------------- */
     (uint64 mintTimeCost, uint96 countdownEnd, uint96 initialCountdownEnd, , ) = customErc721.config();
-    assertEq(countdownEnd, fuzzingMaxSupply * DEFAULT_MINT_TIME_COST, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST");
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
+    assertEq(countdownEnd, fuzzingMaxSupply * DEFAULT_MINT_INTERVAL, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL");
+    assertEq(mintTimeCost, DEFAULT_MINT_INTERVAL, "Mint time cost should be DEFAULT_MINT_INTERVAL");
     assertTrue(initialCountdownEnd == countdownEnd, "Initial countdown end should be equal to countdown end");
     assertTrue(countdownEnd % mintTimeCost == 0, "Countdown end should be divisible by mint time cost");
 
@@ -154,10 +154,10 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
     (mintTimeCost, countdownEnd, initialCountdownEnd, , ) = customErc721.config();
     assertEq(
       countdownEnd,
-      fuzzingMaxSupply * DEFAULT_MINT_TIME_COST - mintTimeCost * amountToPurchase,
-      "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST - mint time cost * purchased amount"
+      fuzzingMaxSupply * DEFAULT_MINT_INTERVAL - mintTimeCost * amountToPurchase,
+      "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL - mint time cost * purchased amount"
     );
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
+    assertEq(mintTimeCost, DEFAULT_MINT_INTERVAL, "Mint time cost should be DEFAULT_MINT_INTERVAL");
     assertTrue(
       initialCountdownEnd == countdownEnd + mintTimeCost * amountToPurchase,
       "Initial countdown end should be equal to countdown end + mint time cost * purchased amount"
@@ -175,8 +175,8 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
 
     /* -------------------------- Initialization checks ------------------------- */
     (uint64 mintTimeCost, uint96 countdownEnd, uint96 initialCountdownEnd, , ) = customErc721.config();
-    assertEq(countdownEnd, fuzzingMaxSupply * DEFAULT_MINT_TIME_COST, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST");
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
+    assertEq(countdownEnd, fuzzingMaxSupply * DEFAULT_MINT_INTERVAL, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL");
+    assertEq(mintTimeCost, DEFAULT_MINT_INTERVAL, "Mint time cost should be DEFAULT_MINT_INTERVAL");
     assertTrue(initialCountdownEnd == countdownEnd, "Initial countdown end should be equal to countdown end");
     assertTrue(countdownEnd % mintTimeCost == 0, "Countdown end should be divisible by mint time cost");
 
@@ -194,10 +194,10 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
     (mintTimeCost, countdownEnd, initialCountdownEnd, , ) = customErc721.config();
     assertEq(
       countdownEnd,
-      fuzzingMaxSupply * DEFAULT_MINT_TIME_COST - mintTimeCost * amountToPurchase,
-      "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST - mint time cost * purchased amount"
+      fuzzingMaxSupply * DEFAULT_MINT_INTERVAL - mintTimeCost * amountToPurchase,
+      "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL - mint time cost * purchased amount"
     );
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
+    assertEq(mintTimeCost, DEFAULT_MINT_INTERVAL, "Mint time cost should be DEFAULT_MINT_INTERVAL");
     assertTrue(
       initialCountdownEnd == countdownEnd + mintTimeCost * amountToPurchase,
       "Initial countdown end should be equal to countdown end + mint time cost * purchased amount"
@@ -210,8 +210,8 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
 
     /* -------------------------- Initialization checks ------------------------- */
     (uint64 mintTimeCost, uint96 countdownEnd, uint96 initialCountdownEnd, , ) = customErc721.config();
-    assertEq(countdownEnd, 100 * DEFAULT_MINT_TIME_COST, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST");
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
+    assertEq(countdownEnd, 100 * DEFAULT_MINT_INTERVAL, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL");
+    assertEq(mintTimeCost, DEFAULT_MINT_INTERVAL, "Mint time cost should be DEFAULT_MINT_INTERVAL");
     assertTrue(initialCountdownEnd == countdownEnd, "Initial countdown end should be equal to countdown end");
     assertTrue(countdownEnd % mintTimeCost == 0, "Countdown end should be divisible by mint time cost");
     
@@ -222,10 +222,10 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
     (mintTimeCost, countdownEnd, initialCountdownEnd, , ) = customErc721.config();
     assertEq(
       countdownEnd,
-      customErc721.maxSupply() * DEFAULT_MINT_TIME_COST - mintTimeCost * customErc721.maxSupply(),
-      "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST - mint time cost * purchased amount"
+      customErc721.maxSupply() * DEFAULT_MINT_INTERVAL - mintTimeCost * customErc721.maxSupply(),
+      "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL - mint time cost * purchased amount"
     );
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
+    assertEq(mintTimeCost, DEFAULT_MINT_INTERVAL, "Mint time cost should be DEFAULT_MINT_INTERVAL");
     assertEq(
       initialCountdownEnd, countdownEnd + mintTimeCost * customErc721.maxSupply(),
       "Initial countdown end should be equal to countdown end + mint time cost * purchased amount"

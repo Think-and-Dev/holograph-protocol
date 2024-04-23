@@ -19,8 +19,8 @@ import {InitializableLazyMint} from "../extension/InitializableLazyMint.sol";
 import {AddressMintDetails} from "../drops/struct/AddressMintDetails.sol";
 import {CustomERC721Configuration} from "../struct/CustomERC721Configuration.sol";
 import {CustomERC721Initializer} from "../struct/CustomERC721Initializer.sol";
-import {SaleDetails} from "../drops/struct/SaleDetails.sol";
-import {SalesConfiguration} from "../drops/struct/SalesConfiguration.sol";
+import {CustomERC721SaleDetails} from "src/struct/CustomERC721SaleDetails.sol";
+import {CustomERC721SalesConfiguration} from "src/struct/CustomERC721SalesConfiguration.sol";
 
 import {Address} from "../drops/library/Address.sol";
 import {MerkleProof} from "../drops/library/MerkleProof.sol";
@@ -39,6 +39,18 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
    * CONTRACT VARIABLES
    * all variables, without custom storage slots, are defined here
    */
+
+  /// @notice Getter for the purchase start date
+  /// @dev This storage variable is set only once in the init and can be considered as immutable
+  uint256 public START_DATE;
+
+  /// @notice Getter for the initial max supply
+  /// @dev This storage variable is set only once in the init and can be considered as immutable
+  uint256 public INITIAL_MAX_SUPPLY;
+
+  /// @notice Getter for the mint interval
+  /// @dev This storage variable is set only once in the init and can be considered as immutable
+  uint256 public MINT_INTERVAL;
 
   /**
    * @dev Address of the price oracle proxy
@@ -61,7 +73,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   /**
    * @notice Sales configuration
    */
-  SalesConfiguration public salesConfig;
+  CustomERC721SalesConfiguration public salesConfig;
 
   /**
    * @dev Mapping for presale mint counts by address to allow public mint limit
@@ -141,10 +153,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     // Setup the contract URI
     _setupContractURI(initializer.contractURI);
 
-    if (initializer.countdownEnd % initializer.mintTimeCost != 0) {
-      revert CountdownEndMustBeDivisibleByMintTimeCost(initializer.countdownEnd, initializer.mintTimeCost);
-    }
-
     // Init the lazy mints
     for (uint256 i = 0; i < initializer.lazyMintsConfigurations.length; ) {
       lazyMint(
@@ -158,14 +166,12 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
       }
     }
 
-    // Setup config variables
-    config = CustomERC721Configuration({
-      mintTimeCost: initializer.mintTimeCost,
-      countdownEnd: initializer.countdownEnd,
-      initialCountdownEnd: initializer.countdownEnd,
-      royaltyBPS: initializer.royaltyBPS,
-      fundsRecipient: initializer.fundsRecipient
-    });
+    // Set the start date
+    START_DATE = initializer.startDate;
+    // Set the initial max supply
+    INITIAL_MAX_SUPPLY = initializer.initialMaxSupply;
+    // Set the mint interval
+    MINT_INTERVAL = initializer.mintInterval;
 
     salesConfig = initializer.salesConfiguration;
 
@@ -252,18 +258,32 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     return config.initialCountdownEnd / config.mintTimeCost;
   }
 
+  function currentEndDate() public view returns (uint96) {
+    return config.countdownEnd;
+  }
+
+  function currentMaxSupply() public view returns (uint256) {
+    if (block.timestamp <= START_DATE) {
+      return INITIAL_MAX_SUPPLY;
+    } else if (block.timestamp >= START_DATE + INITIAL_MAX_SUPPLY * MINT_INTERVAL) {
+      return 0; // All intervals have elapsed
+    } else {
+      uint256 intervalsElapsed = (block.timestamp - START_DATE) / MINT_INTERVAL;
+      return INITIAL_MAX_SUPPLY - intervalsElapsed;
+    }
+  }
+
   /**
    * @notice Sale details
    * @return SaleDetails sale information details
    */
-  function saleDetails() external view returns (SaleDetails memory) {
+  function saleDetails() external view returns (CustomERC721SaleDetails memory) {
     return
-      SaleDetails({
+      CustomERC721SaleDetails({
         publicSaleActive: _publicSaleActive(),
         presaleActive: _presaleActive(),
         publicSalePrice: salesConfig.publicSalePrice,
-        publicSaleStart: salesConfig.publicSaleStart,
-        publicSaleEnd: salesConfig.publicSaleEnd,
+        publicSaleStart: START_DATE,
         presaleStart: salesConfig.presaleStart,
         presaleEnd: salesConfig.presaleEnd,
         presaleMerkleRoot: salesConfig.presaleMerkleRoot,
@@ -399,7 +419,8 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
       revert Purchase_WrongPrice((salesConfig.publicSalePrice + holographMintFeeUsd) * quantity);
     }
 
-    if (config.countdownEnd < config.mintTimeCost * quantity) {
+    // Check if the countdown has ended
+    if (_currentTokenId + quantity > currentMaxSupply()) {
       revert Purchase_CountdownCompleted();
     }
 
@@ -531,42 +552,24 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
    * @dev This sets the sales configuration
    * @param publicSalePrice New public sale price
    * @param maxSalePurchasePerAddress Max # of purchases (public) per address allowed
-   * @param publicSaleStart unix timestamp when the public sale starts
-   * @param publicSaleEnd unix timestamp when the public sale ends (set to 0 to disable)
    * @param presaleStart unix timestamp when the presale starts
    * @param presaleEnd unix timestamp when the presale ends
    * @param presaleMerkleRoot merkle root for the presale information
    */
   function setSaleConfiguration(
     uint104 publicSalePrice,
-    uint32 maxSalePurchasePerAddress,
-    uint64 publicSaleStart,
-    uint64 publicSaleEnd,
+    uint24 maxSalePurchasePerAddress,
     uint64 presaleStart,
     uint64 presaleEnd,
     bytes32 presaleMerkleRoot
   ) external onlyOwner {
     salesConfig.publicSalePrice = publicSalePrice;
     salesConfig.maxSalePurchasePerAddress = maxSalePurchasePerAddress;
-    salesConfig.publicSaleStart = publicSaleStart;
-    salesConfig.publicSaleEnd = publicSaleEnd;
     salesConfig.presaleStart = presaleStart;
     salesConfig.presaleEnd = presaleEnd;
     salesConfig.presaleMerkleRoot = presaleMerkleRoot;
 
     emit SalesConfigChanged(msgSender());
-  }
-
-  /**
-   * @notice Set a different funds recipient
-   * @param newRecipientAddress new funds recipient address
-   */
-  function setFundsRecipient(address payable newRecipientAddress) external onlyOwner {
-    if (newRecipientAddress == address(0)) {
-      revert("Funds Recipient cannot be 0 address");
-    }
-    config.fundsRecipient = newRecipientAddress;
-    emit FundsRecipientChanged(newRecipientAddress, msgSender());
   }
 
   /**
@@ -618,7 +621,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   }
 
   function _publicSaleActive() internal view returns (bool) {
-    return salesConfig.publicSaleStart <= block.timestamp && salesConfig.publicSaleEnd > block.timestamp;
+    return START_DATE <= block.timestamp && currentMaxSupply() > _currentTokenId;
   }
 
   function _usdToWei(uint256 amount) internal view returns (uint256 weiAmount) {

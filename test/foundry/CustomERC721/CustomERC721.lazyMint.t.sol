@@ -8,7 +8,7 @@ import {CustomERC721Fixture} from "test/foundry/fixtures/CustomERC721Fixture.t.s
 
 import {Strings} from "src/library/Strings.sol";
 
-import {DEFAULT_MAX_SUPPLY, DEFAULT_MINT_TIME_COST} from "test/foundry/CustomERC721/utils/Constants.sol";
+import {DEFAULT_MAX_SUPPLY, DEFAULT_MINT_INTERVAL} from "test/foundry/CustomERC721/utils/Constants.sol";
 
 contract CustomERC721LazyMintTest is CustomERC721Fixture, ICustomERC721Errors {
   using Strings for uint256;
