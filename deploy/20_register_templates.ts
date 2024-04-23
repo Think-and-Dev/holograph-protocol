@@ -474,7 +474,7 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
       [
         1718822400, // Epoch time for June 3, 2024
         4173120, // Total number of ten-minute intervals until Oct 8, 2103
-        60, // Duration of each interval
+        600, // Duration of each interval
         deployerAddress, // initialOwner
         '', // contractURI
         [0, 0, 0, 0, '0x' + '00'.repeat(32)], // salesConfig

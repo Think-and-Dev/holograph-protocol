@@ -254,6 +254,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     } else if (block.timestamp >= START_DATE + INITIAL_MAX_SUPPLY * MINT_INTERVAL) {
       return 0; // All intervals have elapsed
     } else {
+      // EVM division is floored
       uint256 intervalsElapsed = (block.timestamp - START_DATE) / MINT_INTERVAL;
       return INITIAL_MAX_SUPPLY - intervalsElapsed;
     }
@@ -321,14 +322,9 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
    * @return Token URI
    */
   function tokenURI(uint256 _tokenId) public view returns (string memory) {
-    // (uint256 batchId, ) = _getBatchId(_tokenId);
+    // If the URI is encrypted, return the placeholder URI
+    // If not, return the revealed URI with the tokenId appended
     string memory batchUri = _getBaseURI(_tokenId);
-
-    // if (isEncryptedBatch(batchId)) {
-    //   return string(abi.encodePacked(batchUri, "0"));
-    // } else {
-    //   return string(abi.encodePacked(batchUri, _tokenId.toString()));
-    // }
 
     return string(abi.encodePacked(batchUri, _tokenId.toString()));
   }
@@ -381,10 +377,17 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   function reveal(uint256 _index, bytes calldata _key) public virtual override returns (string memory revealedURI) {
     require(_canReveal(), "Not authorized");
 
+    // Get the batch ID at the given index
     uint256 batchId = getBatchIdAtIndex(_index);
+
+    // Decrypt the base URI for the batch
     revealedURI = getRevealURI(batchId, _key);
 
+    // Clear the encrypted data for the batch
     _setEncryptedData(batchId, "");
+
+    // Update the decrypted base URI for the batch
+    // NOTE: It replace the initial placeholder uri with the revealed uri
     _setBaseURI(batchId, revealedURI);
 
     emit TokenURIRevealed(_index, revealedURI);
@@ -568,7 +571,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   }
 
   function _publicSaleActive() internal view returns (bool) {
-    return START_DATE <= block.timestamp && currentMaxSupply() > _currentTokenId;
+    return START_DATE <= block.timestamp;
   }
 
   function _usdToWei(uint256 amount) internal view returns (uint256 weiAmount) {

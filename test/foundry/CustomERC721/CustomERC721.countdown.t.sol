@@ -51,7 +51,7 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
     }
 
     // Try to purchase one more
-    vm.expectRevert(abi.encodeWithSelector(Sale_Inactive.selector));
+    vm.expectRevert(abi.encodeWithSelector(Purchase_CountdownCompleted.selector));
     customErc721.purchase{value: totalCost}(1);
 
     assertEq(customErc721.totalMinted(), maxSupply, "Wrong total minted");
@@ -61,6 +61,7 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
     uint256 initialMaxSupply = customErc721.INITIAL_MAX_SUPPLY();
     uint256 start = customErc721.START_DATE();
 
+    // Wrap to the timestamp where the total epochs
     vm.warp(start + (initialMaxSupply / 2) * customErc721.MINT_INTERVAL());
     vm.prank(address(TEST_ACCOUNT));
     vm.deal(address(TEST_ACCOUNT), type(uint256).max);
@@ -73,7 +74,7 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
     }
 
     // Try to purchase one more
-    vm.expectRevert(abi.encodeWithSelector(Sale_Inactive.selector));
+    vm.expectRevert(abi.encodeWithSelector(Purchase_CountdownCompleted.selector));
     customErc721.purchase{value: totalCost}(1);
 
     assertEq(customErc721.totalMinted(), initialMaxSupply / 2, "Wrong total minted");
@@ -116,7 +117,7 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
     }
 
     // Try to purchase one more
-    vm.expectRevert(abi.encodeWithSelector(Sale_Inactive.selector));
+    vm.expectRevert(abi.encodeWithSelector(Purchase_CountdownCompleted.selector));
     customErc721.purchase{value: totalCost}(1);
 
     uint256 totalMinted = customErc721.totalMinted();
