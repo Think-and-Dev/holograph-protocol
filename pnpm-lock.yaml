@@ -83,8 +83,8 @@ devDependencies:
     specifier: 4.8.3
     version: 4.8.3
   '@openzeppelin/contracts-upgradeable':
-    specifier: 4.8.3
-    version: 4.8.3
+    specifier: 4.9.6
+    version: 4.9.6
   '@tenderly/hardhat-tenderly':
     specifier: 2.1.0
     version: 2.1.0(@types/node@18.16.2)(ethers@5.5.4)(hardhat@2.14.0)
@@ -1222,7 +1222,7 @@ packages:
       '@ledgerhq/errors': 6.16.3
       '@ledgerhq/hw-transport': 6.30.5
       '@ledgerhq/logs': 6.12.0
-      node-hid: github.com/holographxyz/node-hid/99e7e3d3c4a8a4190f60332ac191949ccb2a5dd4
+      node-hid: git/github.com+holographxyz/node-hid/99e7e3d3c4a8a4190f60332ac191949ccb2a5dd4
 
   /@ledgerhq/hw-transport-node-hid@6.28.5:
     resolution: {integrity: sha512-vH5fu0SiM27gE5UqRwO4aySS2qu1tiCYMf4/XkkYafac4FLwqMIg03RyU7Wp+SQ3srMeXjSCsLbijF1kPSyTKQ==}
@@ -1233,7 +1233,7 @@ packages:
       '@ledgerhq/hw-transport-node-hid-noevents': 6.29.5
       '@ledgerhq/logs': 6.12.0
       lodash: 4.17.21
-      node-hid: github.com/holographxyz/node-hid/99e7e3d3c4a8a4190f60332ac191949ccb2a5dd4
+      node-hid: git/github.com+holographxyz/node-hid/99e7e3d3c4a8a4190f60332ac191949ccb2a5dd4
       usb: 2.9.0
 
   /@ledgerhq/hw-transport@6.30.5:
@@ -1622,8 +1622,8 @@ packages:
       hardhat: 2.14.0(ts-node@10.9.2)(typescript@4.9.5)
     dev: true
 
-  /@openzeppelin/contracts-upgradeable@4.8.3:
-    resolution: {integrity: sha512-SXDRl7HKpl2WDoJpn7CK/M9U4Z8gNXDHHChAKh0Iz+Wew3wu6CmFYBeie3je8V0GSXZAIYYwUktSrnW/kwVPtg==}
+  /@openzeppelin/contracts-upgradeable@4.9.6:
+    resolution: {integrity: sha512-m4iHazOsOCv1DgM7eD7GupTJ+NFVujRZt1wzddDPSVGpWdKq1SKkla5htKG7+IS4d2XOCtzkUNwRZ7Vq5aEUMA==}
     dev: true
 
   /@openzeppelin/contracts@4.8.3:
@@ -5067,7 +5067,7 @@ packages:
     resolution: {integrity: sha512-iNZ576iTOGcfllftB73cPB5AN+XUQAT/T8xzsILsghXC1o8gJUqe3RHlcDqagu+biFpYQ61KQrZZJza8eRSYqw==}
     deprecated: Deprecated in favor of '@metamask/eth-sig-util'
     dependencies:
-      ethereumjs-abi: github.com/ethereumjs/ethereumjs-abi/ee3994657fa7a427238e6ba92a84d0b529bbcde0
+      ethereumjs-abi: git/github.com+ethereumjs/ethereumjs-abi/ee3994657fa7a427238e6ba92a84d0b529bbcde0
       ethereumjs-util: 5.2.1
     dev: true
 
@@ -11423,7 +11423,7 @@ packages:
     dependencies:
       underscore: 1.9.1
       web3-core-helpers: 1.2.1
-      websocket: github.com/web3-js/WebSocket-Node/ef5ea2f41daf4a2113b80c9223df884b4d56c400
+      websocket: git/github.com+web3-js/WebSocket-Node/ef5ea2f41daf4a2113b80c9223df884b4d56c400
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -11436,7 +11436,7 @@ packages:
       eventemitter3: 4.0.4
       underscore: 1.9.1
       web3-core-helpers: 1.2.11
-      websocket: 1.0.32
+      websocket: 1.0.34
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -11665,7 +11665,6 @@ packages:
       yaeti: 0.0.6
     transitivePeerDependencies:
       - supports-color
-    dev: false
 
   /whatwg-fetch@2.0.4:
     resolution: {integrity: sha512-dcQ1GWpOD/eEQ97k66aiEVpNnapVj90/+R+SXTPYGHpYBBypfKJEQjLrvMZ7YXbKm21gXd4NcuxUTjiv1YtLng==}
@@ -12015,8 +12014,8 @@ packages:
     resolution: {integrity: sha512-OFLT+LTocvabn6q76BTwVB0hExEBS0IduTr3cqZyMqEDbOnYmcU+y0tUAYbND4uwclpBGi4I4UUBGzylWpjLGA==}
     dev: true
 
-  github.com/ethereumjs/ethereumjs-abi/ee3994657fa7a427238e6ba92a84d0b529bbcde0:
-    resolution: {tarball: https://codeload.github.com/ethereumjs/ethereumjs-abi/tar.gz/ee3994657fa7a427238e6ba92a84d0b529bbcde0}
+  git/github.com+ethereumjs/ethereumjs-abi/ee3994657fa7a427238e6ba92a84d0b529bbcde0:
+    resolution: {commit: ee3994657fa7a427238e6ba92a84d0b529bbcde0, repo: git@github.com:ethereumjs/ethereumjs-abi.git, type: git}
     name: ethereumjs-abi
     version: 0.6.8
     dependencies:
@@ -12024,8 +12023,8 @@ packages:
       ethereumjs-util: 6.2.1
     dev: true
 
-  github.com/holographxyz/node-hid/99e7e3d3c4a8a4190f60332ac191949ccb2a5dd4:
-    resolution: {tarball: https://codeload.github.com/holographxyz/node-hid/tar.gz/99e7e3d3c4a8a4190f60332ac191949ccb2a5dd4}
+  git/github.com+holographxyz/node-hid/99e7e3d3c4a8a4190f60332ac191949ccb2a5dd4:
+    resolution: {commit: 99e7e3d3c4a8a4190f60332ac191949ccb2a5dd4, repo: git@github.com:holographxyz/node-hid.git, type: git}
     name: node-hid
     version: 2.2.0
     engines: {node: '>=10'}
@@ -12036,8 +12035,8 @@ packages:
       node-addon-api: 3.2.1
       prebuild-install: 7.1.2
 
-  github.com/web3-js/WebSocket-Node/ef5ea2f41daf4a2113b80c9223df884b4d56c400:
-    resolution: {tarball: https://codeload.github.com/web3-js/WebSocket-Node/tar.gz/ef5ea2f41daf4a2113b80c9223df884b4d56c400}
+  git/github.com+web3-js/WebSocket-Node/ef5ea2f41daf4a2113b80c9223df884b4d56c400:
+    resolution: {commit: ef5ea2f41daf4a2113b80c9223df884b4d56c400, repo: git@github.com:web3-js/WebSocket-Node.git, type: git}
     name: websocket
     version: 1.0.29
     engines: {node: '>=0.10.0'}
