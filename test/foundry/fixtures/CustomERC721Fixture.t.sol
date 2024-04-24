@@ -242,7 +242,7 @@ contract CustomERC721Fixture is Test {
   }
 
   function _purchaseAllSupply() internal {
-    for (uint256 i = 0; i < customErc721.currentMaxSupply(); i++) {
+    for (uint256 i = 0; i < customErc721.currentTheoricalMaxSupply(); i++) {
       address user = address(uint160(uint256(keccak256(abi.encodePacked(i)))));
       vm.startPrank(address(user));
       vm.deal(address(user), totalCost);

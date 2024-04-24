@@ -148,7 +148,7 @@ interface ICustomERC721 {
   function saleDetails() external view returns (CustomERC721SaleDetails memory);
 
   /// @notice Function to return the current max supply
-  function currentMaxSupply() external view returns (uint256);
+  function currentTheoricalMaxSupply() external view returns (uint256);
 
   /// @notice Function to return the specific sales details for a given address
   /// @param minter address for minter to return mint information for
