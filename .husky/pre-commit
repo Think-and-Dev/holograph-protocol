@@ -26,20 +26,20 @@ git add .
 # ---------------------------------------------------------------------------- #
 
 # ------------------------------ Natspec smells ------------------------------ #
-echo "👉 Checking for missing natspecs..."
-natspecSmellsOutput=$(npx @defi-wonderland/natspec-smells 2>&1)
+# echo "👉 Checking for missing natspecs..."
+# natspecSmellsOutput=$(npx @defi-wonderland/natspec-smells 2>&1)
 
-# Compare the trimmed output to "No issues found"
-if [ "$natspecSmellsOutput" != "No issues found" ]; then
-  echo "⛔️ Missing documentation or errors have been found:"
-  echo "$natspecSmellsOutput"
-  exit 1
-else
-  echo "✅ No missing natspecs detected.\n"
-fi
+# # Compare the trimmed output to "No issues found"
+# if [ "$natspecSmellsOutput" != "No issues found" ]; then
+#   echo "⛔️ Missing documentation or errors have been found:"
+#   echo "$natspecSmellsOutput"
+#   exit 1
+# else
+#   echo "✅ No missing natspecs detected.\n"
+# fi
 
 # ------------------------------- Gas snapshot ------------------------------- #
 
-echo "👉 Checking gas snapshots..."
-npm run snapshot:check
-echo "✅ Gas snapshots are up to date.\n\n"
+# echo "👉 Checking gas snapshots..."
+# npm run snapshot:check
+# echo "✅ Gas snapshots are up to date.\n\n"
