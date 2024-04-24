@@ -51,6 +51,10 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   /// @dev This storage variable is set only once in the init and can be considered as immutable
   uint256 public MINT_INTERVAL;
 
+  /// @notice Getter for the mint interval
+  /// @dev This storage variable is set only once in the init and can be considered as immutable
+  address payable FUNDS_RECIPIENT;
+
   /**
    * @dev Address of the price oracle proxy
    */
@@ -166,6 +170,8 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     INITIAL_MAX_SUPPLY = initializer.initialMaxSupply;
     // Set the mint interval
     MINT_INTERVAL = initializer.mintInterval;
+    // Set the funds recipient
+    FUNDS_RECIPIENT = initializer.fundsRecipient;
 
     salesConfig = initializer.salesConfiguration;
 
@@ -559,6 +565,45 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     salesConfig.presaleMerkleRoot = presaleMerkleRoot;
 
     emit SalesConfigChanged(msgSender());
+  }
+
+  /**
+   * @notice Set a different funds recipient
+   * @param newRecipientAddress new funds recipient address
+   */
+  function setFundsRecipient(address payable newRecipientAddress) external onlyOwner {
+    if (newRecipientAddress == address(0)) {
+      revert("Funds Recipient cannot be 0 address");
+    }
+    FUNDS_RECIPIENT = newRecipientAddress;
+    emit FundsRecipientChanged(newRecipientAddress, msgSender());
+  }
+
+  /**
+   * @notice This withdraws native tokens from the contract to the contract owner.
+   */
+  function withdraw() external override nonReentrant {
+    if (FUNDS_RECIPIENT == address(0)) {
+      revert("Funds Recipient address not set");
+    }
+    address sender = msgSender();
+
+    // Get the contract balance
+    uint256 funds = address(this).balance;
+
+    // Check if withdraw is allowed for sender
+    if (sender != FUNDS_RECIPIENT && sender != _getOwner()) {
+      revert Access_WithdrawNotAllowed();
+    }
+
+    // Payout recipient
+    (bool successFunds, ) = FUNDS_RECIPIENT.call{value: funds, gas: STATIC_GAS_LIMIT}("");
+    if (!successFunds) {
+      revert Withdraw_FundsSendFailure();
+    }
+
+    // Emit event for indexing
+    emit FundsWithdrawn(sender, FUNDS_RECIPIENT, funds);
   }
 
   /**

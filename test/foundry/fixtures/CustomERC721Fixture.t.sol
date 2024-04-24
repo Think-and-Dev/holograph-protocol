@@ -62,22 +62,34 @@ contract CustomERC721Fixture is Test {
 
   constructor() {
     // Create the first batch configuration
-    bytes memory encryptedUri = CustomERC721Helper.encryptDecrypt(abi.encodePacked(DEFAULT_BASE_URI), DEFAULT_ENCRYPT_DECRYPT_KEY);
+    bytes memory encryptedUri = CustomERC721Helper.encryptDecrypt(
+      abi.encodePacked(DEFAULT_BASE_URI),
+      DEFAULT_ENCRYPT_DECRYPT_KEY
+    );
     bytes32 provenanceHash = keccak256(abi.encodePacked(DEFAULT_BASE_URI, DEFAULT_ENCRYPT_DECRYPT_KEY, block.chainid));
-    defaultLazyMintConfigurations.push(LazyMintConfiguration({
-      _amount: DEFAULT_MAX_SUPPLY / 2,
-      _baseURIForTokens: DEFAULT_PLACEHOLDER_URI,
-      _data: abi.encode(encryptedUri, provenanceHash)
-    }));
+    defaultLazyMintConfigurations.push(
+      LazyMintConfiguration({
+        _amount: DEFAULT_MAX_SUPPLY / 2,
+        _baseURIForTokens: DEFAULT_PLACEHOLDER_URI,
+        _data: abi.encode(encryptedUri, provenanceHash)
+      })
+    );
 
     // Create the second batch configuration
-    bytes memory encryptedUri2 = CustomERC721Helper.encryptDecrypt(abi.encodePacked(DEFAULT_BASE_URI_2), DEFAULT_ENCRYPT_DECRYPT_KEY_2);
-    bytes32 provenanceHash2 = keccak256(abi.encodePacked(DEFAULT_BASE_URI_2, DEFAULT_ENCRYPT_DECRYPT_KEY_2, block.chainid));
-    defaultLazyMintConfigurations.push(LazyMintConfiguration({
-      _amount: DEFAULT_MAX_SUPPLY / 2,
-      _baseURIForTokens: DEFAULT_PLACEHOLDER_URI_2,
-      _data: abi.encode(encryptedUri2, provenanceHash2)
-    }));
+    bytes memory encryptedUri2 = CustomERC721Helper.encryptDecrypt(
+      abi.encodePacked(DEFAULT_BASE_URI_2),
+      DEFAULT_ENCRYPT_DECRYPT_KEY_2
+    );
+    bytes32 provenanceHash2 = keccak256(
+      abi.encodePacked(DEFAULT_BASE_URI_2, DEFAULT_ENCRYPT_DECRYPT_KEY_2, block.chainid)
+    );
+    defaultLazyMintConfigurations.push(
+      LazyMintConfiguration({
+        _amount: DEFAULT_MAX_SUPPLY / 2,
+        _baseURIForTokens: DEFAULT_PLACEHOLDER_URI_2,
+        _data: abi.encode(encryptedUri2, provenanceHash2)
+      })
+    );
   }
 
   function setUp() public virtual {
@@ -194,6 +206,7 @@ contract CustomERC721Fixture is Test {
       initialMaxSupply: maxSupply,
       mintInterval: DEFAULT_MINT_INTERVAL,
       initialOwner: payable(DEFAULT_OWNER_ADDRESS),
+      fundsRecipient: payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS),
       contractURI: "https://example.com/metadata.json",
       salesConfiguration: saleConfig,
       lazyMintsConfigurations: new LazyMintConfiguration[](0)

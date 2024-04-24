@@ -13,10 +13,11 @@ import {LazyMintConfiguration} from "src/struct/LazyMintConfiguration.sol";
 /// @param salesConfiguration The initial SalesConfiguration
 /// @param lazyMintsConfigurations The initial Lazy mints configurations
 struct CustomERC721Initializer {
-  uint40 startDate; // max start date in year 36_812 
+  uint40 startDate; // max start date in year 36_812
   uint32 initialMaxSupply; // max initial supply 4_294_967_295 tokens
   uint24 mintInterval; // max mint interval 16_777_215 seconds
   address initialOwner;
+  address payable fundsRecipient;
   string contractURI;
   CustomERC721SalesConfiguration salesConfiguration;
   LazyMintConfiguration[] lazyMintsConfigurations;
