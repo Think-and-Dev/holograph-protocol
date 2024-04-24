@@ -47,7 +47,7 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
     assertEq(customErc721.currentMaxSupply(), DEFAULT_MAX_SUPPLY - 10, "Wrong current max supply after start date");
   }
 
-  function test_purchaseCantExceedMaxSupplyAtStartDate() public setupTestCustomERC21(50) setUpPurchase {
+  function test_purchaseCantExceedMaxSupplyAtStartDate() public setupTestCustomERC21(1000) setUpPurchase {
     uint256 maxSupply = customErc721.INITIAL_MAX_SUPPLY();
     uint256 start = customErc721.START_DATE();
 
@@ -100,7 +100,6 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
   ) public setupTestCustomERC21(2000) setUpPurchase {
     uint256 mintInterval = customErc721.MINT_INTERVAL();
     uint256 initialMaxSupply = customErc721.INITIAL_MAX_SUPPLY();
-    // uint256 initialEndDate = customErc721.INITIAL_END_DATE();
     uint256 start = customErc721.START_DATE();
     uint256 maxIntervalCount = 5;
 
@@ -112,10 +111,7 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
 
     // Purchase all the supply
     uint256 i = 1;
-    // While the end date is greater than the block timestamp + 2 mint intervals, buy one
-    // NOTE: x2 because if block.timestamp - END_DATE < MINT_INTERVAL && block.timestamp - END_DATE > 0 
-    //       the mint will be allowed even if the countdown is lower than the mint interval (but gt 0)
-    while (customErc721.END_DATE() >= block.timestamp + mintInterval * 2) {
+    while (customErc721.totalMinted() < customErc721.currentMaxSupply()) {
       customErc721.purchase{value: totalCost}(1);
 
       vm.warp(block.timestamp + elapsedTimeBetweenPurchase);
@@ -127,14 +123,12 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
         elapsedInterval > initialMaxSupply ? 0 : initialMaxSupply - elapsedInterval,
         "Wrong current max supply"
       );
-
       i++;
     }
 
     // Try to purchase one more
     vm.expectRevert(abi.encodeWithSelector(Purchase_CountdownCompleted.selector));
     customErc721.purchase{value: totalCost}(1);
-
     uint256 totalMinted = customErc721.totalMinted();
     uint256 expectedMaxSupply;
 
@@ -148,8 +142,8 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
     // The total minted should be equal to the current max supply
     assertEq(expectedMaxSupply, customErc721.currentMaxSupply(), "Wrong expectedMaxSupply");
     assertEq(totalMinted, i - 1, "Wrong total minted");
-
-    // Approx eq maxIntervalCount because the current block timestamp can be a bit more that the last mint exact interval
+    // Approx eq maxIntervalCount because the current block timestamp can be a bit more that the last mint exact
+    // interval
     assertApproxEqAbs(customErc721.totalMinted(), customErc721.currentMaxSupply(), maxIntervalCount);
   }
 

@@ -51,13 +51,12 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   /// @dev This storage variable is set only once in the init and can be considered as immutable
   uint256 public MINT_INTERVAL;
 
-  /// @notice Getter for the end date
-  /// @dev This storage variable is set only once in the init and can be considered as immutable
-  uint256 public END_DATE;
-
   /// @notice Getter for the initial end date
   /// @dev This storage variable is set only once in the init and can be considered as immutable
   uint256 public INITIAL_END_DATE;
+
+  /// @notice Getter for the end date
+  uint256 public END_DATE;
 
   /**
    * @dev Address of the price oracle proxy
@@ -252,7 +251,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
    * PUBLIC NON STATE CHANGING FUNCTIONS
    * dynamic
    */
-
   function owner() external view override(ERC721H, ICustomERC721) returns (address) {
     return _getOwner();
   }
@@ -343,7 +341,8 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   }
 
   /**
-   * @dev Returns the base URI for a given tokenId. It return the base URI corresponding to the batch the tokenId belongs to.
+   * @dev Returns the base URI for a given tokenId. It return the base URI corresponding to the batch the tokenId
+   * belongs to.
    * @param _tokenId id of token to get URI for
    * @return Token URI
    */
@@ -369,7 +368,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
    * PUBLIC STATE CHANGING FUNCTIONS
    * available to all
    */
-
   function multicall(bytes[] memory data) public returns (bytes[] memory results) {
     results = new bytes[](data.length);
     for (uint256 i = 0; i < data.length; i++) {
@@ -422,9 +420,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     }
 
     // Check if the countdown has ended
-    // NOTE: Plus 1 because if block.timestamp - END_DATE < MINT_INTERVAL && block.timestamp - END_DATE > 0 
-    //       we should still allow the mint.
-    if (block.timestamp > END_DATE - MINT_INTERVAL * (quantity + 1)) {
+    if (block.timestamp >= END_DATE - MINT_INTERVAL * (quantity - 1)) {
       revert Purchase_CountdownCompleted();
     }
 
@@ -583,7 +579,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
    * INTERNAL FUNCTIONS
    * non state changing
    */
-
   function _presaleActive() internal view returns (bool) {
     return salesConfig.presaleStart <= block.timestamp && salesConfig.presaleEnd > block.timestamp;
   }
