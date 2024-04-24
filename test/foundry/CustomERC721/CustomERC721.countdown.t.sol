@@ -23,18 +23,28 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
     assertEq(customErc721.START_DATE(), DEFAULT_START_DATE, "Wrong start date");
     assertEq(customErc721.MINT_INTERVAL(), DEFAULT_MINT_INTERVAL, "Wrong mint interval");
     assertEq(customErc721.INITIAL_MAX_SUPPLY(), DEFAULT_MAX_SUPPLY, "Wrong initial max supply");
+    assertEq(
+      customErc721.END_DATE(),
+      DEFAULT_START_DATE + DEFAULT_MINT_INTERVAL * DEFAULT_MAX_SUPPLY,
+      "Wrong initial end date"
+    );
+    assertEq(
+      customErc721.INITIAL_END_DATE(),
+      DEFAULT_START_DATE + DEFAULT_MINT_INTERVAL * DEFAULT_MAX_SUPPLY,
+      "Wrong initial end date"
+    );
   }
 
-  function test_currentMaxSupply() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) setUpPurchase {
+  function test_currentTheoricalMaxSupply() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) setUpPurchase {
     // Current Max supply should be the same as initial max supply before the start date
-    assertEq(customErc721.currentMaxSupply(), DEFAULT_MAX_SUPPLY, "Wrong current max supply");
+    assertEq(customErc721.currentTheoricalMaxSupply(), DEFAULT_MAX_SUPPLY, "Wrong current max supply");
 
     // Current Max supply still the same at the exacte start date timestamp
     vm.warp(customErc721.START_DATE());
-    assertEq(customErc721.currentMaxSupply(), DEFAULT_MAX_SUPPLY, "Wrong current max supply at start date");
+    assertEq(customErc721.currentTheoricalMaxSupply(), DEFAULT_MAX_SUPPLY, "Wrong current max supply at start date");
 
     vm.warp(customErc721.START_DATE() + 10 * customErc721.MINT_INTERVAL());
-    assertEq(customErc721.currentMaxSupply(), DEFAULT_MAX_SUPPLY - 10, "Wrong current max supply after start date");
+    assertEq(customErc721.currentTheoricalMaxSupply(), DEFAULT_MAX_SUPPLY - 10, "Wrong current max supply after start date");
   }
 
   function test_purchaseCantExceedMaxSupplyAtStartDate() public setupTestCustomERC21(1000) setUpPurchase {
@@ -55,6 +65,7 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
     customErc721.purchase{value: totalCost}(1);
 
     assertEq(customErc721.totalMinted(), maxSupply, "Wrong total minted");
+    assertEq(customErc721.END_DATE(), start, "Wrong end date");
   }
 
   function test_purchaseCantExceedMaxSupply() public setupTestCustomERC21(1000) setUpPurchase {
@@ -87,12 +98,12 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
   function test_Invariant_complexMaxSupply(
     uint256 elapsedTimeBetweenPurchase
   ) public setupTestCustomERC21(2000) setUpPurchase {
-    uint256 mintIneterval = customErc721.MINT_INTERVAL();
+    uint256 mintInterval = customErc721.MINT_INTERVAL();
     uint256 initialMaxSupply = customErc721.INITIAL_MAX_SUPPLY();
     uint256 start = customErc721.START_DATE();
     uint256 maxIntervalCount = 5;
 
-    elapsedTimeBetweenPurchase = bound(elapsedTimeBetweenPurchase, mintIneterval, mintIneterval * maxIntervalCount - 1);
+    elapsedTimeBetweenPurchase = bound(elapsedTimeBetweenPurchase, mintInterval, mintInterval * maxIntervalCount - 1);
 
     vm.warp(start);
     vm.prank(address(TEST_ACCOUNT));
@@ -100,45 +111,43 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
 
     // Purchase all the supply
     uint256 i = 1;
-    while (customErc721.totalMinted() < customErc721.currentMaxSupply()) {
+    while (customErc721.totalMinted() < customErc721.currentTheoricalMaxSupply()) {
       customErc721.purchase{value: totalCost}(1);
 
       vm.warp(block.timestamp + elapsedTimeBetweenPurchase);
 
-      uint256 elapsedInterval = (block.timestamp - start) / mintIneterval;
+      uint256 elapsedInterval = (block.timestamp - start) / mintInterval;
       assertEq(customErc721.totalMinted(), i, "Wrong total minted");
       assertEq(
-        customErc721.currentMaxSupply(),
+        customErc721.currentTheoricalMaxSupply(),
         elapsedInterval > initialMaxSupply ? 0 : initialMaxSupply - elapsedInterval,
         "Wrong current max supply"
       );
-
       i++;
     }
 
     // Try to purchase one more
     vm.expectRevert(abi.encodeWithSelector(Purchase_CountdownCompleted.selector));
     customErc721.purchase{value: totalCost}(1);
-
     uint256 totalMinted = customErc721.totalMinted();
     uint256 expectedMaxSupply;
 
-    if (block.timestamp >= start + initialMaxSupply * mintIneterval) {
+    if (block.timestamp >= start + initialMaxSupply * mintInterval) {
       expectedMaxSupply = 0; // All intervals have elapsed
     } else {
-      uint256 intervalsElapsed = (block.timestamp - start) / mintIneterval;
+      uint256 intervalsElapsed = (block.timestamp - start) / mintInterval;
       expectedMaxSupply = initialMaxSupply - intervalsElapsed;
     }
 
     // The total minted should be equal to the current max supply
-    assertEq(expectedMaxSupply, customErc721.currentMaxSupply(), "Wrong expectedMaxSupply");
+    assertEq(expectedMaxSupply, customErc721.currentTheoricalMaxSupply(), "Wrong expectedMaxSupply");
     assertEq(totalMinted, i - 1, "Wrong total minted");
-
-    // Approx eq maxIntervalCount because the current block timestamp can be a bit more that the last mint exact interval
-    assertApproxEqAbs(customErc721.totalMinted(), customErc721.currentMaxSupply(), maxIntervalCount);
+    // Approx eq maxIntervalCount because the current block timestamp can be a bit more that the last mint exact
+    // interval
+    assertApproxEqAbs(customErc721.totalMinted(), customErc721.currentTheoricalMaxSupply(), maxIntervalCount);
   }
 
-  function test_Invariant_currentMaxSupply(
+  function test_Invariant_currentTheoricalMaxSupply(
     uint256 elapsedInterval
   ) public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) setUpPurchase {
     elapsedInterval = bound(elapsedInterval, 0, DEFAULT_MAX_SUPPLY * 10);
@@ -147,10 +156,10 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
 
     // If the elapsed interval is greater than the max supply, the current max supply should be 0
     if (block.timestamp > DEFAULT_START_DATE + DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL) {
-      assertEq(customErc721.currentMaxSupply(), 0, "Wrong current max supply after start date");
+      assertEq(customErc721.currentTheoricalMaxSupply(), 0, "Wrong current max supply after start date");
     } else {
       assertEq(
-        customErc721.currentMaxSupply(),
+        customErc721.currentTheoricalMaxSupply(),
         DEFAULT_MAX_SUPPLY - elapsedInterval,
         "Wrong current max supply after start date"
       );

@@ -34,10 +34,10 @@ import {Strings} from "./../drops/library/Strings.sol";
 contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, DelayedReveal, ERC721H, ICustomERC721 {
   using Strings for uint256;
 
-  /**
-   * CONTRACT VARIABLES
-   * all variables, without custom storage slots, are defined here
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                             CONTRACT VARIABLES                             */
+  /*        all variables, without custom storage slots, are defined here       */
+  /* -------------------------------------------------------------------------- */
 
   /// @notice Getter for the purchase start date
   /// @dev This storage variable is set only once in the init and can be considered as immutable
@@ -54,6 +54,13 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   /// @notice Getter for the mint interval
   /// @dev This storage variable is set only once in the init and can be considered as immutable
   address payable FUNDS_RECIPIENT;
+
+  /// @notice Getter for the initial end date
+  /// @dev This storage variable is set only once in the init and can be considered as immutable
+  uint256 public INITIAL_END_DATE;
+
+  /// @notice Getter for the end date
+  uint256 public END_DATE;
 
   /**
    * @dev Address of the price oracle proxy
@@ -83,13 +90,9 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
    */
   mapping(address => uint256) public totalMintsByAddress;
 
-  /**
-   * CUSTOM ERRORS
-   */
-
-  /**
-   * MODIFIERS
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                                  MODIFIERS                                 */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Allows user to mint tokens at a quantity
@@ -121,9 +124,9 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     _;
   }
 
-  /**
-   * CONTRACT INITIALIZERS
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                            CONTRACT INITIALIZERS                           */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @dev Constructor is left empty and init is used instead
@@ -132,17 +135,18 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
 
   /**
    * @notice Used internally to initialize the contract instead of through a constructor
-   * @dev This function is called by the deployer/factory when creating a contract
-   * @param initPayload abi encoded payload to use for contract initilaization
+   * @dev This function is called by the deployer/the factory when creating a contract
+   * @param initPayload abi encoded payload (CustomERC721Initializer struct) to use for contract initilaization
    */
   function init(bytes memory initPayload) external override returns (bytes4) {
     require(!_isInitialized(), "HOLOGRAPH: already initialized");
 
-    // to enable sourceExternalCall to work on init, we set holographer here since it's only set after init
+    // Enable sourceExternalCall to work on init, we set holographer here since it's only set after init
     assembly {
       sstore(_holographerSlot, caller())
     }
 
+    // Decode the initializer payload to get the CustomERC721Initializer struct
     CustomERC721Initializer memory initializer = abi.decode(initPayload, (CustomERC721Initializer));
 
     // Setup the owner role
@@ -151,7 +155,12 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     // Setup the contract URI
     _setupContractURI(initializer.contractURI);
 
-    // Init the lazy mints
+    // Init all the the lazy mints.
+    /// @dev The CustomERC721Initializer struct contains the lazy mint configurations.
+    ///      You must know that:
+    ///      - Each lazy mint configuration contains the amount of tokens per batch, the batchs baseURI, and the batchs data.
+    ///      - The batchs data is an abi encoded payload containing the encryptedURI (string) and the provenanceHash (bytes32)
+    ///      - The provenanceHash is used to as a proof when decrypting the encryptedURI
     for (uint256 i = 0; i < initializer.lazyMintsConfigurations.length; ) {
       lazyMint(
         initializer.lazyMintsConfigurations[i]._amount,
@@ -164,15 +173,32 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
       }
     }
 
-    // Set the start date
+    // Set the sale start date.
+    /// @dev The sale start date represents the date when the public sale starts.
+    ///      The sale start date is used like an immutable.
     START_DATE = initializer.startDate;
-    // Set the initial max supply
+
+    // Set the initial max supply.
+    /// @dev The initial max supply represents the theoretical maximum supply at the start date timestamp.
+    ///      The sale start date is used like an immutable.
     INITIAL_MAX_SUPPLY = initializer.initialMaxSupply;
-    // Set the mint interval
+
+    // Set the mint interval.
+    /// @dev The mint interval specifies the duration by which the END_DATE is decreased after each mint operation.
+    ///      The sale start date is used like an immutable.
     MINT_INTERVAL = initializer.mintInterval;
     // Set the funds recipient
     FUNDS_RECIPIENT = initializer.fundsRecipient;
 
+    // Set the end dates
+    /// @dev The END_DATE is calculated by adding the initial max supply times the mint interval to the start date.
+    ///      The END_DATE is decreased after each mint operation by the mint interval.
+    uint256 endDate = initializer.startDate + initializer.initialMaxSupply * initializer.mintInterval;
+    END_DATE = endDate;
+    /// @dev The sale start date is used like an immutable.
+    INITIAL_END_DATE = endDate;
+
+    // Set the sales configuration
     salesConfig = initializer.salesConfiguration;
 
     setStatus(1);
@@ -181,17 +207,18 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   }
 
   /**
-   * @notice Initialize the lazy minting for the contract
-   * @dev This function also synchronizes the metadata with the prepended tokenID
-   * @dev This function should be called after the contract is initialized
+   * @notice Sync the lazy minting with the prepended tokenID
+   * @dev This function is called after the lazy mints has all been done in the init funcition.
+   *      It aligns the lazy mint storage with a new token ID by applying the chain-specific token ID prepend.
+   * @return chainPrepend The chain prepend used to sync the lazy minting
    */
   function syncLazyMint() external override onlyOwner returns (uint256 chainPrepend) {
-    // Check if the contract is initialized
+    // Check if the contract has been initialized
     if (!_isInitialized()) revert NotInitialized();
-    // Check if the lazy minting is already initialized
+    // Check if the lazy minting is not initialized yet
     if (_isLazyMintInitialized()) revert LazyMint_AlreadyInitialized();
 
-    // Setup the lazy minting
+    // Get the chain prepend
     HolographERC721Interface H721 = HolographERC721Interface(holographer());
     chainPrepend = H721.sourceGetChainPrepend() + 1;
 
@@ -206,8 +233,11 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
       batchFrozen[batchIds[i] + chainPrepend] = batchFrozen[batchIds[i]];
       // Store the encrypted data for the prepended tokenID
       _setEncryptedData(batchIds[i] + chainPrepend, encryptedData[batchIds[i]]);
+      // Update the batchId to the prepended tokenID
+      batchIds[i] += chainPrepend;
 
       /* ---------------------------- Clearing storage ---------------------------- */
+      /// @dev Clearing storage enables to obtain a gas refund
 
       // Clear the baseURI for the original tokenID
       delete baseURIs[batchIds[i]];
@@ -215,18 +245,16 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
       delete batchFrozen[batchIds[i]];
       // Clear the encrypted data for the original tokenID
       _setEncryptedData(batchIds[i], "");
-
-      // Update the batchId to the prepended tokenID
-      batchIds[i] += chainPrepend;
     }
 
+    // Set the lazy mint initialized status to true to prevent this function from being called again
     _setLazyMintInitialized();
   }
 
-  /**
-   * PUBLIC NON STATE CHANGING FUNCTIONS
-   * static
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                     PUBLIC NON STATE CHANGING FUNCTIONS                    */
+  /*                                   static                                   */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Returns the version of the contract
@@ -241,10 +269,10 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     return interfaceId == type(ICustomERC721).interfaceId;
   }
 
-  /**
-   * PUBLIC NON STATE CHANGING FUNCTIONS
-   * dynamic
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                     PUBLIC NON STATE CHANGING FUNCTIONS                    */
+  /*                                   dynamic                                  */
+  /* -------------------------------------------------------------------------- */
 
   function owner() external view override(ERC721H, ICustomERC721) returns (address) {
     return _getOwner();
@@ -254,7 +282,17 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     return (_getOwner() == user);
   }
 
-  function currentMaxSupply() public view returns (uint256) {
+  /**
+   * @notice Returns the theoretical maximum supply for the current time
+   * @dev The max supply is calculated based on the current time and the mint interval, by subtracting
+   *      the elapsed_mint intervals from the initial max supply.
+   *      - The max supply is the initial max supply if the current time is less than the start date.
+   *      - The max supply is zero if the current time is greater than the end date.
+   *      - The max supply is decreased by one for each mint interval that has passed.
+   *      - The max supply is calculated by subtracting the intervals elapsed from the initial max supply.
+   * @return max supply
+   */
+  function currentTheoricalMaxSupply() public view returns (uint256) {
     if (block.timestamp <= START_DATE) {
       return INITIAL_MAX_SUPPLY;
     } else if (block.timestamp >= START_DATE + INITIAL_MAX_SUPPLY * MINT_INTERVAL) {
@@ -268,6 +306,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
 
   /**
    * @notice Sale details
+   * @dev Returns the sale details for the contract
    * @return SaleDetails sale information details
    */
   function saleDetails() external view returns (CustomERC721SaleDetails memory) {
@@ -281,7 +320,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
         presaleEnd: salesConfig.presaleEnd,
         presaleMerkleRoot: salesConfig.presaleMerkleRoot,
         totalMinted: _currentTokenId,
-        maxSupply: currentMaxSupply(),
+        maxSupply: currentTheoricalMaxSupply(),
         maxSalePurchasePerAddress: salesConfig.maxSalePurchasePerAddress
       });
   }
@@ -336,7 +375,8 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   }
 
   /**
-   * @dev Returns the base URI for a given tokenId. It return the base URI corresponding to the batch the tokenId belongs to.
+   * @dev Returns the base URI for a given tokenId. It return the base URI corresponding to the batch the tokenId
+   * belongs to.
    * @param _tokenId id of token to get URI for
    * @return Token URI
    */
@@ -358,10 +398,10 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     return HolographERC721Interface(holographer()).name();
   }
 
-  /**
-   * PUBLIC STATE CHANGING FUNCTIONS
-   * available to all
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                       PUBLIC STATE CHANGING FUNCTIONS                      */
+  /*                              available to all                              */
+  /* -------------------------------------------------------------------------- */
 
   function multicall(bytes[] memory data) public returns (bytes[] memory results) {
     results = new bytes[](data.length);
@@ -370,15 +410,10 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     }
   }
 
-  /* -------------------------------------------------------------------------- */
-  /*                            Delayed Reveal Logic                            */
-  /* -------------------------------------------------------------------------- */
-
   /**
-   *  @notice       Lets an authorized address reveal a batch of delayed reveal NFTs.
-   *
+   *  @notice Lets an authorized address reveal a batch of delayed reveal NFTs.
    *  @param _index The ID for the batch of delayed-reveal NFTs to reveal.
-   *  @param _key   The key with which the base URI for the relevant batch of NFTs was encrypted.
+   *  @param _key The key with which the base URI for the relevant batch of NFTs was encrypted.
    */
   function reveal(uint256 _index, bytes calldata _key) public virtual override returns (string memory revealedURI) {
     require(_canReveal(), "Not authorized");
@@ -401,6 +436,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
 
   /**
    * @dev This allows the user to purchase/mint a edition at the given price in the contract.
+   * @param quantity quantity to purchase
    */
   function purchase(
     uint256 quantity
@@ -414,10 +450,15 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
       revert Purchase_WrongPrice((salesConfig.publicSalePrice + holographMintFeeUsd) * quantity);
     }
 
-    // Check if the countdown has ended
-    if (_currentTokenId + quantity > currentMaxSupply()) {
+    /// @dev Check if the countdown has completed
+    ///      END_DATE - MINT_INTERVAL * (quantity - 1) represent the time when the last mint will be allowed
+    ///      (quantity - 1) because we want to allow the last mint to be available until the END_DATE
+    if (block.timestamp >= END_DATE - MINT_INTERVAL * (quantity - 1)) {
       revert Purchase_CountdownCompleted();
     }
+
+    // Reducing the end date by removing the quantity of mints times the mint interval
+    END_DATE = END_DATE - quantity * MINT_INTERVAL;
 
     uint256 remainder = msg.value - (salePrice * quantity);
 
@@ -453,67 +494,10 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     return firstMintedTokenId;
   }
 
-  /**
-   * @notice Merkle-tree based presale purchase function
-   * @param quantity quantity to purchase
-   * @param maxQuantity max quantity that can be purchased via merkle proof #
-   * @param pricePerToken price that each token is purchased at
-   * @param merkleProof proof for presale mint
-   */
-  function purchasePresale(
-    uint256 quantity,
-    uint256 maxQuantity,
-    uint256 pricePerToken,
-    bytes32[] calldata merkleProof
-  ) external payable nonReentrant canMintTokens(quantity) onlyPresaleActive returns (uint256) {
-    if (
-      !// address, uint256, uint256
-      MerkleProof.verify(
-        merkleProof,
-        salesConfig.presaleMerkleRoot,
-        keccak256(abi.encode(msgSender(), maxQuantity, pricePerToken))
-      )
-    ) {
-      revert Presale_MerkleNotApproved();
-    }
-
-    uint256 weiPricePerToken = _usdToWei(pricePerToken);
-    if (msg.value < weiPricePerToken * quantity) {
-      revert Purchase_WrongPrice(pricePerToken * quantity);
-    }
-    uint256 remainder = msg.value - (weiPricePerToken * quantity);
-
-    presaleMintsByAddress[msgSender()] += quantity;
-    if (presaleMintsByAddress[msgSender()] > maxQuantity) {
-      revert Presale_TooManyForAddress();
-    }
-
-    // First mint the NFTs
-    _mintNFTs(msgSender(), quantity);
-
-    HolographERC721Interface H721 = HolographERC721Interface(holographer());
-    uint256 chainPrepend = H721.sourceGetChainPrepend();
-    uint256 firstMintedTokenId = (chainPrepend + uint256(_currentTokenId - quantity)) + 1;
-
-    emit Sale({
-      to: msgSender(),
-      quantity: quantity,
-      pricePerToken: weiPricePerToken,
-      firstPurchasedTokenId: firstMintedTokenId
-    });
-
-    // Refund any overpayment
-    if (remainder > 0) {
-      msgSender().call{value: remainder, gas: gasleft() > STATIC_GAS_LIMIT ? STATIC_GAS_LIMIT : gasleft()}("");
-    }
-
-    return firstMintedTokenId;
-  }
-
-  /**
-   * PUBLIC STATE CHANGING FUNCTIONS
-   * admin only
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                       PUBLIC STATE CHANGING FUNCTIONS                      */
+  /*                                 admin only                                 */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Admin mint tokens to a recipient for free
@@ -606,19 +590,26 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     emit FundsWithdrawn(sender, FUNDS_RECIPIENT, funds);
   }
 
-  /**
-   * INTERNAL FUNCTIONS
-   * non state changing
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                             INTERNAL FUNCTIONS                             */
+  /*                             non state changing                             */
+  /* -------------------------------------------------------------------------- */
 
   function _presaleActive() internal view returns (bool) {
     return salesConfig.presaleStart <= block.timestamp && salesConfig.presaleEnd > block.timestamp;
   }
 
+  /**
+   * @dev Checks if the public sale is active
+   */
   function _publicSaleActive() internal view returns (bool) {
     return START_DATE <= block.timestamp;
   }
 
+  /**
+   * @dev Converts the given amount in USD to the equivalent amount in wei using the price oracle.
+   * @param amount The amount in USD to convert to wei
+   */
   function _usdToWei(uint256 amount) internal view returns (uint256 weiAmount) {
     if (amount == 0) {
       return 0;
@@ -626,54 +617,65 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     weiAmount = dropsPriceOracle.convertUsdToWei(amount);
   }
 
-  /// @dev Returns whether lazy minting can be done in the given execution context.
+  /// @notice Returns whether lazy minting can be done in the given execution context.
   function _canLazyMint() internal view override returns (bool) {
     return !_isInitialized() || ((msgSender() == _getOwner()) && _publicSaleActive()) || _presaleActive();
   }
 
-  /// @dev Checks whether contract metadata can be set in the given execution context.
+  /// @notice Checks whether contract metadata can be set in the given execution context.
   function _canSetContractURI() internal view override returns (bool) {
     return msgSender() == _getOwner();
   }
 
   /**
-   * Returns the total amount of tokens minted in the contract.
+   * @notice Returns the total amount of tokens minted in the contract.
    */
   function totalMinted() external view returns (uint256) {
     return _currentTokenId;
   }
 
-  /// @dev The tokenId of the next NFT that will be minted / lazy minted.
+  /// @notice The tokenId of the next NFT that will be minted / lazy minted.
   function nextTokenIdToMint() external view returns (uint256) {
     return nextTokenIdToLazyMint;
   }
 
-  /// @dev The next token ID of the NFT that can be claimed.
+  /// @notice The next token ID of the NFT that can be claimed.
   function nextTokenIdToClaim() external view returns (uint256) {
     return _currentTokenId + 1;
   }
 
-  /**
-   * INTERNAL FUNCTIONS
-   * state changing
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                             INTERNAL FUNCTIONS                             */
+  /*                               state changing                               */
+  /* -------------------------------------------------------------------------- */
 
   /**
-   *  We override the `lazyMint` function, and use the `_data` parameter for storing encrypted metadata
-   *  for 'delayed reveal' NFTs.
+   * @dev This function is used to set the placeholder base URI, the encrypted one and the provennance hashe for 
+   *      a batch of tokens.
+   * @dev We override the `lazyMint` function, and use the `_data` parameter for storing encrypted metadata
+   *      for 'delayed reveal' NFTs.
+   * @param _amount The amount of tokens in the batch
+   * @param _baseURIForTokens The placeholder base URI for the batch
+   * @param _data The encrypted metadata for the batch, abi encoded payload containing the encryptedURI (string) 
+   *              and the provenanceHash (bytes32).
    */
   function lazyMint(
     uint256 _amount,
     string memory _baseURIForTokens,
     bytes memory _data
   ) internal override returns (uint256 batchId) {
+    // If the data is not empty, set the encrypted base URI and the provenance hash for the batch
     if (_data.length > 0) {
+      // Decode the data to get the encrypted URI and the provenance hash
       (bytes memory encryptedURI, bytes32 provenanceHash) = abi.decode(_data, (bytes, bytes32));
+
+      // If both the encrypted URI and the provenance hash are not empty, set the encrypted data for the batch
       if (encryptedURI.length != 0 && provenanceHash != "") {
         _setEncryptedData(nextTokenIdToLazyMint + _amount, _data);
       }
     }
 
+    // Call the parent lazy mint function
     return super.lazyMint(_amount, _baseURIForTokens, _data);
   }
 
@@ -709,6 +711,10 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
       }
     }
   }
+
+  /* -------------------------------------------------------------------------- */
+  /*                                  Fallback                                  */
+  /* -------------------------------------------------------------------------- */
 
   fallback() external payable override {
     assembly {

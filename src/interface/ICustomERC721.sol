@@ -131,24 +131,11 @@ interface ICustomERC721 {
   /// @return first minted token ID
   function purchase(uint256 quantity) external payable returns (uint256);
 
-  /// @notice External purchase presale function (takes a merkle proof and matches to root) (payable in eth)
-  /// @param quantity to purchase
-  /// @param maxQuantity can purchase (verified by merkle root)
-  /// @param pricePerToken price per token allowed (verified by merkle root)
-  /// @param merkleProof input for merkle proof leaf verified by merkle root
-  /// @return first minted token ID
-  function purchasePresale(
-    uint256 quantity,
-    uint256 maxQuantity,
-    uint256 pricePerToken,
-    bytes32[] memory merkleProof
-  ) external payable returns (uint256);
-
   /// @notice Function to return the global sales details for the given drop
   function saleDetails() external view returns (CustomERC721SaleDetails memory);
 
   /// @notice Function to return the current max supply
-  function currentMaxSupply() external view returns (uint256);
+  function currentTheoricalMaxSupply() external view returns (uint256);
 
   /// @notice Function to return the specific sales details for a given address
   /// @param minter address for minter to return mint information for
