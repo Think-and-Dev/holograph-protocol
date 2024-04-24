@@ -7,8 +7,8 @@ import {HolographTreasury} from "src/HolographTreasury.sol";
 import {DummyDropsPriceOracle} from "src/drops/oracle/DummyDropsPriceOracle.sol";
 import {CustomERC721Initializer} from "src/struct/CustomERC721Initializer.sol";
 import {DeploymentConfig} from "src/struct/DeploymentConfig.sol";
-import {SalesConfiguration} from "src/drops/struct/SalesConfiguration.sol";
-import {LazyMintConfiguration} from "src/drops/struct/LazyMintConfiguration.sol";
+import {CustomERC721SalesConfiguration} from "src/struct/CustomERC721SalesConfiguration.sol";
+import {LazyMintConfiguration} from "src/struct/LazyMintConfiguration.sol";
 import {Verification} from "src/struct/Verification.sol";
 import {HolographFactory} from "src/HolographFactory.sol";
 import {HolographerInterface} from "src/interface/HolographerInterface.sol";
@@ -20,7 +20,7 @@ import {Utils} from "../utils/Utils.sol";
 import {CustomERC721Helper} from "test/foundry/CustomERC721/utils/Helper.sol";
 
 import {Constants} from "test/foundry/utils/Constants.sol";
-import {DEFAULT_BASE_URI, DEFAULT_BASE_URI_2, DEFAULT_PLACEHOLDER_URI, DEFAULT_PLACEHOLDER_URI_2, DEFAULT_ENCRYPT_DECRYPT_KEY, DEFAULT_ENCRYPT_DECRYPT_KEY_2, DEFAULT_MAX_SUPPLY, DEFAULT_MINT_TIME_COST} from "test/foundry/CustomERC721/utils/Constants.sol";
+import {DEFAULT_BASE_URI, DEFAULT_BASE_URI_2, DEFAULT_PLACEHOLDER_URI, DEFAULT_PLACEHOLDER_URI_2, DEFAULT_ENCRYPT_DECRYPT_KEY, DEFAULT_ENCRYPT_DECRYPT_KEY_2, DEFAULT_MAX_SUPPLY, DEFAULT_MINT_INTERVAL, DEFAULT_START_DATE} from "test/foundry/CustomERC721/utils/Constants.sol";
 
 contract CustomERC721Fixture is Test {
   /// @notice Event emitted when the funds are withdrawn from the minting contract
@@ -113,13 +113,13 @@ contract CustomERC721Fixture is Test {
     }
   }
 
-  modifier setupTestCustomERC21(uint256 maxSupply) {
+  modifier setupTestCustomERC21(uint32 maxSupply) {
     chainPrepend = deployAndSetupProtocol(maxSupply, false);
 
     _;
   }
 
-  modifier setupTestCustomERC21WithoutLazyMintSync(uint256 maxSupply) {
+  modifier setupTestCustomERC21WithoutLazyMintSync(uint32 maxSupply) {
     chainPrepend = deployAndSetupProtocol(maxSupply, true);
 
     _;
@@ -174,13 +174,13 @@ contract CustomERC721Fixture is Test {
     uint256 nativeFee = dummyPriceOracle.convertUsdToWei(holographFee);
 
     totalCost = (nativePrice + nativeFee);
+
+    vm.warp(customErc721.START_DATE());
   }
 
-  function deployAndSetupProtocol(uint256 maxSupply, bool skipLazyMintSync) internal returns (uint256) {
+  function deployAndSetupProtocol(uint32 maxSupply, bool skipLazyMintSync) internal returns (uint256) {
     // Setup sale config for edition
-    SalesConfiguration memory saleConfig = SalesConfiguration({
-      publicSaleStart: 0, // starts now
-      publicSaleEnd: type(uint64).max, // never ends
+    CustomERC721SalesConfiguration memory saleConfig = CustomERC721SalesConfiguration({
       presaleStart: 0, // never starts
       presaleEnd: 0, // never ends
       publicSalePrice: usd100,
@@ -190,12 +190,11 @@ contract CustomERC721Fixture is Test {
 
     // Create initializer
     CustomERC721Initializer memory initializer = CustomERC721Initializer({
+      startDate: DEFAULT_START_DATE,
+      initialMaxSupply: maxSupply,
+      mintInterval: DEFAULT_MINT_INTERVAL,
       initialOwner: payable(DEFAULT_OWNER_ADDRESS),
-      fundsRecipient: payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS),
       contractURI: "https://example.com/metadata.json",
-      countdownEnd: uint96(DEFAULT_MINT_TIME_COST * maxSupply),
-      mintTimeCost: uint64(DEFAULT_MINT_TIME_COST),
-      royaltyBPS: 1000,
       salesConfiguration: saleConfig,
       lazyMintsConfigurations: new LazyMintConfiguration[](0)
     });
@@ -243,7 +242,7 @@ contract CustomERC721Fixture is Test {
   }
 
   function _purchaseAllSupply() internal {
-    for (uint256 i = 0; i < customErc721.maxSupply(); i++) {
+    for (uint256 i = 0; i < customErc721.currentTheoricalMaxSupply(); i++) {
       address user = address(uint160(uint256(keccak256(abi.encodePacked(i)))));
       vm.startPrank(address(user));
       vm.deal(address(user), totalCost);

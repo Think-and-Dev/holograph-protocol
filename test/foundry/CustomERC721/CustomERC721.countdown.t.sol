@@ -8,7 +8,7 @@ import {CustomERC721Fixture} from "test/foundry/fixtures/CustomERC721Fixture.t.s
 
 import {Strings} from "src/library/Strings.sol";
 
-import {DEFAULT_MAX_SUPPLY, DEFAULT_MINT_TIME_COST} from "test/foundry/CustomERC721/utils/Constants.sol";
+import {DEFAULT_START_DATE, DEFAULT_MAX_SUPPLY, DEFAULT_MINT_INTERVAL} from "test/foundry/CustomERC721/utils/Constants.sol";
 
 contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
   using Strings for uint256;
@@ -19,232 +19,150 @@ contract CustomERC721CountdownTest is CustomERC721Fixture, ICustomERC721Errors {
     super.setUp();
   }
 
-  function test_getMintTimeCost() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) setUpPurchase {
-    uint64 mintTimeCost = customErc721.getMintTimeCost();
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
+  function test_init() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) {
+    assertEq(customErc721.START_DATE(), DEFAULT_START_DATE, "Wrong start date");
+    assertEq(customErc721.MINT_INTERVAL(), DEFAULT_MINT_INTERVAL, "Wrong mint interval");
+    assertEq(customErc721.INITIAL_MAX_SUPPLY(), DEFAULT_MAX_SUPPLY, "Wrong initial max supply");
+    assertEq(
+      customErc721.END_DATE(),
+      DEFAULT_START_DATE + DEFAULT_MINT_INTERVAL * DEFAULT_MAX_SUPPLY,
+      "Wrong initial end date"
+    );
+    assertEq(
+      customErc721.INITIAL_END_DATE(),
+      DEFAULT_START_DATE + DEFAULT_MINT_INTERVAL * DEFAULT_MAX_SUPPLY,
+      "Wrong initial end date"
+    );
   }
 
-  function test_getCountdownEnd() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) setUpPurchase {
-    uint96 countdownEnd = customErc721.getCountdownEnd();
-    assertEq(countdownEnd, DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST");
+  function test_currentTheoricalMaxSupply() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) setUpPurchase {
+    // Current Max supply should be the same as initial max supply before the start date
+    assertEq(customErc721.currentTheoricalMaxSupply(), DEFAULT_MAX_SUPPLY, "Wrong current max supply");
+
+    // Current Max supply still the same at the exacte start date timestamp
+    vm.warp(customErc721.START_DATE());
+    assertEq(customErc721.currentTheoricalMaxSupply(), DEFAULT_MAX_SUPPLY, "Wrong current max supply at start date");
+
+    vm.warp(customErc721.START_DATE() + 10 * customErc721.MINT_INTERVAL());
+    assertEq(customErc721.currentTheoricalMaxSupply(), DEFAULT_MAX_SUPPLY - 10, "Wrong current max supply after start date");
   }
 
-  function test_getInitialCountdownEnd() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) setUpPurchase {
-    uint96 initialCountdownEnd = customErc721.getInitialCountdownEnd();
-    assertEq(initialCountdownEnd, DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST, "Initial countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST");
-  }
+  function test_purchaseCantExceedMaxSupplyAtStartDate() public setupTestCustomERC21(1000) setUpPurchase {
+    uint256 maxSupply = customErc721.INITIAL_MAX_SUPPLY();
+    uint256 start = customErc721.START_DATE();
 
-  function test_SubCountdown() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) setUpPurchase {
-    /* -------------------------- Initialization checks ------------------------- */
-    (uint64 mintTimeCost, uint96 countdownEnd, uint96 initialCountdownEnd, , ) = customErc721.config();
-    assertEq(countdownEnd, DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST");
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
-    assertTrue(initialCountdownEnd == countdownEnd, "Initial countdown end should be equal to countdown end");
-    assertTrue(countdownEnd % mintTimeCost == 0, "Countdown end should be divisible by mint time cost");
-
-    /* -------------------------------- Purchase -------------------------------- */
-
+    vm.warp(start);
     vm.prank(address(TEST_ACCOUNT));
-    vm.deal(address(TEST_ACCOUNT), totalCost);
-    customErc721.purchase{value: totalCost}(1);
+    vm.deal(address(TEST_ACCOUNT), type(uint256).max);
 
-    /* ----------------------------- Countdown checks ---------------------------- */
-    (mintTimeCost, countdownEnd, initialCountdownEnd, , ) = customErc721.config();
-    assertEq(countdownEnd, DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST - mintTimeCost, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST - mint time cost");
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
-    assertTrue(
-      initialCountdownEnd == countdownEnd + mintTimeCost,
-      "Initial countdown end should be equal to countdown end + mint time cost"
-    );
-    assertTrue(countdownEnd % mintTimeCost == 0, "Countdown end should be divisible by mint time cost");
-  }
-
-  function test_SubCountdownMultiplePurchase() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) setUpPurchase {
-    /* -------------------------- Initialization checks ------------------------- */
-    (uint64 mintTimeCost, uint96 countdownEnd, uint96 initialCountdownEnd, , ) = customErc721.config();
-    assertEq(countdownEnd, DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST");
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
-    assertTrue(initialCountdownEnd == countdownEnd, "Initial countdown end should be equal to countdown end");
-    assertTrue(countdownEnd % mintTimeCost == 0, "Countdown end should be divisible by mint time cost");
-
-    /* -------------------------------- Purchase -------------------------------- */
-    uint256 amountToPurchase = 10;
-    vm.prank(address(TEST_ACCOUNT));
-    vm.deal(address(TEST_ACCOUNT), totalCost * amountToPurchase);
-    customErc721.purchase{value: totalCost * amountToPurchase}(amountToPurchase);
-
-    /* ----------------------------- Countdown checks ---------------------------- */
-    (mintTimeCost, countdownEnd, initialCountdownEnd, , ) = customErc721.config();
-    assertEq(
-      countdownEnd,
-      DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST - mintTimeCost * amountToPurchase,
-      "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST - mint time cost * purchased amount"
-    );
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
-    assertTrue(
-      initialCountdownEnd == countdownEnd + mintTimeCost * amountToPurchase,
-      "Initial countdown end should be equal to countdown end + mint time cost * purchased amount"
-    );
-    assertTrue(countdownEnd % mintTimeCost == 0, "Countdown end should be divisible by mint time cost");
-  }
-
-  function test_CantExceedMaxSupply() public setupTestCustomERC21(2000) setUpPurchase {
-    /* -------------------------- Initialization checks ------------------------- */
-    (uint64 mintTimeCost, uint96 countdownEnd, uint96 initialCountdownEnd, , ) = customErc721.config();
-    assertEq(countdownEnd, 2000 * DEFAULT_MINT_TIME_COST, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST");
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
-    assertTrue(initialCountdownEnd == countdownEnd, "Initial countdown end should be equal to countdown end");
-    assertTrue(countdownEnd % mintTimeCost == 0, "Countdown end should be divisible by mint time cost");
-
-    /* ----------------------- Purchases to the max supply ---------------------- */
-    _purchaseAllSupply();
-
-    /* ----------------------------- Countdown checks ---------------------------- */
-    (mintTimeCost, countdownEnd, initialCountdownEnd, , ) = customErc721.config();
-    assertEq(
-      countdownEnd,
-      customErc721.maxSupply() * DEFAULT_MINT_TIME_COST - mintTimeCost * customErc721.maxSupply(),
-      "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST - mint time cost * purchased amount"
-    );
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
-    assertEq(
-      initialCountdownEnd, countdownEnd + mintTimeCost * customErc721.maxSupply(),
-      "Initial countdown end should be equal to countdown end + mint time cost * purchased amount"
-    );
-    assertEq(countdownEnd, 0, "Countdown end should be 0");
-    assertTrue(countdownEnd % mintTimeCost == 0, "Countdown end should be divisible by mint time cost");
-    assertEq(customErc721.totalMinted() * mintTimeCost, initialCountdownEnd, "Max supply not reached");
-
-    /* ------------------------- Check mint another one ------------------------- */
-
-    vm.startPrank(alice);
-    vm.deal(alice, totalCost);
-    vm.expectRevert(abi.encodeWithSelector(Purchase_CountdownCompleted.selector));
-    customErc721.purchase{value: totalCost}(1);
-    vm.stopPrank();
-  }
-
-  /* -------------------------------------------------------------------------- */
-  /*                                   Fuzzing                                  */
-  /* -------------------------------------------------------------------------- */
-
-  function test_Invariant_CountdownSupplySingleCall(
-    uint256 amountToPurchase
-  ) public setupTestCustomERC21(fuzzingMaxSupply) setUpPurchase {
-    // Bounds the amount to purchase between 1 and the max supply
-    /// @dev using bound instead of vm.assume prevent the fuzzing from calling the test with useless values
-    ///      Every values is used but bounded
-    amountToPurchase = bound(amountToPurchase, 1, customErc721.maxSupply());
-
-    /* -------------------------- Initialization checks ------------------------- */
-    (uint64 mintTimeCost, uint96 countdownEnd, uint96 initialCountdownEnd, , ) = customErc721.config();
-    assertEq(countdownEnd, fuzzingMaxSupply * DEFAULT_MINT_TIME_COST, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST");
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
-    assertTrue(initialCountdownEnd == countdownEnd, "Initial countdown end should be equal to countdown end");
-    assertTrue(countdownEnd % mintTimeCost == 0, "Countdown end should be divisible by mint time cost");
-
-    /* -------------------------------- Purchase -------------------------------- */
-
-    vm.startPrank(address(TEST_ACCOUNT));
-    vm.deal(address(TEST_ACCOUNT), totalCost * amountToPurchase);
-    customErc721.purchase{value: totalCost * amountToPurchase}(amountToPurchase);
-    vm.stopPrank();
-
-    /* ----------------------------- Countdown checks ---------------------------- */
-    (mintTimeCost, countdownEnd, initialCountdownEnd, , ) = customErc721.config();
-    assertEq(
-      countdownEnd,
-      fuzzingMaxSupply * DEFAULT_MINT_TIME_COST - mintTimeCost * amountToPurchase,
-      "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST - mint time cost * purchased amount"
-    );
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
-    assertTrue(
-      initialCountdownEnd == countdownEnd + mintTimeCost * amountToPurchase,
-      "Initial countdown end should be equal to countdown end + mint time cost * purchased amount"
-    );
-    assertTrue(countdownEnd % mintTimeCost == 0, "Countdown end should be divisible by mint time cost");
-  }
-
-  function test_Invariant_CountdownSupplyMultiple(
-    uint256 amountToPurchase
-  ) public setupTestCustomERC21(fuzzingMaxSupply) setUpPurchase {
-    // Bounds the amount to purchase between 1 and the max supply
-    /// @dev using bound instead of vm.assume prevent the fuzzing from calling the test with useless values
-    ///      Every values is used but bounded
-    amountToPurchase = bound(amountToPurchase, 1, customErc721.maxSupply());
-
-    /* -------------------------- Initialization checks ------------------------- */
-    (uint64 mintTimeCost, uint96 countdownEnd, uint96 initialCountdownEnd, , ) = customErc721.config();
-    assertEq(countdownEnd, fuzzingMaxSupply * DEFAULT_MINT_TIME_COST, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST");
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
-    assertTrue(initialCountdownEnd == countdownEnd, "Initial countdown end should be equal to countdown end");
-    assertTrue(countdownEnd % mintTimeCost == 0, "Countdown end should be divisible by mint time cost");
-
-    /* -------------------------------- Purchase -------------------------------- */
-
-    for (uint256 i = 0; i < amountToPurchase; i++) {
-      address user = address(uint160(uint256(keccak256(abi.encodePacked(i)))));
-      vm.startPrank(address(user));
-      vm.deal(address(user), totalCost);
+    // Purchase all the supply
+    for (uint256 i = 0; i < maxSupply; i++) {
       customErc721.purchase{value: totalCost}(1);
-      vm.stopPrank();
     }
 
-    /* ----------------------------- Countdown checks ---------------------------- */
-    (mintTimeCost, countdownEnd, initialCountdownEnd, , ) = customErc721.config();
-    assertEq(
-      countdownEnd,
-      fuzzingMaxSupply * DEFAULT_MINT_TIME_COST - mintTimeCost * amountToPurchase,
-      "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST - mint time cost * purchased amount"
-    );
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
-    assertTrue(
-      initialCountdownEnd == countdownEnd + mintTimeCost * amountToPurchase,
-      "Initial countdown end should be equal to countdown end + mint time cost * purchased amount"
-    );
-    assertTrue(countdownEnd % mintTimeCost == 0, "Countdown end should be divisible by mint time cost");
+    // Try to purchase one more
+    vm.expectRevert(abi.encodeWithSelector(Purchase_CountdownCompleted.selector));
+    customErc721.purchase{value: totalCost}(1);
+
+    assertEq(customErc721.totalMinted(), maxSupply, "Wrong total minted");
+    assertEq(customErc721.END_DATE(), start, "Wrong end date");
   }
 
-  function test_Invariant_CantExceedMaxSupply(uint256 forceAmount) public setupTestCustomERC21(100) setUpPurchase {
-    forceAmount = bound(forceAmount, 1, customErc721.maxSupply());
+  function test_purchaseCantExceedMaxSupply() public setupTestCustomERC21(1000) setUpPurchase {
+    uint256 initialMaxSupply = customErc721.INITIAL_MAX_SUPPLY();
+    uint256 start = customErc721.START_DATE();
 
-    /* -------------------------- Initialization checks ------------------------- */
-    (uint64 mintTimeCost, uint96 countdownEnd, uint96 initialCountdownEnd, , ) = customErc721.config();
-    assertEq(countdownEnd, 100 * DEFAULT_MINT_TIME_COST, "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST");
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
-    assertTrue(initialCountdownEnd == countdownEnd, "Initial countdown end should be equal to countdown end");
-    assertTrue(countdownEnd % mintTimeCost == 0, "Countdown end should be divisible by mint time cost");
-    
-    /* ----------------------- Purchases to the max supply ---------------------- */
-    _purchaseAllSupply();
+    // Wrap to the timestamp where the total epochs
+    vm.warp(start + (initialMaxSupply / 2) * customErc721.MINT_INTERVAL());
+    vm.prank(address(TEST_ACCOUNT));
+    vm.deal(address(TEST_ACCOUNT), type(uint256).max);
 
-    /* ----------------------------- Countdown checks ---------------------------- */
-    (mintTimeCost, countdownEnd, initialCountdownEnd, , ) = customErc721.config();
-    assertEq(
-      countdownEnd,
-      customErc721.maxSupply() * DEFAULT_MINT_TIME_COST - mintTimeCost * customErc721.maxSupply(),
-      "Countdown end should be DEFAULT_MAX_SUPPLY * DEFAULT_MINT_TIME_COST - mint time cost * purchased amount"
-    );
-    assertEq(mintTimeCost, DEFAULT_MINT_TIME_COST, "Mint time cost should be DEFAULT_MINT_TIME_COST");
-    assertEq(
-      initialCountdownEnd, countdownEnd + mintTimeCost * customErc721.maxSupply(),
-      "Initial countdown end should be equal to countdown end + mint time cost * purchased amount"
-    );
-    assertEq(countdownEnd, 0, "Countdown end should be 0");
-    assertTrue(countdownEnd % mintTimeCost == 0, "Countdown end should be divisible by mint time cost");
-    assertEq(customErc721.totalMinted() * mintTimeCost, initialCountdownEnd, "Max supply not reached");
+    uint256 newMaxSupply = initialMaxSupply / 2;
 
-    /* -------------------------------------------------------------------------- */
-    /*                       Check mint more than max supply                      */
-    /* -------------------------------------------------------------------------- */
-
-    for (uint256 i = 0; i < forceAmount; i++) {
-      address user = address(uint160(uint256(keccak256(abi.encodePacked(i)))));
-      vm.startPrank(address(user));
-      vm.deal(address(user), totalCost);
-      vm.expectRevert(abi.encodeWithSelector(Purchase_CountdownCompleted.selector));
+    // Purchase all the supply
+    for (uint256 i = 0; i < newMaxSupply; i++) {
       customErc721.purchase{value: totalCost}(1);
-      vm.stopPrank();
+    }
+
+    // Try to purchase one more
+    vm.expectRevert(abi.encodeWithSelector(Purchase_CountdownCompleted.selector));
+    customErc721.purchase{value: totalCost}(1);
+
+    assertEq(customErc721.totalMinted(), initialMaxSupply / 2, "Wrong total minted");
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /*                               Invariant tests                              */
+  /* -------------------------------------------------------------------------- */
+
+  function test_Invariant_complexMaxSupply(
+    uint256 elapsedTimeBetweenPurchase
+  ) public setupTestCustomERC21(2000) setUpPurchase {
+    uint256 mintInterval = customErc721.MINT_INTERVAL();
+    uint256 initialMaxSupply = customErc721.INITIAL_MAX_SUPPLY();
+    uint256 start = customErc721.START_DATE();
+    uint256 maxIntervalCount = 5;
+
+    elapsedTimeBetweenPurchase = bound(elapsedTimeBetweenPurchase, mintInterval, mintInterval * maxIntervalCount - 1);
+
+    vm.warp(start);
+    vm.prank(address(TEST_ACCOUNT));
+    vm.deal(address(TEST_ACCOUNT), type(uint256).max);
+
+    // Purchase all the supply
+    uint256 i = 1;
+    while (customErc721.totalMinted() < customErc721.currentTheoricalMaxSupply()) {
+      customErc721.purchase{value: totalCost}(1);
+
+      vm.warp(block.timestamp + elapsedTimeBetweenPurchase);
+
+      uint256 elapsedInterval = (block.timestamp - start) / mintInterval;
+      assertEq(customErc721.totalMinted(), i, "Wrong total minted");
+      assertEq(
+        customErc721.currentTheoricalMaxSupply(),
+        elapsedInterval > initialMaxSupply ? 0 : initialMaxSupply - elapsedInterval,
+        "Wrong current max supply"
+      );
+      i++;
+    }
+
+    // Try to purchase one more
+    vm.expectRevert(abi.encodeWithSelector(Purchase_CountdownCompleted.selector));
+    customErc721.purchase{value: totalCost}(1);
+    uint256 totalMinted = customErc721.totalMinted();
+    uint256 expectedMaxSupply;
+
+    if (block.timestamp >= start + initialMaxSupply * mintInterval) {
+      expectedMaxSupply = 0; // All intervals have elapsed
+    } else {
+      uint256 intervalsElapsed = (block.timestamp - start) / mintInterval;
+      expectedMaxSupply = initialMaxSupply - intervalsElapsed;
+    }
+
+    // The total minted should be equal to the current max supply
+    assertEq(expectedMaxSupply, customErc721.currentTheoricalMaxSupply(), "Wrong expectedMaxSupply");
+    assertEq(totalMinted, i - 1, "Wrong total minted");
+    // Approx eq maxIntervalCount because the current block timestamp can be a bit more that the last mint exact
+    // interval
+    assertApproxEqAbs(customErc721.totalMinted(), customErc721.currentTheoricalMaxSupply(), maxIntervalCount);
+  }
+
+  function test_Invariant_currentTheoricalMaxSupply(
+    uint256 elapsedInterval
+  ) public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) setUpPurchase {
+    elapsedInterval = bound(elapsedInterval, 0, DEFAULT_MAX_SUPPLY * 10);
+
+    vm.warp(customErc721.START_DATE() + elapsedInterval * customErc721.MINT_INTERVAL());
+
+    // If the elapsed interval is greater than the max supply, the current max supply should be 0
+    if (block.timestamp > DEFAULT_START_DATE + DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL) {
+      assertEq(customErc721.currentTheoricalMaxSupply(), 0, "Wrong current max supply after start date");
+    } else {
+      assertEq(
+        customErc721.currentTheoricalMaxSupply(),
+        DEFAULT_MAX_SUPPLY - elapsedInterval,
+        "Wrong current max supply after start date"
+      );
     }
   }
 }

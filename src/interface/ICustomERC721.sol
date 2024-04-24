@@ -3,7 +3,7 @@
 pragma solidity 0.8.13;
 
 import {AddressMintDetails} from "../drops/struct/AddressMintDetails.sol";
-import {SaleDetails} from "../drops/struct/SaleDetails.sol";
+import {CustomERC721SaleDetails} from "src/struct/CustomERC721SaleDetails.sol";
 
 /// @notice Interface for HOLOGRAPH Drops contract
 interface ICustomERC721 {
@@ -103,19 +103,24 @@ interface ICustomERC721 {
   /// @param id id of the minted nft with chain id prefix
   event NFTMinted(address indexed recipient, uint256 indexed tokenId, uint256 id);
 
+  /// @notice Getter for the sale start date
+  function START_DATE() external view returns (uint256);
+
+  /// @notice Getter for the initial max supply
+  function INITIAL_MAX_SUPPLY() external view returns (uint256);
+
+  /// @notice Getter for the mint interval
+  function MINT_INTERVAL() external view returns (uint256);
+
   /// @notice Admin function to update the sales configuration settings
   /// @param publicSalePrice public sale price in ether
   /// @param maxSalePurchasePerAddress Max # of purchases (public) per address allowed
-  /// @param publicSaleStart unix timestamp when the public sale starts
-  /// @param publicSaleEnd unix timestamp when the public sale ends (set to 0 to disable)
   /// @param presaleStart unix timestamp when the presale starts
   /// @param presaleEnd unix timestamp when the presale ends
   /// @param presaleMerkleRoot merkle root for the presale information
   function setSaleConfiguration(
     uint104 publicSalePrice,
-    uint32 maxSalePurchasePerAddress,
-    uint64 publicSaleStart,
-    uint64 publicSaleEnd,
+    uint24 maxSalePurchasePerAddress,
     uint64 presaleStart,
     uint64 presaleEnd,
     bytes32 presaleMerkleRoot
@@ -126,21 +131,11 @@ interface ICustomERC721 {
   /// @return first minted token ID
   function purchase(uint256 quantity) external payable returns (uint256);
 
-  /// @notice External purchase presale function (takes a merkle proof and matches to root) (payable in eth)
-  /// @param quantity to purchase
-  /// @param maxQuantity can purchase (verified by merkle root)
-  /// @param pricePerToken price per token allowed (verified by merkle root)
-  /// @param merkleProof input for merkle proof leaf verified by merkle root
-  /// @return first minted token ID
-  function purchasePresale(
-    uint256 quantity,
-    uint256 maxQuantity,
-    uint256 pricePerToken,
-    bytes32[] memory merkleProof
-  ) external payable returns (uint256);
-
   /// @notice Function to return the global sales details for the given drop
-  function saleDetails() external view returns (SaleDetails memory);
+  function saleDetails() external view returns (CustomERC721SaleDetails memory);
+
+  /// @notice Function to return the current max supply
+  function currentTheoricalMaxSupply() external view returns (uint256);
 
   /// @notice Function to return the specific sales details for a given address
   /// @param minter address for minter to return mint information for
