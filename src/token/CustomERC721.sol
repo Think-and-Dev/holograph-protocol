@@ -62,6 +62,10 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   /// @notice Getter for the end date
   uint256 public END_DATE;
 
+  /// @notice Getter for the minter
+  /// @dev This account tokens on behalf of those that purchase them offchain
+  address public minter;
+
   /**
    * @dev Address of the price oracle proxy
    */
@@ -90,6 +94,16 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   /* -------------------------------------------------------------------------- */
 
   /**
+   * @notice Allows only the minter to call the function
+   */
+  modifier onlyMinter() {
+    if (msgSender() == minter) {
+      revert Access_OnlyMinter();
+    }
+    _;
+  }
+
+  /**
    * @notice Allows user to mint tokens at a quantity
    */
   modifier canMintTokens(uint256 quantity) {
@@ -104,7 +118,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     if (!_publicSaleActive()) {
       revert Sale_Inactive();
     }
-
     _;
   }
 
@@ -135,6 +148,9 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
 
     // Setup the owner role
     _setOwner(initializer.initialOwner);
+
+    // Setup the minter role
+    minter = initializer.initialMinter;
 
     // Setup the contract URI
     _setupContractURI(initializer.contractURI);
@@ -459,6 +475,20 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
    * @param quantity quantity to mint
    */
   function adminMint(address recipient, uint256 quantity) external onlyOwner canMintTokens(quantity) returns (uint256) {
+    _mintNFTs(recipient, quantity);
+
+    return _currentTokenId;
+  }
+
+  /**
+   * @notice Minter account mints tokens to a recipient that has paid offchain
+   * @param recipient recipient to mint to
+   * @param quantity quantity to mint
+   */
+  function mintTo(
+    address recipient,
+    uint256 quantity
+  ) external onlyMinter onlyOwner canMintTokens(quantity) returns (uint256) {
     _mintNFTs(recipient, quantity);
 
     return _currentTokenId;

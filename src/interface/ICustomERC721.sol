@@ -8,9 +8,10 @@ import {CustomERC721SaleDetails} from "src/struct/CustomERC721SaleDetails.sol";
 /// @notice Interface for HOLOGRAPH Drops contract
 interface ICustomERC721 {
   // Access errors
-
   /// @notice Only admin can access this function
   error Access_OnlyAdmin();
+  /// @notice Only minter can access this function
+  error Access_OnlyMinter();
   /// @notice Missing the given role or admin access
   error Access_MissingRoleOrAdmin(bytes32 role);
   /// @notice Withdraw is not allowed by this user
@@ -105,6 +106,10 @@ interface ICustomERC721 {
 
   /// @notice Getter for the mint interval
   function MINT_INTERVAL() external view returns (uint256);
+
+  // TODO: Do we need this?
+  // /// @notice Getter for the minter role
+  // function minter() external view returns (address);
 
   /// @notice Admin function to update the sales configuration settings
   /// @param publicSalePrice public sale price in ether
