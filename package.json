@@ -30,7 +30,7 @@
     "build": "hardhat compile",
     "clean-compile": "hardhat clean ; hardhat compile",
     "clean": "hardhat clean",
-    "compile": "forge compile",
+    "compile": "forge build",
     "deploy": "hardhat deploy",
     "deploy-x2": "pnpm deploy:localhost && pnpm deploy:localhost2",
     "deploy:localhost": "hardhat deploy --network localhost --no-compile",
