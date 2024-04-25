@@ -38,6 +38,7 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
         deployerAddress, // fundsRecipient
         '', // contractURI
         [0, 0], // salesConfig
+        // lazyMintConfigurations
         [
           [
             5,

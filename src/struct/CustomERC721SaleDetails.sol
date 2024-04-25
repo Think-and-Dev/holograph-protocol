@@ -4,7 +4,7 @@ pragma solidity 0.8.13;
 
 /// @notice Return value for sales details to use with front-ends
 struct CustomERC721SaleDetails {
-  // Synthesized status variables for sale and presale
+  // Sale state
   bool publicSaleActive;
   // Price for public sale
   uint256 publicSalePrice;
