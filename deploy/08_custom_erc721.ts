@@ -28,9 +28,7 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
 
   // Deploy the CustomERC721 custom contract source
   const CustomERC721InitCode = generateInitCode(
-    [
-      'tuple(uint40,uint32,uint24,address,address,string,tuple(uint104,uint24,uint64,uint64,bytes32),tuple(uint256,string,bytes)[])',
-    ],
+    ['tuple(uint40,uint32,uint24,address,address,string,tuple(uint104,uint24),tuple(uint256,string,bytes)[])'],
     [
       [
         1718822400, // Epoch time for June 3, 2024
@@ -39,7 +37,7 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
         deployerAddress, // initialOwner
         deployerAddress, // fundsRecipient
         '', // contractURI
-        [0, 0, 0, 0, '0x' + '00'.repeat(32)], // salesConfig
+        [0, 0], // salesConfig
         [
           [
             5,

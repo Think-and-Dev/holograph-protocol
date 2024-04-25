@@ -10,11 +10,4 @@ struct CustomERC721SalesConfiguration {
   /// @notice Purchase mint limit per address (if set to 0 === unlimited mints)
   /// @dev Max purchase number per txn (90+32 = 122)
   uint24 maxSalePurchasePerAddress;
-  /// @notice Presale start timestamp
-  /// @dev new storage slot
-  uint64 presaleStart;
-  /// @notice Presale end timestamp
-  uint64 presaleEnd;
-  /// @notice Presale merkle root
-  bytes32 presaleMerkleRoot;
 }

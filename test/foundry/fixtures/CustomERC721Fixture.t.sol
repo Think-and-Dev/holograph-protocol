@@ -193,11 +193,8 @@ contract CustomERC721Fixture is Test {
   function deployAndSetupProtocol(uint32 maxSupply, bool skipLazyMintSync) internal returns (uint256) {
     // Setup sale config for edition
     CustomERC721SalesConfiguration memory saleConfig = CustomERC721SalesConfiguration({
-      presaleStart: 0, // never starts
-      presaleEnd: 0, // never ends
       publicSalePrice: usd100,
-      maxSalePurchasePerAddress: 0, // no limit
-      presaleMerkleRoot: bytes32(0) // no presale
+      maxSalePurchasePerAddress: 0 // no limit
     });
 
     // Create initializer
