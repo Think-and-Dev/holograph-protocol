@@ -30,18 +30,12 @@ interface ICustomERC721 {
   // Sale/Purchase errors
   /// @notice Sale is inactive
   error Sale_Inactive();
-  /// @notice Presale is inactive
-  error Presale_Inactive();
-  /// @notice Presale merkle root is invalid
-  error Presale_MerkleNotApproved();
   /// @notice Wrong price for purchase
   error Purchase_WrongPrice(uint256 correctPrice);
   /// @notice NFT sold out
   error Mint_SoldOut();
   /// @notice Too many purchase for address
   error Purchase_TooManyForAddress();
-  /// @notice Too many presale for address
-  error Presale_TooManyForAddress();
   /// @notice Fee payout failed
   error FeePaymentFailed();
   /// @notice The countdown has been completed
@@ -115,16 +109,7 @@ interface ICustomERC721 {
   /// @notice Admin function to update the sales configuration settings
   /// @param publicSalePrice public sale price in ether
   /// @param maxSalePurchasePerAddress Max # of purchases (public) per address allowed
-  /// @param presaleStart unix timestamp when the presale starts
-  /// @param presaleEnd unix timestamp when the presale ends
-  /// @param presaleMerkleRoot merkle root for the presale information
-  function setSaleConfiguration(
-    uint104 publicSalePrice,
-    uint24 maxSalePurchasePerAddress,
-    uint64 presaleStart,
-    uint64 presaleEnd,
-    bytes32 presaleMerkleRoot
-  ) external;
+  function setSaleConfiguration(uint104 publicSalePrice, uint24 maxSalePurchasePerAddress) external;
 
   /// @notice External purchase function (payable in eth)
   /// @param quantity to purchase
@@ -149,11 +134,6 @@ interface ICustomERC721 {
   /// @param quantity quantity to mint
   /// @return the id of the first minted NFT
   function adminMint(address to, uint256 quantity) external returns (uint256);
-
-  /// @notice This is an admin mint function to mint a single nft each to a list of addresses
-  /// @param to list of addresses to mint an NFT each to
-  /// @return the id of the first minted NFT
-  function adminMintAirdrop(address[] memory to) external returns (uint256);
 
   /// @dev Getter for admin role associated with the contract to handle metadata
   /// @return boolean if address is admin

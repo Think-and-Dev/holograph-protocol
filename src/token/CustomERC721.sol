@@ -81,12 +81,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   CustomERC721SalesConfiguration public salesConfig;
 
   /**
-   * @dev Mapping for presale mint counts by address to allow public mint limit
-   */
-  mapping(address => uint256) public presaleMintsByAddress;
-
-  /**
-   * @dev Mapping for presale mint counts by address to allow public mint limit
+   * @dev Mapping for the total mints by address
    */
   mapping(address => uint256) public totalMintsByAddress;
 
@@ -99,17 +94,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
    */
   modifier canMintTokens(uint256 quantity) {
     // NOTE: NEED TO DECIDE IF WE WANT TO RESTRICT MINTING UNDER CERTAIN CONDITIONS
-    _;
-  }
-
-  /**
-   * @notice Presale active
-   */
-  modifier onlyPresaleActive() {
-    if (!_presaleActive()) {
-      revert Presale_Inactive();
-    }
-
     _;
   }
 
@@ -312,40 +296,13 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   function saleDetails() external view returns (CustomERC721SaleDetails memory) {
     return
       CustomERC721SaleDetails({
-        publicSaleActive: _publicSaleActive(),
-        presaleActive: _presaleActive(),
-        publicSalePrice: salesConfig.publicSalePrice,
-        publicSaleStart: START_DATE,
-        presaleStart: salesConfig.presaleStart,
-        presaleEnd: salesConfig.presaleEnd,
-        presaleMerkleRoot: salesConfig.presaleMerkleRoot,
-        totalMinted: _currentTokenId,
-        maxSupply: currentTheoricalMaxSupply(),
-        maxSalePurchasePerAddress: salesConfig.maxSalePurchasePerAddress
+        publicSaleActive: _publicSaleActive(), // Based on the current time
+        publicSalePrice: salesConfig.publicSalePrice, // Can be updated by the owner
+        maxSalePurchasePerAddress: salesConfig.maxSalePurchasePerAddress, // Can be updated by the owner
+        publicSaleStart: START_DATE, // Immutable
+        totalMinted: _currentTokenId, // Updated after each mint
+        maxSupply: currentTheoricalMaxSupply() // Updated after each mint or after each interval
       });
-  }
-
-  /// @notice The Holograph fee is a flat fee for each mint in USD and is controlled by the treasury
-  /// @dev Gets the flat Holograph protocol fee for a single mint in USD
-  function getHolographFeeFromTreasury() public view returns (uint256) {
-    address payable treasuryProxyAddress = payable(
-      HolographInterface(HolographerInterface(holographer()).getHolograph()).getTreasury()
-    );
-
-    HolographTreasuryInterface treasury = HolographTreasuryInterface(treasuryProxyAddress);
-    return treasury.getHolographMintFee();
-  }
-
-  /// @notice The Holograph fee is a flat fee for each mint in USD
-  /// @dev Gets the Holograph protocol fee for amount of mints in USD
-  function getHolographFeeUsd(uint256 quantity) public view returns (uint256 fee) {
-    fee = getHolographFeeFromTreasury() * quantity;
-  }
-
-  /// @notice The Holograph fee is a flat fee for each mint in wei after conversion
-  /// @dev Gets the Holograph protocol fee for amount of mints in wei
-  function getHolographFeeWei(uint256 quantity) public view returns (uint256) {
-    return _usdToWei(getHolographFeeFromTreasury() * quantity);
   }
 
   /**
@@ -355,8 +312,8 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   function mintedPerAddress(address minter) external view returns (AddressMintDetails memory) {
     return
       AddressMintDetails({
-        presaleMints: presaleMintsByAddress[minter],
-        publicMints: totalMintsByAddress[minter] - presaleMintsByAddress[minter],
+        presaleMints: 0, // NOTE: Presale mints are not supported
+        publicMints: totalMintsByAddress[minter],
         totalMints: totalMintsByAddress[minter]
       });
   }
@@ -442,12 +399,10 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     uint256 quantity
   ) external payable nonReentrant canMintTokens(quantity) onlyPublicSaleActive returns (uint256) {
     uint256 salePrice = _usdToWei(salesConfig.publicSalePrice);
-    uint256 holographMintFeeUsd = getHolographFeeFromTreasury();
-    uint256 holographMintFeeWei = _usdToWei(holographMintFeeUsd);
 
-    if (msg.value < (salePrice + holographMintFeeWei) * quantity) {
+    if (msg.value < (salePrice) * quantity) {
       // The error will display what the correct price should be
-      revert Purchase_WrongPrice((salesConfig.publicSalePrice + holographMintFeeUsd) * quantity);
+      revert Purchase_WrongPrice((salesConfig.publicSalePrice) * quantity);
     }
 
     /// @dev Check if the countdown has completed
@@ -466,8 +421,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     // Any other number, the per address mint limit is that.
     if (
       salesConfig.maxSalePurchasePerAddress != 0 &&
-      totalMintsByAddress[msgSender()] + quantity - presaleMintsByAddress[msgSender()] >
-      salesConfig.maxSalePurchasePerAddress
+      totalMintsByAddress[msgSender()] + quantity > salesConfig.maxSalePurchasePerAddress
     ) {
       revert Purchase_TooManyForAddress();
     }
@@ -511,42 +465,13 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   }
 
   /**
-   * @dev Mints multiple editions to the given list of addresses.
-   * @dev TODO: Double check if we need to use arrays for encryptedBaseUris and dataArray
-   * @param recipients list of addresses to send the newly minted editions to
-   */
-  function adminMintAirdrop(
-    address[] calldata recipients
-  ) external onlyOwner canMintTokens(recipients.length) returns (uint256) {
-    unchecked {
-      for (uint256 i = 0; i != recipients.length; i++) {
-        _mintNFTs(recipients[i], 1);
-      }
-    }
-
-    return _currentTokenId;
-  }
-
-  /**
    * @dev This sets the sales configuration
    * @param publicSalePrice New public sale price
    * @param maxSalePurchasePerAddress Max # of purchases (public) per address allowed
-   * @param presaleStart unix timestamp when the presale starts
-   * @param presaleEnd unix timestamp when the presale ends
-   * @param presaleMerkleRoot merkle root for the presale information
    */
-  function setSaleConfiguration(
-    uint104 publicSalePrice,
-    uint24 maxSalePurchasePerAddress,
-    uint64 presaleStart,
-    uint64 presaleEnd,
-    bytes32 presaleMerkleRoot
-  ) external onlyOwner {
+  function setSaleConfiguration(uint104 publicSalePrice, uint24 maxSalePurchasePerAddress) external onlyOwner {
     salesConfig.publicSalePrice = publicSalePrice;
     salesConfig.maxSalePurchasePerAddress = maxSalePurchasePerAddress;
-    salesConfig.presaleStart = presaleStart;
-    salesConfig.presaleEnd = presaleEnd;
-    salesConfig.presaleMerkleRoot = presaleMerkleRoot;
 
     emit SalesConfigChanged(msgSender());
   }
@@ -595,10 +520,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   /*                             non state changing                             */
   /* -------------------------------------------------------------------------- */
 
-  function _presaleActive() internal view returns (bool) {
-    return salesConfig.presaleStart <= block.timestamp && salesConfig.presaleEnd > block.timestamp;
-  }
-
   /**
    * @dev Checks if the public sale is active
    */
@@ -619,7 +540,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
 
   /// @notice Returns whether lazy minting can be done in the given execution context.
   function _canLazyMint() internal view override returns (bool) {
-    return !_isInitialized() || ((msgSender() == _getOwner()) && _publicSaleActive()) || _presaleActive();
+    return !_isInitialized() || ((msgSender() == _getOwner()) && _publicSaleActive());
   }
 
   /// @notice Checks whether contract metadata can be set in the given execution context.
@@ -650,13 +571,13 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   /* -------------------------------------------------------------------------- */
 
   /**
-   * @dev This function is used to set the placeholder base URI, the encrypted one and the provennance hashe for 
+   * @dev This function is used to set the placeholder base URI, the encrypted one and the provennance hashe for
    *      a batch of tokens.
    * @dev We override the `lazyMint` function, and use the `_data` parameter for storing encrypted metadata
    *      for 'delayed reveal' NFTs.
    * @param _amount The amount of tokens in the batch
    * @param _baseURIForTokens The placeholder base URI for the batch
-   * @param _data The encrypted metadata for the batch, abi encoded payload containing the encryptedURI (string) 
+   * @param _data The encrypted metadata for the batch, abi encoded payload containing the encryptedURI (string)
    *              and the provenanceHash (bytes32).
    */
   function lazyMint(
