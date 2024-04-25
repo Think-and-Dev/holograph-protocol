@@ -20,7 +20,7 @@ contract CustomERC721LazyMintTest is CustomERC721Fixture, ICustomERC721Errors {
   }
 
   function test_lazyMint() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) {
-    
+    assertEq(customErc721.encryptedData(DEFAULT_MAX_SUPPLY/2), "", "Encrypted data should be empty");
   }
 
 }

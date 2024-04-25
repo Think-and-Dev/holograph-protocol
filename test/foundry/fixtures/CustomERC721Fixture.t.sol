@@ -104,7 +104,7 @@ contract CustomERC721Fixture is Test {
     // NOTE: This is the address that will be used to sign transactions
     //       A signature is required to deploy Holographable contracts via the HolographFactory
     alice = vm.addr(1);
-    vm.prank(HOLOGRAPH_TREASURY_ADDRESS);
+    // vm.prank(HOLOGRAPH_TREASURY_ADDRESS);
     dummyPriceOracle = DummyDropsPriceOracle(Constants.getDummyDropsPriceOracle());
 
     // NOTE: This needs to be uncommented to inject the DropsPriceOracleProxy contract into the VM if it isn't done by the deploy script
@@ -214,8 +214,8 @@ contract CustomERC721Fixture is Test {
 
     // Get deployment config, hash it, and then sign it
     DeploymentConfig memory config = getDeploymentConfig(
-      "Testing Init", // contractName
-      "BOO", // contractSymbol
+      "NFT name", // contractName
+      "SYM", // contractSymbol
       1000, // contractBps
       type(uint256).max, // eventConfig
       false, // skipInit

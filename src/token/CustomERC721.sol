@@ -53,7 +53,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
 
   /// @notice Getter for the mint interval
   /// @dev This storage variable is set only once in the init and can be considered as immutable
-  address payable FUNDS_RECIPIENT;
+  address payable public FUNDS_RECIPIENT;
 
   /// @notice Getter for the initial end date
   /// @dev This storage variable is set only once in the init and can be considered as immutable
@@ -98,16 +98,11 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
    * @notice Allows user to mint tokens at a quantity
    */
   modifier canMintTokens(uint256 quantity) {
-    // NOTE: NEED TO DECIDE IF WE WANT TO RESTRICT MINTING UNDER CERTAIN CONDITIONS
-    _;
-  }
-
-  /**
-   * @notice Presale active
-   */
-  modifier onlyPresaleActive() {
-    if (!_presaleActive()) {
-      revert Presale_Inactive();
+    /// @dev Check if the countdown has completed
+    ///      END_DATE - MINT_INTERVAL * (quantity - 1) represent the time when the last mint will be allowed
+    ///      (quantity - 1) because we want to allow the last mint to be available until the END_DATE
+    if (block.timestamp >= END_DATE - MINT_INTERVAL * (quantity - 1)) {
+      revert Purchase_CountdownCompleted();
     }
 
     _;
@@ -448,13 +443,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     if (msg.value < (salePrice + holographMintFeeWei) * quantity) {
       // The error will display what the correct price should be
       revert Purchase_WrongPrice((salesConfig.publicSalePrice + holographMintFeeUsd) * quantity);
-    }
-
-    /// @dev Check if the countdown has completed
-    ///      END_DATE - MINT_INTERVAL * (quantity - 1) represent the time when the last mint will be allowed
-    ///      (quantity - 1) because we want to allow the last mint to be available until the END_DATE
-    if (block.timestamp >= END_DATE - MINT_INTERVAL * (quantity - 1)) {
-      revert Purchase_CountdownCompleted();
     }
 
     // Reducing the end date by removing the quantity of mints times the mint interval
