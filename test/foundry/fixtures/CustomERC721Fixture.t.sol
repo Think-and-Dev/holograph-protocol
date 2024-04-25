@@ -182,10 +182,8 @@ contract CustomERC721Fixture is Test {
 
     uint104 price = usd100;
     nativePrice = dummyPriceOracle.convertUsdToWei(price);
-    uint256 holographFee = customErc721.getHolographFeeUsd(1);
-    uint256 nativeFee = dummyPriceOracle.convertUsdToWei(holographFee);
 
-    totalCost = (nativePrice + nativeFee);
+    totalCost = (nativePrice);
 
     vm.warp(customErc721.START_DATE());
   }

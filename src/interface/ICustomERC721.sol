@@ -135,11 +135,6 @@ interface ICustomERC721 {
   /// @return the id of the first minted NFT
   function adminMint(address to, uint256 quantity) external returns (uint256);
 
-  /// @notice This is an admin mint function to mint a single nft each to a list of addresses
-  /// @param to list of addresses to mint an NFT each to
-  /// @return the id of the first minted NFT
-  function adminMintAirdrop(address[] memory to) external returns (uint256);
-
   /// @dev Getter for admin role associated with the contract to handle metadata
   /// @return boolean if address is admin
   function isAdmin(address user) external view returns (bool);

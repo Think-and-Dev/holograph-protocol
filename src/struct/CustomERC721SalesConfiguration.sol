@@ -3,7 +3,7 @@
 pragma solidity 0.8.13;
 
 /// @notice Sales states and configuration
-/// @dev Uses 2 storage slots
+/// @dev Uses 2 storage slots (Can be set by the owner)
 struct CustomERC721SalesConfiguration {
   /// @dev Public sale price (max ether value > 1000 ether with this value)
   uint104 publicSalePrice;

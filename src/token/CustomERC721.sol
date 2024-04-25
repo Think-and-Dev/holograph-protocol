@@ -296,36 +296,13 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
   function saleDetails() external view returns (CustomERC721SaleDetails memory) {
     return
       CustomERC721SaleDetails({
-        publicSaleActive: _publicSaleActive(),
-        publicSalePrice: salesConfig.publicSalePrice,
-        publicSaleStart: START_DATE,
-        totalMinted: _currentTokenId,
-        maxSupply: currentTheoricalMaxSupply(),
-        maxSalePurchasePerAddress: salesConfig.maxSalePurchasePerAddress
+        publicSaleActive: _publicSaleActive(), // Based on the current time
+        publicSalePrice: salesConfig.publicSalePrice, // Can be updated by the owner
+        maxSalePurchasePerAddress: salesConfig.maxSalePurchasePerAddress, // Can be updated by the owner
+        publicSaleStart: START_DATE, // Immutable
+        totalMinted: _currentTokenId, // Updated after each mint
+        maxSupply: currentTheoricalMaxSupply() // Updated after each mint or after each interval
       });
-  }
-
-  /// @notice The Holograph fee is a flat fee for each mint in USD and is controlled by the treasury
-  /// @dev Gets the flat Holograph protocol fee for a single mint in USD
-  function getHolographFeeFromTreasury() public view returns (uint256) {
-    address payable treasuryProxyAddress = payable(
-      HolographInterface(HolographerInterface(holographer()).getHolograph()).getTreasury()
-    );
-
-    HolographTreasuryInterface treasury = HolographTreasuryInterface(treasuryProxyAddress);
-    return treasury.getHolographMintFee();
-  }
-
-  /// @notice The Holograph fee is a flat fee for each mint in USD
-  /// @dev Gets the Holograph protocol fee for amount of mints in USD
-  function getHolographFeeUsd(uint256 quantity) public view returns (uint256 fee) {
-    fee = getHolographFeeFromTreasury() * quantity;
-  }
-
-  /// @notice The Holograph fee is a flat fee for each mint in wei after conversion
-  /// @dev Gets the Holograph protocol fee for amount of mints in wei
-  function getHolographFeeWei(uint256 quantity) public view returns (uint256) {
-    return _usdToWei(getHolographFeeFromTreasury() * quantity);
   }
 
   /**
@@ -422,12 +399,10 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     uint256 quantity
   ) external payable nonReentrant canMintTokens(quantity) onlyPublicSaleActive returns (uint256) {
     uint256 salePrice = _usdToWei(salesConfig.publicSalePrice);
-    uint256 holographMintFeeUsd = getHolographFeeFromTreasury();
-    uint256 holographMintFeeWei = _usdToWei(holographMintFeeUsd);
 
-    if (msg.value < (salePrice + holographMintFeeWei) * quantity) {
+    if (msg.value < (salePrice) * quantity) {
       // The error will display what the correct price should be
-      revert Purchase_WrongPrice((salesConfig.publicSalePrice + holographMintFeeUsd) * quantity);
+      revert Purchase_WrongPrice((salesConfig.publicSalePrice) * quantity);
     }
 
     /// @dev Check if the countdown has completed
@@ -485,23 +460,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
    */
   function adminMint(address recipient, uint256 quantity) external onlyOwner canMintTokens(quantity) returns (uint256) {
     _mintNFTs(recipient, quantity);
-
-    return _currentTokenId;
-  }
-
-  /**
-   * @dev Mints multiple editions to the given list of addresses.
-   * @dev TODO: Double check if we need to use arrays for encryptedBaseUris and dataArray
-   * @param recipients list of addresses to send the newly minted editions to
-   */
-  function adminMintAirdrop(
-    address[] calldata recipients
-  ) external onlyOwner canMintTokens(recipients.length) returns (uint256) {
-    unchecked {
-      for (uint256 i = 0; i != recipients.length; i++) {
-        _mintNFTs(recipients[i], 1);
-      }
-    }
 
     return _currentTokenId;
   }
