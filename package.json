@@ -121,5 +121,8 @@
     "overrides": {
       "node-hid": "github:holographxyz/node-hid#feature/guard-against-reinstantiating-connection"
     }
+  },
+  "engines": {
+    "node": "v20"
   }
 }
