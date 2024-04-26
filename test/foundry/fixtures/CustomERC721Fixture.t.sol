@@ -2,6 +2,7 @@
 pragma solidity 0.8.13;
 
 import {Test, Vm} from "forge-std/Test.sol";
+import {console2} from "forge-std/console2.sol";
 
 import {HolographTreasury} from "src/HolographTreasury.sol";
 import {DummyDropsPriceOracle} from "src/drops/oracle/DummyDropsPriceOracle.sol";
@@ -138,6 +139,12 @@ contract CustomERC721Fixture is Test {
     _;
   }
 
+  modifier setupTestCustomERC21WithLazyMint(uint32 maxSupply) {
+    chainPrepend = deployAndSetupProtocol(maxSupply, true, defaultLazyMintConfigurations);
+
+    _;
+  }
+
   modifier setUpPurchase() {
     _setUpPurchase();
 
@@ -189,7 +196,37 @@ contract CustomERC721Fixture is Test {
     vm.warp(customErc721.START_DATE());
   }
 
+  function deployAndSetupProtocol(
+    uint32 maxSupply,
+    bool skipLazyMintSync,
+    LazyMintConfiguration[] memory lazyMintsConfigurations
+  ) internal returns (uint256) {
+    _deployAndSetupProtocol(maxSupply, skipLazyMintSync, lazyMintsConfigurations);
+
+    return chainPrepend;
+  }
+
   function deployAndSetupProtocol(uint32 maxSupply, bool skipLazyMintSync) internal returns (uint256) {
+    _deployAndSetupProtocol(maxSupply, skipLazyMintSync, new LazyMintConfiguration[](0));
+
+    return chainPrepend;
+  }
+
+  function _purchaseAllSupply() internal {
+    for (uint256 i = 0; i < customErc721.currentTheoricalMaxSupply(); i++) {
+      address user = address(uint160(uint256(keccak256(abi.encodePacked(i)))));
+      vm.startPrank(address(user));
+      vm.deal(address(user), totalCost);
+      customErc721.purchase{value: totalCost}(1);
+      vm.stopPrank();
+    }
+  }
+
+  function _deployAndSetupProtocol(
+    uint32 maxSupply,
+    bool skipLazyMintSync,
+    LazyMintConfiguration[] memory lazyMintsConfigurations
+  ) private {
     // Setup sale config for edition
     CustomERC721SalesConfiguration memory saleConfig = CustomERC721SalesConfiguration({
       publicSalePrice: usd100,
@@ -206,7 +243,7 @@ contract CustomERC721Fixture is Test {
       fundsRecipient: payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS),
       contractURI: "https://example.com/metadata.json",
       salesConfiguration: saleConfig,
-      lazyMintsConfigurations: new LazyMintConfiguration[](0)
+      lazyMintsConfigurations: lazyMintsConfigurations
     });
 
     // Get deployment config, hash it, and then sign it
@@ -240,24 +277,21 @@ contract CustomERC721Fixture is Test {
     vm.recordLogs();
     factory.deployHolographableContract(config, signature, alice); // Pass the payload hash, with the signature, and signer's address
     Vm.Log[] memory entries = vm.getRecordedLogs();
-    address newDropAddress = address(uint160(uint256(entries[2].topics[1])));
+
+    address newCustomERC721Address;
+    if (lazyMintsConfigurations.length > 0) {
+      newCustomERC721Address = address(uint160(uint256(entries[2 + lazyMintsConfigurations.length].topics[1])));
+    }
+    else {
+      newCustomERC721Address = address(uint160(uint256(entries[2].topics[1])));
+    }
 
     // Connect the drop implementation to the drop proxy address
-    customErc721 = CustomERC721(payable(newDropAddress));
+    customErc721 = CustomERC721(payable(newCustomERC721Address));
 
     if (!skipLazyMintSync) {
       vm.prank(DEFAULT_OWNER_ADDRESS);
       customErc721.syncLazyMint();
-    }
-  }
-
-  function _purchaseAllSupply() internal {
-    for (uint256 i = 0; i < customErc721.currentTheoricalMaxSupply(); i++) {
-      address user = address(uint160(uint256(keccak256(abi.encodePacked(i)))));
-      vm.startPrank(address(user));
-      vm.deal(address(user), totalCost);
-      customErc721.purchase{value: totalCost}(1);
-      vm.stopPrank();
     }
   }
 }

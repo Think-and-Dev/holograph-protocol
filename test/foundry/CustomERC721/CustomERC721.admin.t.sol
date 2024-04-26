@@ -28,6 +28,14 @@ contract CustomERC721AdminTest is CustomERC721Fixture, ICustomERC721Errors {
     super.setUp();
   }
 
+  function test_OnlyAdminCanCallSyncLazyMint() public setupTestCustomERC21WithLazyMint(DEFAULT_MAX_SUPPLY) {
+    vm.expectRevert("ERC721: owner only function");
+    customErc721.syncLazyMint();
+
+    vm.prank(DEFAULT_OWNER_ADDRESS);
+    customErc721.syncLazyMint();
+  }
+
   function test_Withdraw(uint128 amount) public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) {
     vm.assume(amount > 0.01 ether);
     vm.deal(address(customErc721), amount);
