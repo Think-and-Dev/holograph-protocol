@@ -229,6 +229,13 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     HolographERC721Interface H721 = HolographERC721Interface(holographer());
     chainPrepend = H721.sourceGetChainPrepend() + 1;
 
+    // Set the lazy mint initialized status to true to prevent this function from being called again
+    _setLazyMintInitialized();
+
+    if(chainPrepend == 0) {
+      return 0;
+    }
+
     // Sync batch metadata with the prepended tokenID
     uint256 batchIdsLength = batchIds.length;
     for (uint256 i = 0; i < batchIdsLength; i++) {
@@ -253,9 +260,6 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
       // Clear the encrypted data for the original tokenID
       _setEncryptedData(batchIds[i], "");
     }
-
-    // Set the lazy mint initialized status to true to prevent this function from being called again
-    _setLazyMintInitialized();
   }
 
   /* -------------------------------------------------------------------------- */
