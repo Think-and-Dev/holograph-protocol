@@ -97,9 +97,10 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
    * @notice Allows only the minter to call the function
    */
   modifier onlyMinter() {
-    if (msgSender() == minter) {
+    if (msgSender() != minter) {
       revert Access_OnlyMinter();
     }
+
     _;
   }
 
