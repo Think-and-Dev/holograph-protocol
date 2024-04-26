@@ -232,7 +232,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
     // Set the lazy mint initialized status to true to prevent this function from being called again
     _setLazyMintInitialized();
 
-    if(chainPrepend == 0) {
+    if (chainPrepend == 0) {
       return 0;
     }
 
@@ -478,10 +478,7 @@ contract CustomERC721 is NonReentrant, ContractMetadata, InitializableLazyMint, 
    * @param recipient recipient to mint to
    * @param quantity quantity to mint
    */
-  function mintTo(
-    address recipient,
-    uint256 quantity
-  ) external onlyMinter canMintTokens(quantity) returns (uint256) {
+  function mintTo(address recipient, uint256 quantity) external onlyMinter canMintTokens(quantity) returns (uint256) {
     _mintNFTs(recipient, quantity);
 
     return _currentTokenId;
