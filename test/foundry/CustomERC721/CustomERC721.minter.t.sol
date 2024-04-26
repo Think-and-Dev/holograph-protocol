@@ -37,11 +37,23 @@ contract CustomERC721MinterRoleTest is CustomERC721Fixture, ICustomERC721Errors 
   }
 
   function test_OnlyMinterCanMint() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) {
-    vm.prank(DEFAULT_MINTER_ADDRESS);
+    // Calling without pranking the minter should revert
+    vm.expectRevert(Access_OnlyMinter.selector);
     customErc721.mintTo(TEST_ACCOUNT, 1);
 
-    HolographERC721 erc721Enforcer = HolographERC721(payable(address(customErc721)));
-    assertEq(erc721Enforcer.ownerOf(FIRST_TOKEN_ID), TEST_ACCOUNT, "Owner is wrong for new minted token");
+    // Calling with pranking the owner should revert too
+    vm.expectRevert(Access_OnlyMinter.selector);
+    vm.prank(DEFAULT_OWNER_ADDRESS);
+    customErc721.mintTo(TEST_ACCOUNT, 1);
+  }
+
+  function test_Fuzz_OnlyMinterCanMint(address sender) public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) {
+    vm.assume(sender != DEFAULT_MINTER_ADDRESS);
+    
+    // Calling with pranking any address should revert too
+    vm.expectRevert(Access_OnlyMinter.selector);
+    vm.prank(sender);
+    customErc721.mintTo(TEST_ACCOUNT, 1);
   }
 
   function test_Fuzz_MinterCantMintAfterSaleEnd(uint16 limit) public setupTestCustomERC21(200) setUpPurchase {
