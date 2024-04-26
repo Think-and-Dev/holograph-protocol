@@ -134,12 +134,6 @@ interface ICustomERC721 {
   /// @notice This is the opensea/public owner setting that can be set by the contract admin
   function owner() external view returns (address);
 
-  /// @notice This is an admin mint function to mint a quantity to a specific address
-  /// @param to address to mint to
-  /// @param quantity quantity to mint
-  /// @return the id of the first minted NFT
-  function adminMint(address to, uint256 quantity) external returns (uint256);
-
   /// @dev Getter for admin role associated with the contract to handle metadata
   /// @return boolean if address is admin
   function isAdmin(address user) external view returns (bool);
