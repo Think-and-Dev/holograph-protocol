@@ -10,6 +10,9 @@ uint256 constant DEFAULT_PUBLIC_SALE_END = 10 days;
 uint256 constant DEFAULT_PRESALE_START = 1 days;
 uint256 constant DEFAULT_PRESALE_END = 5 days - 1;
 bytes32 constant DEFAULT_PRESALE_MERKLE_ROOT = keccak256("random-merkle-root");
+uint256 constant EVENT_CONFIG = 0x0000000000000000000000000000000000000000000000000000000000040000;
+address constant HOLOGRAPH_REGISTRY_PROXY = 0xB47C0E0170306583AA979bF30c0407e2bFE234b2;
+address constant HOLOGRAPH_TREASURY_ADDRESS = 0x65115A3Be2Aa1F267ccD7499e720088060c7ccd2;
 
 /* ----------------------------- Collection data ---------------------------- */
 

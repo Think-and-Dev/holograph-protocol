@@ -53,7 +53,10 @@
     "prettier:deployments": "hardhat deploymentsPrettier",
     "natspec": "npx natspec-smells &> natspec-smells.report.txt",
     "snapshot": "FOUNDRY_PROFILE=ci forge snapshot --no-match-test \"(FFI|Fork|Fuzz)\" --offline",
-    "snapshot:check": "FOUNDRY_PROFILE=ci forge snapshot --no-match-test \"(FFI|Fork|Fuzz)\" --check --offline"
+    "snapshot:check": "FOUNDRY_PROFILE=ci forge snapshot --no-match-test \"(FFI|Fork|Fuzz)\" --check --offline",
+    "start": "bash ./scripts/start-protocol.sh",
+    "restart": "bash ./scripts/stop-protocol.sh && bash ./scripts/start-protocol.sh",
+    "stop": "bash ./scripts/stop-protocol.sh"
   },
   "dependencies": {
     "@ethersproject/abstract-provider": "^5.7.0",

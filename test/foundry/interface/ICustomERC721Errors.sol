@@ -13,4 +13,6 @@ interface ICustomERC721Errors {
   error BatchMintInvalidTokenId(uint256 tokenId);
   error Purchase_CountdownCompleted();
   error Sale_Inactive();
+  error Access_OnlyMinter();
+  error LazyMint_AlreadyInitialized();
 }
