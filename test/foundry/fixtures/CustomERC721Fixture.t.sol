@@ -201,6 +201,7 @@ contract CustomERC721Fixture is Test {
       initialMaxSupply: maxSupply,
       mintInterval: DEFAULT_MINT_INTERVAL,
       initialOwner: payable(DEFAULT_OWNER_ADDRESS),
+      initialMinter: payable(DEFAULT_OWNER_ADDRESS),
       fundsRecipient: payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS),
       contractURI: "https://example.com/metadata.json",
       salesConfiguration: saleConfig,

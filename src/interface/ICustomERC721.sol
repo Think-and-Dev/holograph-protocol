@@ -8,9 +8,10 @@ import {CustomERC721SaleDetails} from "src/struct/CustomERC721SaleDetails.sol";
 /// @notice Interface for HOLOGRAPH Drops contract
 interface ICustomERC721 {
   // Access errors
-
   /// @notice Only admin can access this function
   error Access_OnlyAdmin();
+  /// @notice Only minter can access this function
+  error Access_OnlyMinter();
   /// @notice Missing the given role or admin access
   error Access_MissingRoleOrAdmin(bytes32 role);
   /// @notice Withdraw is not allowed by this user
@@ -106,6 +107,9 @@ interface ICustomERC721 {
   /// @notice Getter for the mint interval
   function MINT_INTERVAL() external view returns (uint256);
 
+  /// @notice Getter for the minter role
+  function minter() external view returns (address);
+
   /// @notice Admin function to update the sales configuration settings
   /// @param publicSalePrice public sale price in ether
   /// @param maxSalePurchasePerAddress Max # of purchases (public) per address allowed
@@ -128,12 +132,6 @@ interface ICustomERC721 {
 
   /// @notice This is the opensea/public owner setting that can be set by the contract admin
   function owner() external view returns (address);
-
-  /// @notice This is an admin mint function to mint a quantity to a specific address
-  /// @param to address to mint to
-  /// @param quantity quantity to mint
-  /// @return the id of the first minted NFT
-  function adminMint(address to, uint256 quantity) external returns (uint256);
 
   /// @dev Getter for admin role associated with the contract to handle metadata
   /// @return boolean if address is admin
