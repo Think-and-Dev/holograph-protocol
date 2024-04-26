@@ -73,6 +73,11 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
    */
   uint224 private _currentTokenId;
 
+  /**
+   * @dev Internal reference to the base URI
+   */
+  string private _baseURI;
+
   /// @dev Gas limit for transferring funds
   uint256 private constant STATIC_GAS_LIMIT = 210_000;
 
@@ -275,29 +280,18 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
       });
   }
 
-  // TODO: Add tokenURI, baseURI, and setBaseURI
-  // /**
-  //  * @dev Returns the URI for a given tokenId.
-  //  * @param _tokenId id of token to get URI for
-  //  * @return Token URI
-  //  */
-  // function tokenURI(uint256 _tokenId) public view returns (string memory) {
-  //   // If the URI is encrypted, return the placeholder URI
-  //   // If not, return the revealed URI with the tokenId appended
-  //   string memory batchUri = _getBaseURI(_tokenId);
+  /**
+   * @dev Returns the URI for a given tokenId.
+   * @param tokenId id of token to get URI for
+   * @return Token URI
+   */
+  function tokenURI(uint256 tokenId) public view returns (string memory) {
+    HolographERC721Interface H721 = HolographERC721Interface(holographer());
+    require(H721.exists(tokenId), "ERC721: token does not exist");
 
-  //   return string(abi.encodePacked(batchUri, _tokenId.toString()));
-  // }
-
-  // /**
-  //  * @dev Returns the base URI for a given tokenId. It return the base URI corresponding to the batch the tokenId
-  //  * belongs to.
-  //  * @param _tokenId id of token to get URI for
-  //  * @return Token URI
-  //  */
-  // function baseURI(uint256 _tokenId) public view returns (string memory) {
-  //   return _getBaseURI(_tokenId);
-  // }
+    string memory baseURI = _baseURI;
+    return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : "";
+  }
 
   /**
    * @notice Convert USD price to current price in native Ether units
@@ -388,17 +382,6 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
   /* -------------------------------------------------------------------------- */
 
   /**
-   * @notice Admin mint tokens to a recipient for free
-   * @param recipient recipient to mint to
-   * @param quantity quantity to mint
-   */
-  function adminMint(address recipient, uint256 quantity) external onlyOwner canMintTokens(quantity) returns (uint256) {
-    _mintNFTs(recipient, quantity);
-
-    return _currentTokenId;
-  }
-
-  /**
    * @notice Minter account mints tokens to a recipient that has paid offchain
    * @param recipient recipient to mint to
    * @param quantity quantity to mint
@@ -463,10 +446,31 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     emit FundsWithdrawn(sender, FUNDS_RECIPIENT, funds);
   }
 
+  /**
+   * @notice Sets the base URI for computing {tokenURI}. Can only be called by the owner.
+   * @param newBaseURI New base URI
+   */
+  function setBaseURI(string memory newBaseURI) public onlyOwner {
+    _baseURI = newBaseURI;
+  }
+
   /* -------------------------------------------------------------------------- */
   /*                             INTERNAL FUNCTIONS                             */
   /*                             non state changing                             */
   /* -------------------------------------------------------------------------- */
+
+  /**
+   * @dev Internal function to return the base URI stored in the contract.
+   * Used to construct the URI for each token.
+   */
+  function baseURI() internal view returns (string memory) {
+    return _baseURI;
+  }
+
+  /// @notice Checks whether contract metadata can be set in the given execution context.
+  function _canSetContractURI() internal view override returns (bool) {
+    return msgSender() == _getOwner();
+  }
 
   /**
    * @dev Checks if the public sale is active
@@ -484,11 +488,6 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
       return 0;
     }
     weiAmount = dropsPriceOracle.convertUsdToWei(amount);
-  }
-
-  /// @notice Checks whether contract metadata can be set in the given execution context.
-  function _canSetContractURI() internal view override returns (bool) {
-    return msgSender() == _getOwner();
   }
 
   /* -------------------------------------------------------------------------- */
