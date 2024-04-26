@@ -44,6 +44,9 @@ jobs:
       - name: Run the protocol
         run: bash scripts/start-protocol.sh
 
+      - name: Run compile contracts
+        run: pnpm compile
+
       - name: Run tests
         run: forge test -vv --no-match-test "(FFI|Fork)" --no-match-contract Fork
 
