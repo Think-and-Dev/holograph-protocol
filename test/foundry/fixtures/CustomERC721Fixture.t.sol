@@ -182,10 +182,8 @@ contract CustomERC721Fixture is Test {
 
     uint104 price = usd100;
     nativePrice = dummyPriceOracle.convertUsdToWei(price);
-    uint256 holographFee = customErc721.getHolographFeeUsd(1);
-    uint256 nativeFee = dummyPriceOracle.convertUsdToWei(holographFee);
 
-    totalCost = (nativePrice + nativeFee);
+    totalCost = (nativePrice);
 
     vm.warp(customErc721.START_DATE());
   }
@@ -193,11 +191,8 @@ contract CustomERC721Fixture is Test {
   function deployAndSetupProtocol(uint32 maxSupply, bool skipLazyMintSync) internal returns (uint256) {
     // Setup sale config for edition
     CustomERC721SalesConfiguration memory saleConfig = CustomERC721SalesConfiguration({
-      presaleStart: 0, // never starts
-      presaleEnd: 0, // never ends
       publicSalePrice: usd100,
-      maxSalePurchasePerAddress: 0, // no limit
-      presaleMerkleRoot: bytes32(0) // no presale
+      maxSalePurchasePerAddress: 0 // no limit
     });
 
     // Create initializer
@@ -206,6 +201,7 @@ contract CustomERC721Fixture is Test {
       initialMaxSupply: maxSupply,
       mintInterval: DEFAULT_MINT_INTERVAL,
       initialOwner: payable(DEFAULT_OWNER_ADDRESS),
+      initialMinter: payable(DEFAULT_OWNER_ADDRESS),
       fundsRecipient: payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS),
       contractURI: "https://example.com/metadata.json",
       salesConfiguration: saleConfig,

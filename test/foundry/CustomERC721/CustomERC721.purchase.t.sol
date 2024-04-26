@@ -46,10 +46,9 @@ contract CustomERC721PurchaseTest is CustomERC721Fixture, ICustomERC721Errors {
 
     uint256 amount = 1;
     uint104 price = usd100;
-    uint256 holographFee = customErc721.getHolographFeeUsd(amount);
     vm.prank(address(TEST_ACCOUNT));
     vm.deal(address(TEST_ACCOUNT), totalCost - 1);
-    vm.expectRevert(abi.encodeWithSelector(ICustomERC721.Purchase_WrongPrice.selector, uint256(price + holographFee)));
+    vm.expectRevert(abi.encodeWithSelector(ICustomERC721.Purchase_WrongPrice.selector, uint256(price)));
 
     customErc721.purchase{value: totalCost - 1}(amount);
   }
