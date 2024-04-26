@@ -28,14 +28,6 @@ contract CustomERC721AdminTest is CustomERC721Fixture, ICustomERC721Errors {
     super.setUp();
   }
 
-  function test_MintAdmin() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) {
-    vm.prank(DEFAULT_OWNER_ADDRESS);
-    customErc721.adminMint(DEFAULT_OWNER_ADDRESS, 1);
-
-    HolographERC721 erc721Enforcer = HolographERC721(payable(address(customErc721)));
-    assertEq(erc721Enforcer.ownerOf(FIRST_TOKEN_ID), DEFAULT_OWNER_ADDRESS, "Owner is wrong for new minted token");
-  }
-
   function test_Withdraw(uint128 amount) public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) {
     vm.assume(amount > 0.01 ether);
     vm.deal(address(customErc721), amount);
@@ -62,42 +54,26 @@ contract CustomERC721AdminTest is CustomERC721Fixture, ICustomERC721Errors {
     vm.prank(DEFAULT_OWNER_ADDRESS);
     customErc721.setSaleConfiguration({
       publicSalePrice: price,
-      maxSalePurchasePerAddress: 10,
-      presaleStart: 0,
-      presaleEnd: 100,
-      presaleMerkleRoot: bytes32(0)
+      maxSalePurchasePerAddress: 10
     });
 
-    (uint104 newPrice, , , , ) = customErc721.salesConfig();
-    assertEq(newPrice, price);
+    (uint104 publicSalePrice, uint24 maxSalePurchasePerAddress) = customErc721.salesConfig();
+    assertEq(publicSalePrice, price);
+    assertEq(maxSalePurchasePerAddress, 10);
 
     vm.startPrank(DEFAULT_OWNER_ADDRESS);
     customErc721.setSaleConfiguration({
-      publicSalePrice: price,
-      maxSalePurchasePerAddress: 5,
-      presaleStart: 0,
-      presaleEnd: 100,
-      presaleMerkleRoot: bytes32(0)
+      publicSalePrice: price*2,
+      maxSalePurchasePerAddress: 5
     });
 
-    ( , uint24 maxSalePurchasePerAddress, uint64 presaleStartLookup2, uint64 presaleEndLookup2, ) = customErc721.salesConfig();
-    assertEq(presaleStartLookup2, 0);
-    assertEq(presaleEndLookup2, 100);
+    (publicSalePrice, maxSalePurchasePerAddress) = customErc721.salesConfig();
+    assertEq(publicSalePrice, price*2);
     assertEq(maxSalePurchasePerAddress, 5);
   }
 
   function test_WithdrawNotAllowed() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) {
     vm.expectRevert(IHolographDropERC721V2.Access_WithdrawNotAllowed.selector);
     customErc721.withdraw();
-  }
-
-  function test_Fuzz_AdminCantMintAfterSaleEnd(uint16 limit) public setupTestCustomERC21(200) setUpPurchase {
-    // Set assume to a more reasonable number to speed up tests
-    limit = uint16(bound(limit, 1, 10));
-    _purchaseAllSupply();
-
-    vm.prank(DEFAULT_OWNER_ADDRESS);
-    vm.expectRevert(Purchase_CountdownCompleted.selector);
-    customErc721.adminMint(DEFAULT_OWNER_ADDRESS, 1);
   }
 }

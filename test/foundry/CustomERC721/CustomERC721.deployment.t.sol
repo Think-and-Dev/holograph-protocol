@@ -52,10 +52,7 @@ contract CustomERC721DeploymentTest is CustomERC721Fixture, ICustomERC721Errors 
     // Setup sale config
     CustomERC721SalesConfiguration memory salesConfig = CustomERC721SalesConfiguration({
       publicSalePrice: 0,
-      maxSalePurchasePerAddress: 0,
-      presaleStart: DEFAULT_START_DATE,
-      presaleEnd: 0,
-      presaleMerkleRoot: bytes32(0)
+      maxSalePurchasePerAddress: 0
     });
 
     HolographERC721 customErc721 = HolographERC721(payable(address(customErc721)));
@@ -90,9 +87,10 @@ contract CustomERC721DeploymentTest is CustomERC721Fixture, ICustomERC721Errors 
       startDate: DEFAULT_START_DATE,
       initialMaxSupply: DEFAULT_MAX_SUPPLY,
       mintInterval: DEFAULT_MINT_INTERVAL,
-      initialOwner: DEFAULT_OWNER_ADDRESS,
-      fundsRecipient: payable(DEFAULT_OWNER_ADDRESS),
-      contractURI: "",
+      initialOwner: payable(DEFAULT_OWNER_ADDRESS),
+      initialMinter: payable(DEFAULT_MINTER_ADDRESS),
+      fundsRecipient: payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS),
+      contractURI: "https://example.com/metadata.json",
       salesConfiguration: salesConfig,
       lazyMintsConfigurations: lazyMintsConfigurations
     });

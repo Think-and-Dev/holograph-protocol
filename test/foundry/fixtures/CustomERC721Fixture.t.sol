@@ -32,6 +32,7 @@ contract CustomERC721Fixture is Test {
   /* -------------------------------- Addresses ------------------------------- */
   address sourceContractAddress;
   address public constant DEFAULT_OWNER_ADDRESS = address(0x1);
+  address public constant DEFAULT_MINTER_ADDRESS = address(0x11);
   address payable public constant DEFAULT_FUNDS_RECIPIENT_ADDRESS = payable(address(0x2));
   address payable public constant HOLOGRAPH_TREASURY_ADDRESS = payable(address(0x3));
   address payable constant TEST_ACCOUNT = payable(address(0x888));
@@ -201,7 +202,7 @@ contract CustomERC721Fixture is Test {
       initialMaxSupply: maxSupply,
       mintInterval: DEFAULT_MINT_INTERVAL,
       initialOwner: payable(DEFAULT_OWNER_ADDRESS),
-      initialMinter: payable(DEFAULT_OWNER_ADDRESS),
+      initialMinter: payable(DEFAULT_MINTER_ADDRESS),
       fundsRecipient: payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS),
       contractURI: "https://example.com/metadata.json",
       salesConfiguration: saleConfig,
