@@ -18,8 +18,8 @@ npx ts-node scripts/precompute-solidity-hashes.ts
 echo "✅ Solidity hashes precomputed.\n\n"
 
 # --------------------------- Add any changes made --------------------------- #
-
-git add .
+# temporary comments will be made until it is defined which files have to be add.
+# git add .
 
 # ---------------------------------------------------------------------------- #
 #                                    Checks                                    #
