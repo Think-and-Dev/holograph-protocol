@@ -107,9 +107,8 @@ interface ICustomERC721 {
   /// @notice Getter for the mint interval
   function MINT_INTERVAL() external view returns (uint256);
 
-  // TODO: Do we need this?
-  // /// @notice Getter for the minter role
-  // function minter() external view returns (address);
+  /// @notice Getter for the minter role
+  function minter() external view returns (address);
 
   /// @notice Admin function to update the sales configuration settings
   /// @param publicSalePrice public sale price in ether
