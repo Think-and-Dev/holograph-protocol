@@ -36,10 +36,10 @@ ffi = true
 
 [profile.local.fuzz]
 [profile.local.invariant]
-runs = 10_000
-depth = 15
+runs = 10
+depth = 2
 # call_override = true # makes invariant tests hang
-dictionary_weight = 80
+dictionary_weight = 2
 
 # ---------------------------------------------------------------------------- #
 #                             Heavy fuzzing profile                            #

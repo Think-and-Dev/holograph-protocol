@@ -523,6 +523,64 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
     console.log('"CustomERC721" is already registered');
   }
 
+  // Register CountdownERC721
+
+  // Deploy the CountdownERC721 custom contract source
+  const CountdownERC721InitCode = generateInitCode(
+    ['tuple(uint40,uint32,uint24,address,address,address,string,tuple(uint104,uint24))'],
+    [
+      [
+        1718822400, // Epoch time for June 3, 2024
+        4173120, // Total number of ten-minute intervals until Oct 8, 2103
+        600, // Duration of each interval
+        deployerAddress, // initialOwner
+        deployerAddress, // initialMinter
+        deployerAddress, // fundsRecipient
+        '', // contractURI
+        [0, 0], // salesConfig
+      ],
+    ]
+  );
+
+  const futureCountdownERC721Address = await genesisDeriveFutureAddress(
+    hre,
+    salt,
+    'CountdownERC721',
+    CountdownERC721InitCode
+  );
+  console.log('the future "CountdownERC721" address is', futureCountdownERC721Address);
+  const CountdownERC721Hash = '0x' + web3.utils.asciiToHex('CountdownERC721').substring(2).padStart(64, '0');
+  console.log(`CountdownERC721Hash: ${CountdownERC721Hash}`);
+  if ((await holographRegistry.getContractTypeAddress(CountdownERC721Hash)) !== futureCountdownERC721Address) {
+    const countdownERC721Tx = await MultisigAwareTx(
+      hre,
+      'HolographRegistry',
+      holographRegistry,
+      await holographRegistry.populateTransaction.setContractTypeAddress(
+        CountdownERC721Hash,
+        futureCountdownERC721Address,
+        {
+          ...(await txParams({
+            hre,
+            from: deployerAddress,
+            to: holographRegistry,
+            data: holographRegistry.populateTransaction.setContractTypeAddress(
+              CountdownERC721Hash,
+              futureCountdownERC721Address
+            ),
+          })),
+        }
+      )
+    );
+    console.log('Transaction hash:', countdownERC721Tx.hash);
+    await countdownERC721Tx.wait();
+    console.log(
+      `Registered "CountdownERC721" to: ${await holographRegistry.getContractTypeAddress(CountdownERC721Hash)}`
+    );
+  } else {
+    console.log('"CountdownERC721" is already registered');
+  }
+
   // Register CxipERC721
   const futureCxipErc721Address = await genesisDeriveFutureAddress(
     hre,

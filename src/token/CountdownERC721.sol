@@ -14,7 +14,7 @@ import {IDropsPriceOracle} from "../drops/interface/IDropsPriceOracle.sol";
 import {HolographTreasuryInterface} from "../interface/HolographTreasuryInterface.sol";
 
 import {AddressMintDetails} from "../drops/struct/AddressMintDetails.sol";
-import {CustomERC721Initializer} from "../struct/CustomERC721Initializer.sol";
+import {CountdownERC721Initializer} from "src/struct/CountdownERC721Initializer.sol";
 import {CustomERC721SaleDetails} from "src/struct/CustomERC721SaleDetails.sol";
 import {CustomERC721SalesConfiguration} from "src/struct/CustomERC721SalesConfiguration.sol";
 
@@ -140,7 +140,7 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
   /**
    * @notice Used internally to initialize the contract instead of through a constructor
    * @dev This function is called by the deployer/the factory when creating a contract
-   * @param initPayload abi encoded payload (CustomERC721Initializer struct) to use for contract initilaization
+   * @param initPayload abi encoded payload (CountdownERC721Initializer struct) to use for contract initilaization
    */
   function init(bytes memory initPayload) external override returns (bytes4) {
     require(!_isInitialized(), "HOLOGRAPH: already initialized");
@@ -150,8 +150,8 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
       sstore(_holographerSlot, caller())
     }
 
-    // Decode the initializer payload to get the CustomERC721Initializer struct
-    CustomERC721Initializer memory initializer = abi.decode(initPayload, (CustomERC721Initializer));
+    // Decode the initializer payload to get the CountdownERC721Initializer struct
+    CountdownERC721Initializer memory initializer = abi.decode(initPayload, (CountdownERC721Initializer));
 
     // Setup the owner role
     _setOwner(initializer.initialOwner);
@@ -176,6 +176,7 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     /// @dev The mint interval specifies the duration by which the END_DATE is decreased after each mint operation.
     ///      The sale start date is used like an immutable.
     MINT_INTERVAL = initializer.mintInterval;
+
     // Set the funds recipient
     FUNDS_RECIPIENT = initializer.fundsRecipient;
 
@@ -397,10 +398,7 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
    * @param recipient recipient to mint to
    * @param quantity quantity to mint
    */
-  function mintTo(
-    address recipient,
-    uint256 quantity
-  ) external onlyMinter onlyOwner canMintTokens(quantity) returns (uint256) {
+  function mintTo(address recipient, uint256 quantity) external onlyMinter canMintTokens(quantity) returns (uint256) {
     _mintNFTs(recipient, quantity);
 
     return _currentTokenId;
