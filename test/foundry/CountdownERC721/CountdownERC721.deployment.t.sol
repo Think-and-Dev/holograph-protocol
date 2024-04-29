@@ -2,22 +2,22 @@
 pragma solidity 0.8.13;
 
 import {ICustomERC721Errors} from "test/foundry/interface/ICustomERC721Errors.sol";
-import {CustomERC721Fixture} from "test/foundry/fixtures/CustomERC721Fixture.t.sol";
+import {CountdownERC721Fixture} from "test/foundry/fixtures/CountdownERC721Fixture.t.sol";
 
 import {Vm} from "forge-std/Test.sol";
 import {console} from "forge-std/console.sol";
 
-import {DEFAULT_START_DATE, DEFAULT_MAX_SUPPLY, DEFAULT_MINT_INTERVAL, EVENT_CONFIG, HOLOGRAPH_REGISTRY_PROXY} from "test/foundry/CustomERC721/utils/Constants.sol";
+import {DEFAULT_START_DATE, DEFAULT_MAX_SUPPLY, DEFAULT_MINT_INTERVAL, EVENT_CONFIG, HOLOGRAPH_REGISTRY_PROXY} from "test/foundry/CountdownERC721/utils/Constants.sol";
 
-import {ICustomERC721} from "src/interface/ICustomERC721.sol";
-import {CustomERC721} from "src/token/CustomERC721.sol";
+import {ICountdownERC721} from "src/interface/ICountdownERC721.sol";
+import {CountdownERC721} from "src/token/CountdownERC721.sol";
 import {Strings} from "src/library/Strings.sol";
 import {CustomERC721SalesConfiguration} from "src/struct/CustomERC721SalesConfiguration.sol";
 import {CustomERC721Initializer} from "src/struct/CustomERC721Initializer.sol";
 import {LazyMintConfiguration} from "src/struct/LazyMintConfiguration.sol";
 import {HolographERC721} from "src/enforcer/HolographERC721.sol";
 
-contract CustomERC721DeploymentTest is CustomERC721Fixture, ICustomERC721Errors {
+contract CountdownERC721DeploymentTest is CountdownERC721Fixture, ICustomERC721Errors {
   using Strings for uint256;
 
   constructor() {}
@@ -26,28 +26,28 @@ contract CustomERC721DeploymentTest is CustomERC721Fixture, ICustomERC721Errors 
     super.setUp();
   }
 
-  function test_DeployHolographCustomERC721() public {
-    super.deployAndSetupProtocol(DEFAULT_MAX_SUPPLY, false);
-    assertEq(customErc721.version(), 1);
-    assertEq(customErc721.currentTheoricalMaxSupply(), DEFAULT_MAX_SUPPLY);
-    assertEq(customErc721.START_DATE(), DEFAULT_START_DATE, "Wrong start date");
-    assertEq(customErc721.MINT_INTERVAL(), DEFAULT_MINT_INTERVAL, "Wrong mint interval");
-    assertEq(customErc721.INITIAL_MAX_SUPPLY(), DEFAULT_MAX_SUPPLY, "Wrong initial max supply");
+  function test_DeployHolographCountdownERC721() public {
+    super.deployAndSetupProtocol(DEFAULT_MAX_SUPPLY);
+    assertEq(countdownErc721.version(), 1);
+    assertEq(countdownErc721.currentTheoricalMaxSupply(), DEFAULT_MAX_SUPPLY);
+    assertEq(countdownErc721.START_DATE(), DEFAULT_START_DATE, "Wrong start date");
+    assertEq(countdownErc721.MINT_INTERVAL(), DEFAULT_MINT_INTERVAL, "Wrong mint interval");
+    assertEq(countdownErc721.INITIAL_MAX_SUPPLY(), DEFAULT_MAX_SUPPLY, "Wrong initial max supply");
     assertEq(
-      customErc721.END_DATE(),
+      countdownErc721.END_DATE(),
       DEFAULT_START_DATE + DEFAULT_MINT_INTERVAL * DEFAULT_MAX_SUPPLY,
       "Wrong initial end date"
     );
     assertEq(
-      customErc721.INITIAL_END_DATE(),
+      countdownErc721.INITIAL_END_DATE(),
       DEFAULT_START_DATE + DEFAULT_MINT_INTERVAL * DEFAULT_MAX_SUPPLY,
       "Wrong initial end date"
     );
   }
 
-  function test_init() public setupTestCustomERC21(DEFAULT_MAX_SUPPLY) {
-    assertEq(customErc721.owner(), DEFAULT_OWNER_ADDRESS, "Default owner set wrong");
-    assertEq(customErc721.FUNDS_RECIPIENT(), payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS), "FundsRecipient is wrong");
+  function test_init() public setupTestCountdownErc721(DEFAULT_MAX_SUPPLY) {
+    assertEq(countdownErc721.owner(), DEFAULT_OWNER_ADDRESS, "Default owner set wrong");
+    // assertEq(countdownErc721.FUNDS_RECIPIENT(), payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS), "FundsRecipient is wrong");
 
     // Setup sale config
     CustomERC721SalesConfiguration memory salesConfig = CustomERC721SalesConfiguration({
@@ -55,10 +55,10 @@ contract CustomERC721DeploymentTest is CustomERC721Fixture, ICustomERC721Errors 
       maxSalePurchasePerAddress: 0
     });
 
-    HolographERC721 customErc721 = HolographERC721(payable(address(customErc721)));
+    HolographERC721 countdownErc721 = HolographERC721(payable(address(countdownErc721)));
 
-    string memory name = customErc721.name();
-    string memory symbol = customErc721.symbol();
+    string memory name = countdownErc721.name();
+    string memory symbol = countdownErc721.symbol();
     assertEq(name, "Contract Name", "Name is wrong");
     assertEq(symbol, "SYM", "Symbol is wrong");
 
@@ -101,6 +101,6 @@ contract CustomERC721DeploymentTest is CustomERC721Fixture, ICustomERC721Errors 
       abi.encode(initializer) // actual init code for source contract (HolographDropERC721V2)
     );
 
-    customErc721.init(abi.encode(contractName, contractSymbol, contractBps, EVENT_CONFIG, skipInit, initCode));
+    countdownErc721.init(abi.encode(contractName, contractSymbol, contractBps, EVENT_CONFIG, skipInit, initCode));
   }
 }

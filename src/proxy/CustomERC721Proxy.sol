@@ -101,10 +101,10 @@
 
 pragma solidity 0.8.13;
 
-import "../../abstract/Admin.sol";
-import "../../abstract/Initializable.sol";
+import "../abstract/Admin.sol";
+import "../abstract/Initializable.sol";
 
-import "../../interface/HolographRegistryInterface.sol";
+import "../interface/HolographRegistryInterface.sol";
 
 contract CustomERC721Proxy is Admin, Initializable {
   /**

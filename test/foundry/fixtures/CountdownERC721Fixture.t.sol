@@ -6,24 +6,23 @@ import {console2} from "forge-std/console2.sol";
 
 import {HolographTreasury} from "src/HolographTreasury.sol";
 import {DummyDropsPriceOracle} from "src/drops/oracle/DummyDropsPriceOracle.sol";
-import {CustomERC721Initializer} from "src/struct/CustomERC721Initializer.sol";
+import {CountdownERC721Initializer} from "src/struct/CountdownERC721Initializer.sol";
 import {DeploymentConfig} from "src/struct/DeploymentConfig.sol";
 import {CustomERC721SalesConfiguration} from "src/struct/CustomERC721SalesConfiguration.sol";
-import {LazyMintConfiguration} from "src/struct/LazyMintConfiguration.sol";
 import {Verification} from "src/struct/Verification.sol";
 import {HolographFactory} from "src/HolographFactory.sol";
 import {HolographerInterface} from "src/interface/HolographerInterface.sol";
 import {HolographERC721} from "src/enforcer/HolographERC721.sol";
-import {CustomERC721} from "src/token/CustomERC721.sol";
+import {CountdownERC721} from "src/token/CountdownERC721.sol";
 
 import {MockUser} from "../utils/MockUser.sol";
 import {Utils} from "../utils/Utils.sol";
-import {CustomERC721Helper} from "test/foundry/CustomERC721/utils/Helper.sol";
+import {CountdownERC721Helper} from "test/foundry/CountdownERC721/utils/Helper.sol";
 
 import {Constants} from "test/foundry/utils/Constants.sol";
-import {DEFAULT_BASE_URI, DEFAULT_BASE_URI_2, DEFAULT_PLACEHOLDER_URI, DEFAULT_PLACEHOLDER_URI_2, DEFAULT_ENCRYPT_DECRYPT_KEY, DEFAULT_ENCRYPT_DECRYPT_KEY_2, DEFAULT_MAX_SUPPLY, DEFAULT_MINT_INTERVAL, DEFAULT_START_DATE} from "test/foundry/CustomERC721/utils/Constants.sol";
+import {DEFAULT_BASE_URI, DEFAULT_BASE_URI_2, DEFAULT_PLACEHOLDER_URI, DEFAULT_PLACEHOLDER_URI_2, DEFAULT_ENCRYPT_DECRYPT_KEY, DEFAULT_ENCRYPT_DECRYPT_KEY_2, DEFAULT_MAX_SUPPLY, DEFAULT_MINT_INTERVAL, DEFAULT_START_DATE} from "test/foundry/CountdownERC721/utils/Constants.sol";
 
-contract CustomERC721Fixture is Test {
+contract CountdownERC721Fixture is Test {
   /// @notice Event emitted when the funds are withdrawn from the minting contract
   /// @param withdrawnBy address that issued the withdraw
   /// @param withdrawnTo address that the funds were withdrawn to
@@ -45,7 +44,7 @@ contract CustomERC721Fixture is Test {
   /* -------------------------------- Contracts ------------------------------- */
   HolographERC721 erc721Enforcer;
   MockUser public mockUser;
-  CustomERC721 public customErc721;
+  CountdownERC721 public countdownErc721;
   HolographTreasury public treasury;
   DummyDropsPriceOracle public dummyPriceOracle;
 
@@ -57,42 +56,11 @@ contract CustomERC721Fixture is Test {
   uint104 constant usd100 = 100 * (10 ** 6); // 100 USD (6 decimal places)
   uint104 constant usd1000 = 1000 * (10 ** 6); // 1000 USD (6 decimal places)
   uint256 internal fuzzingMaxSupply;
-  LazyMintConfiguration[] public defaultLazyMintConfigurations;
 
   uint256 public constant FIRST_TOKEN_ID =
     115792089183396302089269705419353877679230723318366275194376439045705909141505; // large 256 bit number due to chain id prefix
 
-  constructor() {
-    // Create the first batch configuration
-    bytes memory encryptedUri = CustomERC721Helper.encryptDecrypt(
-      abi.encodePacked(DEFAULT_BASE_URI),
-      DEFAULT_ENCRYPT_DECRYPT_KEY
-    );
-    bytes32 provenanceHash = keccak256(abi.encodePacked(DEFAULT_BASE_URI, DEFAULT_ENCRYPT_DECRYPT_KEY, block.chainid));
-    defaultLazyMintConfigurations.push(
-      LazyMintConfiguration({
-        _amount: DEFAULT_MAX_SUPPLY / 2,
-        _baseURIForTokens: DEFAULT_PLACEHOLDER_URI,
-        _data: abi.encode(encryptedUri, provenanceHash)
-      })
-    );
-
-    // Create the second batch configuration
-    bytes memory encryptedUri2 = CustomERC721Helper.encryptDecrypt(
-      abi.encodePacked(DEFAULT_BASE_URI_2),
-      DEFAULT_ENCRYPT_DECRYPT_KEY_2
-    );
-    bytes32 provenanceHash2 = keccak256(
-      abi.encodePacked(DEFAULT_BASE_URI_2, DEFAULT_ENCRYPT_DECRYPT_KEY_2, block.chainid)
-    );
-    defaultLazyMintConfigurations.push(
-      LazyMintConfiguration({
-        _amount: DEFAULT_MAX_SUPPLY / 2,
-        _baseURIForTokens: DEFAULT_PLACEHOLDER_URI_2,
-        _data: abi.encode(encryptedUri2, provenanceHash2)
-      })
-    );
-  }
+  constructor() {}
 
   function setUp() public virtual {
     // Setup VM
@@ -127,20 +95,8 @@ contract CustomERC721Fixture is Test {
     }
   }
 
-  modifier setupTestCustomERC21(uint32 maxSupply) {
-    chainPrepend = deployAndSetupProtocol(maxSupply, false);
-
-    _;
-  }
-
-  modifier setupTestCustomERC21WithoutLazyMintSync(uint32 maxSupply) {
-    chainPrepend = deployAndSetupProtocol(maxSupply, true);
-
-    _;
-  }
-
-  modifier setupTestCustomERC21WithLazyMint(uint32 maxSupply) {
-    chainPrepend = deployAndSetupProtocol(maxSupply, true, defaultLazyMintConfigurations);
+  modifier setupTestCountdownErc721(uint32 maxSupply) {
+    chainPrepend = deployAndSetupProtocol(maxSupply);
 
     _;
   }
@@ -161,13 +117,13 @@ contract CustomERC721Fixture is Test {
     uint16 contractBps,
     uint256 eventConfig,
     bool skipInit,
-    CustomERC721Initializer memory initializer
+    CountdownERC721Initializer memory initializer
   ) public returns (DeploymentConfig memory) {
-    bytes memory bytecode = abi.encodePacked(vm.getCode("CustomERC721Proxy.sol:CustomERC721Proxy"));
+    bytes memory bytecode = abi.encodePacked(vm.getCode("CountdownERC721Proxy.sol:CountdownERC721Proxy"));
     bytes memory initCode = abi.encode(
-      bytes32(0x0000000000000000000000000000000000000000437573746F6D455243373231), // Source contract type CustomERC721
+      bytes32(0x0000000000000000000000000000000000436f756e74646f776e455243373231), // Source contract type CountdownERC721
       address(Constants.getHolographRegistryProxy()), // address of registry (to get source contract address from)
-      abi.encode(initializer) // actual init code for source contract (CustomERC721)
+      abi.encode(initializer) // actual init code for source contract (CountdownERC721)
     );
 
     return
@@ -175,7 +131,7 @@ contract CustomERC721Fixture is Test {
         contractType: Utils.stringToBytes32("HolographERC721"), // HolographERC721
         chainType: 1338, // holograph.getChainId(),
         salt: 0x0000000000000000000000000000000000000000000000000000000000000001, // random salt from user
-        byteCode: bytecode, // custom contract bytecode
+        byteCode: bytecode, // countdown contract bytecode
         initCode: abi.encode(contractName, contractSymbol, contractBps, eventConfig, skipInit, initCode) // init code is used to initialize the HolographERC721 enforcer
       });
   }
@@ -184,49 +140,35 @@ contract CustomERC721Fixture is Test {
     // We assume that the amount is at least one and less than or equal to the edition size given in modifier
     vm.prank(DEFAULT_OWNER_ADDRESS);
 
-    HolographerInterface holographerInterface = HolographerInterface(address(customErc721));
+    HolographerInterface holographerInterface = HolographerInterface(address(countdownErc721));
     sourceContractAddress = holographerInterface.getSourceContract();
-    erc721Enforcer = HolographERC721(payable(address(customErc721)));
+    erc721Enforcer = HolographERC721(payable(address(countdownErc721)));
 
     uint104 price = usd100;
     nativePrice = dummyPriceOracle.convertUsdToWei(price);
 
     totalCost = (nativePrice);
 
-    vm.warp(customErc721.START_DATE());
+    vm.warp(countdownErc721.START_DATE());
   }
 
-  function deployAndSetupProtocol(
-    uint32 maxSupply,
-    bool skipLazyMintSync,
-    LazyMintConfiguration[] memory lazyMintsConfigurations
-  ) internal returns (uint256) {
-    _deployAndSetupProtocol(maxSupply, skipLazyMintSync, lazyMintsConfigurations);
-
-    return chainPrepend;
-  }
-
-  function deployAndSetupProtocol(uint32 maxSupply, bool skipLazyMintSync) internal returns (uint256) {
-    _deployAndSetupProtocol(maxSupply, skipLazyMintSync, new LazyMintConfiguration[](0));
+  function deployAndSetupProtocol(uint32 maxSupply) internal returns (uint256) {
+    _deployAndSetupProtocol(maxSupply);
 
     return chainPrepend;
   }
 
   function _purchaseAllSupply() internal {
-    for (uint256 i = 0; i < customErc721.currentTheoricalMaxSupply(); i++) {
+    for (uint256 i = 0; i < countdownErc721.currentTheoricalMaxSupply(); i++) {
       address user = address(uint160(uint256(keccak256(abi.encodePacked(i)))));
       vm.startPrank(address(user));
       vm.deal(address(user), totalCost);
-      customErc721.purchase{value: totalCost}(1);
+      countdownErc721.purchase{value: totalCost}(1);
       vm.stopPrank();
     }
   }
 
-  function _deployAndSetupProtocol(
-    uint32 maxSupply,
-    bool skipLazyMintSync,
-    LazyMintConfiguration[] memory lazyMintsConfigurations
-  ) private {
+  function _deployAndSetupProtocol(uint32 maxSupply) private {
     // Setup sale config for edition
     CustomERC721SalesConfiguration memory saleConfig = CustomERC721SalesConfiguration({
       publicSalePrice: usd100,
@@ -234,7 +176,7 @@ contract CustomERC721Fixture is Test {
     });
 
     // Create initializer
-    CustomERC721Initializer memory initializer = CustomERC721Initializer({
+    CountdownERC721Initializer memory initializer = CountdownERC721Initializer({
       startDate: DEFAULT_START_DATE,
       initialMaxSupply: maxSupply,
       mintInterval: DEFAULT_MINT_INTERVAL,
@@ -242,8 +184,7 @@ contract CustomERC721Fixture is Test {
       initialMinter: payable(DEFAULT_MINTER_ADDRESS),
       fundsRecipient: payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS),
       contractURI: "https://example.com/metadata.json",
-      salesConfiguration: saleConfig,
-      lazyMintsConfigurations: lazyMintsConfigurations
+      salesConfiguration: saleConfig
     });
 
     // Get deployment config, hash it, and then sign it
@@ -278,19 +219,9 @@ contract CustomERC721Fixture is Test {
     factory.deployHolographableContract(config, signature, alice); // Pass the payload hash, with the signature, and signer's address
     Vm.Log[] memory entries = vm.getRecordedLogs();
 
-    address newCustomERC721Address;
-    if (lazyMintsConfigurations.length > 0) {
-      newCustomERC721Address = address(uint160(uint256(entries[2 + lazyMintsConfigurations.length].topics[1])));
-    } else {
-      newCustomERC721Address = address(uint160(uint256(entries[2].topics[1])));
-    }
+    address newCountdownERC721Address = address(uint160(uint256(entries[2].topics[1])));
 
     // Connect the drop implementation to the drop proxy address
-    customErc721 = CustomERC721(payable(newCustomERC721Address));
-
-    if (!skipLazyMintSync) {
-      vm.prank(DEFAULT_OWNER_ADDRESS);
-      customErc721.syncLazyMint();
-    }
+    countdownErc721 = CountdownERC721(payable(newCountdownERC721Address));
   }
 }
