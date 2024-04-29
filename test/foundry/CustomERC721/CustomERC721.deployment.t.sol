@@ -59,7 +59,7 @@ contract CustomERC721DeploymentTest is CustomERC721Fixture, ICustomERC721Errors 
 
     string memory name = customErc721.name();
     string memory symbol = customErc721.symbol();
-    assertEq(name, "NFT name", "Name is wrong");
+    assertEq(name, "Contract Name", "Name is wrong");
     assertEq(symbol, "SYM", "Symbol is wrong");
 
     string memory contractName = "";
@@ -72,13 +72,13 @@ contract CustomERC721DeploymentTest is CustomERC721Fixture, ICustomERC721Errors 
     // Setup lazy mint config
     LazyMintConfiguration[] memory lazyMintsConfigurations = new LazyMintConfiguration[](2);
     lazyMintsConfigurations[0] = LazyMintConfiguration({
-      _amount: DEFAULT_MAX_SUPPLY/2,
+      _amount: DEFAULT_MAX_SUPPLY / 2,
       _baseURIForTokens: "https://placeholder-uri1.com/",
       _data: "0x00000000000000000000000000000000000000000000000000000000000000406fb73a8c26bf89ea9a8fa8c927042b0c602dc7dffb4614376384cbe15ebc45b40000000000000000000000000000000000000000000000000000000000000014d74bef972bcac96c0d83b64734870bfe84912893000000000000000000000000"
     });
 
     lazyMintsConfigurations[1] = LazyMintConfiguration({
-      _amount: DEFAULT_MAX_SUPPLY/2,
+      _amount: DEFAULT_MAX_SUPPLY / 2,
       _baseURIForTokens: "https://placeholder-uri2.com/",
       _data: "0x00000000000000000000000000000000000000000000000000000000000000406fb73a8c26bf89ea9a8fa8c927042b0c602dc7dffb4614376384cbe15ebc45b40000000000000000000000000000000000000000000000000000000000000014d74bef972bcac96c0d83b64734870bfe84912893000000000000000000000000"
     });

@@ -9,7 +9,6 @@ import {DummyDropsPriceOracle} from "src/drops/oracle/DummyDropsPriceOracle.sol"
 import {CountdownERC721Initializer} from "src/struct/CountdownERC721Initializer.sol";
 import {DeploymentConfig} from "src/struct/DeploymentConfig.sol";
 import {CustomERC721SalesConfiguration} from "src/struct/CustomERC721SalesConfiguration.sol";
-import {LazyMintConfiguration} from "src/struct/LazyMintConfiguration.sol";
 import {Verification} from "src/struct/Verification.sol";
 import {HolographFactory} from "src/HolographFactory.sol";
 import {HolographerInterface} from "src/interface/HolographerInterface.sol";
@@ -120,7 +119,7 @@ contract CountdownERC721Fixture is Test {
     bool skipInit,
     CountdownERC721Initializer memory initializer
   ) public returns (DeploymentConfig memory) {
-    bytes memory bytecode = abi.encodePacked(vm.getCode("CountdownERC721.sol:CountdownERC721"));
+    bytes memory bytecode = abi.encodePacked(vm.getCode("CountdownERC721Proxy.sol:CountdownERC721Proxy"));
     bytes memory initCode = abi.encode(
       bytes32(0x0000000000000000000000000000000000436f756e74646f776e455243373231), // Source contract type CountdownERC721
       address(Constants.getHolographRegistryProxy()), // address of registry (to get source contract address from)
@@ -132,10 +131,35 @@ contract CountdownERC721Fixture is Test {
         contractType: Utils.stringToBytes32("HolographERC721"), // HolographERC721
         chainType: 1338, // holograph.getChainId(),
         salt: 0x0000000000000000000000000000000000000000000000000000000000000001, // random salt from user
-        byteCode: bytecode, // custom contract bytecode
+        byteCode: bytecode, // countdown contract bytecode
         initCode: abi.encode(contractName, contractSymbol, contractBps, eventConfig, skipInit, initCode) // init code is used to initialize the HolographERC721 enforcer
       });
   }
+
+  // function getDeploymentConfig(
+  //   string memory contractName,
+  //   string memory contractSymbol,
+  //   uint16 contractBps,
+  //   uint256 eventConfig,
+  //   bool skipInit,
+  //   CustomERC721Initializer memory initializer
+  // ) public returns (DeploymentConfig memory) {
+  //   bytes memory bytecode = abi.encodePacked(vm.getCode("CustomERC721Proxy.sol:CustomERC721Proxy"));
+  //   bytes memory initCode = abi.encode(
+  //     bytes32(0x0000000000000000000000000000000000000000437573746F6D455243373231), // Source contract type CustomERC721
+  //     address(Constants.getHolographRegistryProxy()), // address of registry (to get source contract address from)
+  //     abi.encode(initializer) // actual init code for source contract (CustomERC721)
+  //   );
+
+  //   return
+  //     DeploymentConfig({
+  //       contractType: Utils.stringToBytes32("HolographERC721"), // HolographERC721
+  //       chainType: 1338, // holograph.getChainId(),
+  //       salt: 0x0000000000000000000000000000000000000000000000000000000000000001, // random salt from user
+  //       byteCode: bytecode, // custom contract bytecode
+  //       initCode: abi.encode(contractName, contractSymbol, contractBps, eventConfig, skipInit, initCode) // init code is used to initialize the HolographERC721 enforcer
+  //     });
+  // }
 
   function _setUpPurchase() private {
     // We assume that the amount is at least one and less than or equal to the edition size given in modifier
@@ -188,21 +212,11 @@ contract CountdownERC721Fixture is Test {
       salesConfiguration: saleConfig
     });
 
-    console2.log("Deploying CountdownERC721 contract");
-    console2.log("startDate: ", DEFAULT_START_DATE);
-    console2.log("initialMaxSupply: ", maxSupply);
-    console2.log("mintInterval: ", DEFAULT_MINT_INTERVAL);
-    console2.log("initialOwner: ", DEFAULT_OWNER_ADDRESS);
-    console2.log("initialMinter: ", DEFAULT_MINTER_ADDRESS);
-    console2.log("fundsRecipient: ", DEFAULT_FUNDS_RECIPIENT_ADDRESS);
-    console2.log("contractURI: ", "https://example.com/metadata.json");
-    // console2.log("salesConfiguration: ", saleConfig);
-
     // Get deployment config, hash it, and then sign it
     DeploymentConfig memory config = getDeploymentConfig(
-      "NFT name", // contractName
+      "Contract Name", // contractName
       "SYM", // contractSymbol
-      1000, // contractBps
+      0, // contractBps
       type(uint256).max, // eventConfig
       false, // skipInit
       initializer

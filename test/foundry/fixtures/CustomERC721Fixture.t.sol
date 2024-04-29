@@ -248,7 +248,7 @@ contract CustomERC721Fixture is Test {
 
     // Get deployment config, hash it, and then sign it
     DeploymentConfig memory config = getDeploymentConfig(
-      "NFT name", // contractName
+      "Contract Name", // contractName
       "SYM", // contractSymbol
       1000, // contractBps
       type(uint256).max, // eventConfig
@@ -281,8 +281,7 @@ contract CustomERC721Fixture is Test {
     address newCustomERC721Address;
     if (lazyMintsConfigurations.length > 0) {
       newCustomERC721Address = address(uint160(uint256(entries[2 + lazyMintsConfigurations.length].topics[1])));
-    }
-    else {
+    } else {
       newCustomERC721Address = address(uint160(uint256(entries[2].topics[1])));
     }
 

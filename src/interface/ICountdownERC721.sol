@@ -20,8 +20,6 @@ interface ICountdownERC721 {
   error Withdraw_FundsSendFailure();
   /// @notice Mint fee send failure
   error MintFee_FundsSendFailure();
-  /// @notice Lazy mint initialization failed
-  error LazyMint_AlreadyInitialized();
   /// @notice Contract is not initialized yet
   error NotInitialized();
 

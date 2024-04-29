@@ -166,7 +166,7 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     /// @dev The mint interval specifies the duration by which the END_DATE is decreased after each mint operation.
     ///      The sale start date is used like an immutable.
     MINT_INTERVAL = initializer.mintInterval;
-    
+
     // Set the funds recipient
     FUNDS_RECIPIENT = initializer.fundsRecipient;
 
