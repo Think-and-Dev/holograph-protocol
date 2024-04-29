@@ -21,6 +21,7 @@ import {CustomERC721SalesConfiguration} from "src/struct/CustomERC721SalesConfig
 import {Address} from "../drops/library/Address.sol";
 import {MerkleProof} from "../drops/library/MerkleProof.sol";
 import {Strings} from "./../drops/library/Strings.sol";
+import {NFTMetadataRenderer} from "../library/NFTMetadataRenderer.sol";
 
 /**
  * @dev This contract subscribes to the following HolographERC721 events:
@@ -30,6 +31,10 @@ import {Strings} from "./../drops/library/Strings.sol";
  */
 contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC721 {
   using Strings for uint256;
+
+  // TODO: Update the base image URI
+  string private constant BASE_IMAGE_URI = "ipfs://QmNMraA4KcB1epgWfqN6krn2WUyT4qpaQzbEpMhXjBCNCW/nft.png";
+  string private constant BASE_ANIMATION_URI = ""; // Define if you have a specific animation URI
 
   /* -------------------------------------------------------------------------- */
   /*                             CONTRACT VARIABLES                             */
@@ -279,18 +284,24 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
         totalMints: totalMintsByAddress[minter]
       });
   }
-
   /**
-   * @dev Returns the URI for a given tokenId.
-   * @param tokenId id of token to get URI for
+   * @dev Returns a base64 encoded metadata URI for a given tokenId.
+   * @param tokenId The ID of the token to get URI for
    * @return Token URI
    */
   function tokenURI(uint256 tokenId) public view returns (string memory) {
     HolographERC721Interface H721 = HolographERC721Interface(holographer());
     require(H721.exists(tokenId), "ERC721: token does not exist");
 
-    string memory baseURI = _baseURI;
-    return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : "";
+    return
+      NFTMetadataRenderer.createMetadataEdition(
+        HolographERC721Interface(holographer()).name(),
+        "Testing",
+        BASE_IMAGE_URI,
+        BASE_ANIMATION_URI,
+        tokenId,
+        0 // editionSize can be set if there's a limited edition size
+      );
   }
 
   /**
