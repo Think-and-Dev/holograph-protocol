@@ -6,7 +6,7 @@ import {console2} from "forge-std/console2.sol";
 
 import {HolographTreasury} from "src/HolographTreasury.sol";
 import {DummyDropsPriceOracle} from "src/drops/oracle/DummyDropsPriceOracle.sol";
-import {CustomERC721Initializer} from "src/struct/CustomERC721Initializer.sol";
+import {CountdownERC721Initializer} from "src/struct/CountdownERC721Initializer.sol";
 import {DeploymentConfig} from "src/struct/DeploymentConfig.sol";
 import {CustomERC721SalesConfiguration} from "src/struct/CustomERC721SalesConfiguration.sol";
 import {LazyMintConfiguration} from "src/struct/LazyMintConfiguration.sol";
@@ -118,13 +118,13 @@ contract CountdownERC721Fixture is Test {
     uint16 contractBps,
     uint256 eventConfig,
     bool skipInit,
-    CustomERC721Initializer memory initializer
+    CountdownERC721Initializer memory initializer
   ) public returns (DeploymentConfig memory) {
-    bytes memory bytecode = abi.encodePacked(vm.getCode("CustomERC721Proxy.sol:CustomERC721Proxy"));
+    bytes memory bytecode = abi.encodePacked(vm.getCode("CountdownERC721.sol:CountdownERC721"));
     bytes memory initCode = abi.encode(
-      bytes32(0x0000000000000000000000000000000000000000437573746F6D455243373231), // Source contract type CustomERC721
+      bytes32(0x0000000000000000000000000000000000436f756e74646f776e455243373231), // Source contract type CountdownERC721
       address(Constants.getHolographRegistryProxy()), // address of registry (to get source contract address from)
-      abi.encode(initializer) // actual init code for source contract (CustomERC721)
+      abi.encode(initializer) // actual init code for source contract (CountdownERC721)
     );
 
     return
@@ -177,7 +177,7 @@ contract CountdownERC721Fixture is Test {
     });
 
     // Create initializer
-    CustomERC721Initializer memory initializer = CustomERC721Initializer({
+    CountdownERC721Initializer memory initializer = CountdownERC721Initializer({
       startDate: DEFAULT_START_DATE,
       initialMaxSupply: maxSupply,
       mintInterval: DEFAULT_MINT_INTERVAL,
@@ -185,9 +185,18 @@ contract CountdownERC721Fixture is Test {
       initialMinter: payable(DEFAULT_MINTER_ADDRESS),
       fundsRecipient: payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS),
       contractURI: "https://example.com/metadata.json",
-      salesConfiguration: saleConfig,
-      lazyMintsConfigurations: new LazyMintConfiguration[](0)
+      salesConfiguration: saleConfig
     });
+
+    console2.log("Deploying CountdownERC721 contract");
+    console2.log("startDate: ", DEFAULT_START_DATE);
+    console2.log("initialMaxSupply: ", maxSupply);
+    console2.log("mintInterval: ", DEFAULT_MINT_INTERVAL);
+    console2.log("initialOwner: ", DEFAULT_OWNER_ADDRESS);
+    console2.log("initialMinter: ", DEFAULT_MINTER_ADDRESS);
+    console2.log("fundsRecipient: ", DEFAULT_FUNDS_RECIPIENT_ADDRESS);
+    console2.log("contractURI: ", "https://example.com/metadata.json");
+    // console2.log("salesConfiguration: ", saleConfig);
 
     // Get deployment config, hash it, and then sign it
     DeploymentConfig memory config = getDeploymentConfig(
