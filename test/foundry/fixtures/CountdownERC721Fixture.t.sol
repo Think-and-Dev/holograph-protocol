@@ -136,31 +136,6 @@ contract CountdownERC721Fixture is Test {
       });
   }
 
-  // function getDeploymentConfig(
-  //   string memory contractName,
-  //   string memory contractSymbol,
-  //   uint16 contractBps,
-  //   uint256 eventConfig,
-  //   bool skipInit,
-  //   CustomERC721Initializer memory initializer
-  // ) public returns (DeploymentConfig memory) {
-  //   bytes memory bytecode = abi.encodePacked(vm.getCode("CustomERC721Proxy.sol:CustomERC721Proxy"));
-  //   bytes memory initCode = abi.encode(
-  //     bytes32(0x0000000000000000000000000000000000000000437573746F6D455243373231), // Source contract type CustomERC721
-  //     address(Constants.getHolographRegistryProxy()), // address of registry (to get source contract address from)
-  //     abi.encode(initializer) // actual init code for source contract (CustomERC721)
-  //   );
-
-  //   return
-  //     DeploymentConfig({
-  //       contractType: Utils.stringToBytes32("HolographERC721"), // HolographERC721
-  //       chainType: 1338, // holograph.getChainId(),
-  //       salt: 0x0000000000000000000000000000000000000000000000000000000000000001, // random salt from user
-  //       byteCode: bytecode, // custom contract bytecode
-  //       initCode: abi.encode(contractName, contractSymbol, contractBps, eventConfig, skipInit, initCode) // init code is used to initialize the HolographERC721 enforcer
-  //     });
-  // }
-
   function _setUpPurchase() private {
     // We assume that the amount is at least one and less than or equal to the edition size given in modifier
     vm.prank(DEFAULT_OWNER_ADDRESS);
@@ -216,7 +191,7 @@ contract CountdownERC721Fixture is Test {
     DeploymentConfig memory config = getDeploymentConfig(
       "Contract Name", // contractName
       "SYM", // contractSymbol
-      0, // contractBps
+      1000, // contractBps
       type(uint256).max, // eventConfig
       false, // skipInit
       initializer

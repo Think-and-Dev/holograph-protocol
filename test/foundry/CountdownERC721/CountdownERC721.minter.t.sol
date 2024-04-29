@@ -49,7 +49,7 @@ contract CountdownERC721MinterRoleTest is CountdownERC721Fixture, ICustomERC721E
 
   function test_Fuzz_OnlyMinterCanMint(address sender) public setupTestCountdownErc721(DEFAULT_MAX_SUPPLY) {
     vm.assume(sender != DEFAULT_MINTER_ADDRESS);
-    
+
     // Calling with pranking any address should revert too
     vm.expectRevert(Access_OnlyMinter.selector);
     vm.prank(sender);
