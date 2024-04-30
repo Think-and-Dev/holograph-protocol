@@ -383,19 +383,6 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
   }
 
   /**
-   * @notice Returns the metadata params for the contract
-   */
-  function setMetadataParams(MetadataParams memory params) external onlyOwner {
-    IMAGE_URI = params.imageURI;
-    ANIMATION_URI = params.animationURI;
-    EXTERNAL_URL = params.externalUrl;
-    ENCRYPTED_MEDIA_URL = params.encryptedMediaUrl;
-    DECRYPTION_KEY = params.decryptionKey;
-    HASH = params.hash;
-    DECRYPTED_MEDIA_URI = params.decryptedMediaUrl;
-  }
-
-  /**
    * @notice Convert USD price to current price in native Ether units
    */
   function getNativePrice() external view returns (uint256) {
@@ -475,6 +462,20 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
   /*                       PUBLIC STATE CHANGING FUNCTIONS                      */
   /*                                 admin only                                 */
   /* -------------------------------------------------------------------------- */
+
+  /**
+   * @dev Returns the metadata params for the contract
+   * @notice This only sets the subset of metadata params that are settable by the owner
+   */
+  function setMetadataParams(MetadataParams memory params) external onlyOwner {
+    IMAGE_URI = params.imageURI;
+    ANIMATION_URI = params.animationURI;
+    EXTERNAL_URL = params.externalUrl;
+    ENCRYPTED_MEDIA_URL = params.encryptedMediaUrl;
+    DECRYPTION_KEY = params.decryptionKey;
+    HASH = params.hash;
+    DECRYPTED_MEDIA_URI = params.decryptedMediaUrl;
+  }
 
   /**
    * @notice Minter account mints tokens to a recipient that has paid offchain
