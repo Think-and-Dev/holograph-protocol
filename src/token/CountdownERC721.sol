@@ -147,7 +147,7 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     _setOwner(initializer.initialOwner);
 
     // Setup the minter role
-    minter = initializer.initialMinter;
+    _setMinter(initializer.initialMinter);
 
     // Setup the contract URI
     _setupContractURI(initializer.contractURI);
@@ -461,6 +461,14 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     emit FundsWithdrawn(sender, FUNDS_RECIPIENT, funds);
   }
 
+  /**
+   * @notice Set the minter address
+   * @param minterAddress new minter address
+   */
+  function setMinter(address minterAddress) external onlyOwner {
+    _setMinter(minterAddress);
+  }
+
   /* -------------------------------------------------------------------------- */
   /*                             INTERNAL FUNCTIONS                             */
   /*                             non state changing                             */
@@ -520,6 +528,14 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
         i++;
       }
     }
+  }
+
+  /**
+   * @dev Set the minter address
+   * @param minterAddress new minter address
+   */
+  function _setMinter(address minterAddress) internal {
+    minter = minterAddress;
   }
 
   /* -------------------------------------------------------------------------- */
