@@ -28,6 +28,10 @@ contract CountdownERC721MinterRoleTest is CountdownERC721Fixture, ICustomERC721E
     super.setUp();
   }
 
+  function test_initMinter() public setupTestCountdownErc721(DEFAULT_MAX_SUPPLY) {
+    assertEq(countdownErc721.minter(), DEFAULT_MINTER_ADDRESS, "Minter is wrong");
+  }
+
   function test_MinterCanMint() public setupTestCountdownErc721(DEFAULT_MAX_SUPPLY) {
     vm.prank(DEFAULT_MINTER_ADDRESS);
     countdownErc721.mintTo(TEST_ACCOUNT, 1);

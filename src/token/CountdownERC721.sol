@@ -109,7 +109,7 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
    * @notice Allows only the minter to call the function
    */
   modifier onlyMinter() {
-    if (msgSender() == minter) {
+    if (msgSender() != minter) {
       revert Access_OnlyMinter();
     }
     _;
@@ -119,7 +119,13 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
    * @notice Allows user to mint tokens at a quantity
    */
   modifier canMintTokens(uint256 quantity) {
-    // NOTE: NEED TO DECIDE IF WE WANT TO RESTRICT MINTING UNDER CERTAIN CONDITIONS
+    /// @dev Check if the countdown has completed
+    ///      END_DATE - MINT_INTERVAL * (quantity - 1) represent the time when the last mint will be allowed
+    ///      (quantity - 1) because we want to allow the last mint to be available until the END_DATE
+    if (block.timestamp >= END_DATE - MINT_INTERVAL * (quantity - 1)) {
+      revert Purchase_CountdownCompleted();
+    }
+
     _;
   }
 
@@ -164,7 +170,7 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     _setOwner(initializer.initialOwner);
 
     // Setup the minter role
-    minter = initializer.initialMinter;
+    _setMinter(initializer.initialMinter);
 
     // Setup the contract URI
 
@@ -366,13 +372,6 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
       revert Purchase_WrongPrice((salesConfig.publicSalePrice) * quantity);
     }
 
-    /// @dev Check if the countdown has completed
-    ///      END_DATE - MINT_INTERVAL * (quantity - 1) represent the time when the last mint will be allowed
-    ///      (quantity - 1) because we want to allow the last mint to be available until the END_DATE
-    if (block.timestamp >= END_DATE - MINT_INTERVAL * (quantity - 1)) {
-      revert Purchase_CountdownCompleted();
-    }
-
     // Reducing the end date by removing the quantity of mints times the mint interval
     END_DATE = END_DATE - quantity * MINT_INTERVAL;
 
@@ -477,11 +476,11 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
   }
 
   /**
-   * @notice Sets the base URI for computing {tokenURI}. Can only be called by the owner.
-   * @param newBaseURI New base URI
+   * @notice Set the minter address
+   * @param minterAddress new minter address
    */
-  function setBaseURI(string memory newBaseURI) public onlyOwner {
-    _baseURI = newBaseURI;
+  function setMinter(address minterAddress) external onlyOwner {
+    _setMinter(minterAddress);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -551,6 +550,14 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
         i++;
       }
     }
+  }
+
+  /**
+   * @dev Set the minter address
+   * @param minterAddress new minter address
+   */
+  function _setMinter(address minterAddress) internal {
+    minter = minterAddress;
   }
 
   /* -------------------------------------------------------------------------- */
