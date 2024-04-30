@@ -38,12 +38,12 @@ contract CountdownERC721PurchaseTest is CountdownERC721Fixture, ICustomERC721Err
     // {
     //     "name": "Contract Name 115792089183396302089269705419353877679230723318366275194376439045705909141505",
     //     "description": "Description of the token",
-    //     "external_url": "https://your-nft-project.com",
-    //     "image": "ipfs://QmNMraA4KcB1epgWfqN6krn2WUyT4qpaQzbEpMhXjBCNCW/nft.png",
-    //     "encrypted_media_url": "ar://encryptedMediaUriHere",
-    //     "decryption_key": "decryptionKeyHere",
-    //     "hash": "uniqueNftHashHere",
-    //     "decrypted_media_url": "ar://decryptedMediaUriHere",
+    //     "external_url": "https://example.com",
+    //     "image": ar://o8eyC27OuSZF0z-zIen5NTjJOKTzOQzKJzIe3F7Lmg0/1.png",
+    //     "encrypted_media_url": "",
+    //     "decryption_key": "",
+    //     "hash": "",
+    //     "decrypted_media_url": "",
     //     "animation_url": "",
     //     "properties": {
     //         "number": 115792089183396302089269705419353877679230723318366275194376439045705909141505,
@@ -51,7 +51,7 @@ contract CountdownERC721PurchaseTest is CountdownERC721Fixture, ICustomERC721Err
     //     }
     // }
     string memory expectedTokenUri = NFTMetadataRenderer.encodeMetadataJSON(
-      '{"name": "Contract Name 115792089183396302089269705419353877679230723318366275194376439045705909141505", "description": "Description of the token", "external_url": "https://your-nft-project.com", "image": "ipfs://QmNMraA4KcB1epgWfqN6krn2WUyT4qpaQzbEpMhXjBCNCW/nft.png", "encrypted_media_url": "ar://encryptedMediaUriHere", "decryption_key": "decryptionKeyHere", "hash": "uniqueNftHashHere", "decrypted_media_url": "ar://decryptedMediaUriHere", "animation_url": "", "properties": {"number": 115792089183396302089269705419353877679230723318366275194376439045705909141505, "name": "Contract Name"}}'
+      '{"name": "Contract Name 115792089183396302089269705419353877679230723318366275194376439045705909141505", "description": "Description of the token", "external_url": "https://example.com", "image": "ar://o8eyC27OuSZF0z-zIen5NTjJOKTzOQzKJzIe3F7Lmg0/1.png", "encrypted_media_url": "", "decryption_key": "", "hash": "", "decrypted_media_url": "", "animation_url": "", "properties": {"number": 115792089183396302089269705419353877679230723318366275194376439045705909141505, "name": "Contract Name"}}'
     );
 
     string memory base64TokenUri = countdownErc721.tokenURI(tokenId);

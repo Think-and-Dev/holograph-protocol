@@ -178,8 +178,9 @@ contract CountdownERC721Fixture is Test {
     // Create initializer
     CountdownERC721Initializer memory initializer = CountdownERC721Initializer({
       description: "Description of the token",
-      imageURI: "https://example.com/image.png",
-      externalLink: "https://example.com/",
+      imageURI: "ar://o8eyC27OuSZF0z-zIen5NTjJOKTzOQzKJzIe3F7Lmg0/1.png",
+      animationURI: "",
+      externalLink: "https://example.com",
       encryptedMediaURI: "xxx",
       startDate: DEFAULT_START_DATE,
       initialMaxSupply: maxSupply,
