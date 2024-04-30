@@ -220,7 +220,6 @@ contract CountdownERC721Fixture is Test {
 
     // Deploy the drop / edition
     vm.recordLogs();
-    console2.log("factory", address(factory));
     factory.deployHolographableContract(config, signature, alice); // Pass the payload hash, with the signature, and signer's address
     Vm.Log[] memory entries = vm.getRecordedLogs();
 
