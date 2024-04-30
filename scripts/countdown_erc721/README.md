@@ -1,9 +1,11 @@
 # CountdownERC721 Contract 
 
-This folder contains three scripts:
+This folder contains four scripts:
 
 - `1-deploy.ts`
-- `2-update-admin.ts`
+- `2-setOwner.ts`
+- `3-mintTo.ts`
+- `2-purchase.ts`
 
 Below are the steps required to run the scripts successfully.
 
@@ -64,18 +66,52 @@ ts-node countdown_erc721/deploy.ts
 
 </br>
 
-## Script 2: Update Admin
+## Script 2: Set Owner
 
-This is a straightforward script that invokes the contract to update the admin using predefined values.
+This is a straightforward script that invokes the contract to update the owner using hardcoded values.
 
 ### Steps
 
 2. **Set the static values:**
    - Configure the static values:
      - `contractAddress`: The CountdownERC721 address
-     - `newAdmin`: The wallet address of the new owner.
+     - `newOwner`: The wallet address of the new owner.
   
-3. **Run the script update the admin:**
+3. **Run the script update the owner:**
 ```sh
-ts-node countdown_erc721/update-admin.ts 
+ts-node countdown_erc721/2-setOwner.ts 
+```
+
+## Script 3: Mint To
+
+This is a straightforward script that invokes the contract `mintTo` function using hardcoded values as parameters.
+
+### Steps
+
+2. **Set the static values:**
+   - Configure the static values:
+     - `contractAddress`: The CountdownERC721 address
+     - `recipient`: The wallet address of recipient.
+     - `quantity`: The number of tokens to be minted.
+  
+3. **Run the script update the owner:**
+```sh
+ts-node countdown_erc721/3-mintTo.ts 
+```
+
+## Script 4: Purchase
+
+This is a straightforward script that invokes the contract `purchase` function using hardcoded values as parameters.
+
+### Steps
+
+2. **Set the static values:**
+   - Configure the static values:
+     - `contractAddress`: The CountdownERC721 address
+     - `quantity`: The number of tokens to be minted.
+     - `price`: The public sale price in wei.
+  
+3. **Run the script update the owner:**
+```sh
+ts-node countdown_erc721/4-purchase.ts 
 ```
