@@ -482,29 +482,7 @@ library NFTMetadataRenderer {
   /// Function to create the metadata for an edition
   /// @param params MetadataParams struct containing all metadata information
   function createMetadataEdition(MetadataParams memory params) internal pure returns (string memory) {
-    string memory _tokenMediaData = tokenMediaData(
-      params.imageURI,
-      params.animationURI,
-      params.externalUrl,
-      params.encryptedMediaUrl,
-      params.decryptionKey,
-      params.hash,
-      params.decryptedMediaUrl
-    );
-    bytes memory json = createMetadataJSON(
-      params.name,
-      params.description,
-      _tokenMediaData,
-      params.tokenOfEdition,
-      params.editionSize,
-      params.externalUrl,
-      params.imageURI,
-      params.encryptedMediaUrl,
-      params.decryptionKey,
-      params.hash,
-      params.decryptedMediaUrl,
-      params.animationURI
-    );
+    bytes memory json = createMetadataJSON(params);
     return encodeMetadataJSON(json);
   }
 
@@ -547,64 +525,50 @@ library NFTMetadataRenderer {
   }
 
   /// Function to create the metadata json string for the nft edition
-  /// @param name Name of NFT in metadata
-  /// @param description Description of NFT in metadata
-  /// @param mediaData Data for media to include in json object
-  /// @param tokenOfEdition Token ID for specific token
-  /// @param editionSize Size of entire edition to show
-  /// @param externalUrl URL related to the NFT
-  /// @param imageUrl URL for the main image of the NFT
-  /// @param encryptedMediaUrl URL for encrypted media
-  /// @param decryptionKey Key used for decryption
-  /// @param hash Unique hash for the NFT
-  /// @param decryptedMediaUrl URL for decrypted media
-  /// @param animationUrl URL for animation media
-  function createMetadataJSON(
-    string memory name,
-    string memory description,
-    string memory mediaData,
-    uint256 tokenOfEdition,
-    uint256 editionSize,
-    string memory externalUrl,
-    string memory imageUrl,
-    string memory encryptedMediaUrl,
-    string memory decryptionKey,
-    string memory hash,
-    string memory decryptedMediaUrl,
-    string memory animationUrl
-  ) internal pure returns (bytes memory) {
+  /// @param params MetadataParams struct containing all metadata information
+  function createMetadataJSON(MetadataParams memory params) internal pure returns (bytes memory) {
     bytes memory editionSizeText;
-    if (editionSize > 0) {
-      editionSizeText = abi.encodePacked("/", Strings.toString(editionSize));
+    string memory tokenOfEditionString;
+    {
+      if (params.editionSize > 0) {
+        editionSizeText = abi.encodePacked("/", Strings.toString(params.editionSize));
+      }
+
+      tokenOfEditionString = Strings.toString(params.tokenOfEdition);
     }
+
     return
       abi.encodePacked(
-        '{"name": "',
-        name,
-        " ",
-        Strings.toString(tokenOfEdition),
-        editionSizeText,
-        '", "description": "',
-        description,
-        '", "external_url": "',
-        externalUrl,
-        '", "image": "',
-        imageUrl,
-        '", "encrypted_media_url": "',
-        encryptedMediaUrl,
-        '", "decryption_key": "',
-        decryptionKey,
-        '", "hash": "',
-        hash,
-        '", "decrypted_media_url": "',
-        decryptedMediaUrl,
-        '", "animation_url": "',
-        animationUrl,
-        '", "properties": {"number": ',
-        Strings.toString(tokenOfEdition),
-        ', "name": "',
-        name,
-        '"}}'
+        abi.encodePacked(
+          '{"name": "',
+          params.name,
+          " ",
+          tokenOfEditionString,
+          editionSizeText,
+          '", "description": "',
+          params.description,
+          '", "external_url": "',
+          params.externalUrl,
+          '", "image": "',
+          params.imageURI,
+          '", "encrypted_media_url": "',
+          params.encryptedMediaUrl
+        ),
+        abi.encodePacked(
+          '", "decryption_key": "',
+          params.decryptionKey,
+          '", "hash": "',
+          params.hash,
+          '", "decrypted_media_url": "',
+          params.decryptedMediaUrl,
+          '", "animation_url": "',
+          params.animationURI,
+          '", "properties": {"number": ',
+          tokenOfEditionString,
+          ', "name": "',
+          params.name,
+          '"}}'
+        )
       );
   }
 
@@ -636,31 +600,17 @@ library NFTMetadataRenderer {
 
   /// @dev Generates a metadata string from provided URLs and keys
   /// This function checks for the presence of media-related information and formats them into a JSON-like string.
-  /// @param imageUrl URL of the image associated with the NFT
-  /// @param animationUrl URL of the animation associated with the NFT
-  /// @param externalUrl URL of an external website providing more details about the NFT
-  /// @param encryptedMediaUrl URL of the encrypted media
-  /// @param decryptionKey Key required to decrypt the encrypted media
-  /// @param hash Hash of the encrypted file to ensure integrity
-  /// @param decryptedMediaUrl URL where the decrypted media can be accessed
+  /// @param params MetadataParams struct containing all metadata information
   /// @return A string that concatenates all provided and non-empty fields into a JSON-like format for NFT metadata.
-  function tokenMediaData(
-    string memory imageUrl,
-    string memory animationUrl,
-    string memory externalUrl,
-    string memory encryptedMediaUrl,
-    string memory decryptionKey,
-    string memory hash,
-    string memory decryptedMediaUrl
-  ) internal pure returns (string memory) {
+  function tokenMediaData(MetadataParams memory params) internal pure returns (string memory) {
     // Initialize boolean variables to check if each parameter contains data.
-    bool hasImage = bytes(imageUrl).length > 0;
-    bool hasAnimation = bytes(animationUrl).length > 0;
-    bool hasExternal = bytes(externalUrl).length > 0;
-    bool hasEncryptedMedia = bytes(encryptedMediaUrl).length > 0;
-    bool hasDecryptionKey = bytes(decryptionKey).length > 0;
-    bool hasHash = bytes(hash).length > 0;
-    bool hasDecryptedMedia = bytes(decryptedMediaUrl).length > 0;
+    bool hasImage = bytes(params.imageURI).length > 0;
+    bool hasAnimation = bytes(params.animationURI).length > 0;
+    bool hasExternal = bytes(params.externalUrl).length > 0;
+    bool hasEncryptedMedia = bytes(params.encryptedMediaUrl).length > 0;
+    bool hasDecryptionKey = bytes(params.decryptionKey).length > 0;
+    bool hasHash = bytes(params.hash).length > 0;
+    bool hasDecryptedMedia = bytes(params.decryptedMediaUrl).length > 0;
 
     // Check if all parameters are provided and concatenate them into a JSON-like string.
     if (
@@ -670,25 +620,25 @@ library NFTMetadataRenderer {
         string(
           abi.encodePacked(
             '"image": "',
-            imageUrl,
+            params.imageURI,
             '", ',
             '"animation_url": "',
-            animationUrl,
+            params.animationURI,
             '", ',
             '"external_url": "',
-            externalUrl,
+            params.externalUrl,
             '", ',
             '"encrypted_media_url": "',
-            encryptedMediaUrl,
+            params.encryptedMediaUrl,
             '", ',
             '"decryption_key": "',
-            decryptionKey,
+            params.decryptionKey,
             '", ',
             '"hash": "',
-            hash,
+            params.hash,
             '", ',
             '"decrypted_media_url": "',
-            decryptedMediaUrl,
+            params.decryptedMediaUrl,
             '", '
           )
         );
@@ -696,25 +646,25 @@ library NFTMetadataRenderer {
 
     // Individual checks for each field, appending them to the result if they contain data.
     if (hasImage) {
-      return string(abi.encodePacked('"image": "', imageUrl, '", '));
+      return string(abi.encodePacked('"image": "', params.imageURI, '", '));
     }
     if (hasAnimation) {
-      return string(abi.encodePacked('"animation_url": "', animationUrl, '", '));
+      return string(abi.encodePacked('"animation_url": "', params.animationURI, '", '));
     }
     if (hasExternal) {
-      return string(abi.encodePacked('"external_url": "', externalUrl, '", '));
+      return string(abi.encodePacked('"external_url": "', params.externalUrl, '", '));
     }
     if (hasEncryptedMedia) {
-      return string(abi.encodePacked('"encrypted_media_url": "', encryptedMediaUrl, '", '));
+      return string(abi.encodePacked('"encrypted_media_url": "', params.encryptedMediaUrl, '", '));
     }
     if (hasDecryptionKey) {
-      return string(abi.encodePacked('"decryption_key": "', decryptionKey, '", '));
+      return string(abi.encodePacked('"decryption_key": "', params.decryptionKey, '", '));
     }
     if (hasHash) {
-      return string(abi.encodePacked('"hash": "', hash, '", '));
+      return string(abi.encodePacked('"hash": "', params.hash, '", '));
     }
     if (hasDecryptedMedia) {
-      return string(abi.encodePacked('"decrypted_media_url": "', decryptedMediaUrl, '", '));
+      return string(abi.encodePacked('"decrypted_media_url": "', params.decryptedMediaUrl, '", '));
     }
 
     // Return an empty string if none of the fields are provided.
