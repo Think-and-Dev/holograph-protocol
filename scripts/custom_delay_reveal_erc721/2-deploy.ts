@@ -6,28 +6,19 @@ import { JsonRpcProvider } from '@ethersproject/providers';
 import { getNetworkByChainId } from '@holographxyz/networks';
 
 import {
-  deleteCSVFile,
   deployHolographableContract,
   destructSignature,
-  encryptDecrypt,
   flattenObject,
   getFactoryAddress,
   getRegistryAddress,
   parseBytes,
   readCsvFile,
-  writeCSVFile,
 } from './utils';
 import { CustomERC721Initializer, DeploymentConfig, DeploymentConfigSettings, Hex } from './types';
 import { customErc721Bytecode } from './custom-erc721-bytecode';
-import { FileColumnsSchema, FileColumnsType, parseRowsContent, parsedEnv, validateHeader } from './validations';
+import { FileColumnsType, parseFileContent, parsedEnv } from './validations';
 
 require('dotenv').config();
-
-/**
- * TODO:
- *  - Validate URI for arweave
- *  - validate ENVs
- */
 
 /**
  * Check out the README file
@@ -93,34 +84,19 @@ async function main() {
   };
 
   /*
-   * STEP 3: CSV FILE VALIDATION
+   * STEP 3: READ CSV FILE
    */
 
   const csvData = await readCsvFile(file);
 
-  if (csvData.length === 0) {
-    throw new Error(`File is empty!`);
-  }
-  const [headerKeys, ...lines] = csvData;
+  const parsedRows: FileColumnsType[] = await parseFileContent(csvData);
 
-  console.log(`Validating header...`);
-  validateHeader(headerKeys.filter(Boolean));
-
-  console.log(`Validating rows...`);
-  const parsedRows: FileColumnsType[] = await parseRowsContent(lines);
-
-  deleteCSVFile(file);
-  writeCSVFile(file, Object.keys(FileColumnsSchema.shape).join(','));
-
-  console.log(`Generating provenance hash and encrypting URIs...`);
+  console.log(`Generating lazy mint configuration...`);
   for (let parsedRow of parsedRows) {
     if (!parsedRow.EncryptedURI || !parsedRow.ProvenanceHash) {
-      parsedRow.ProvenanceHash = ethers.utils.keccak256(
-        ethers.utils.solidityPack(['string', 'bytes', 'uint256'], [parsedRow['RevealURI Path'], parsedRow.Key, chainId])
+      throw new Error(
+        `Encrypted URI or Provenance Hash missing! Please ensure that you have run the encrypt script first to generate these values.`
       );
-      parsedRow.EncryptedURI = encryptDecrypt(parsedRow['RevealURI Path'], parsedRow.Key);
-      const data = Object.values(parsedRow).join(',');
-      writeCSVFile(file, data);
     }
 
     // Encode _data parameter
