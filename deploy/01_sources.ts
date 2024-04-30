@@ -55,13 +55,14 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
   console.log(`The gas price override is set to: ${process.env.GAS_PRICE_OVERRIDE || 'undefined'} gwei`);
   console.log(`We are in dry run mode? ${process.env.DRY_RUN === 'true'}`);
 
-  // const answer = await askQuestion(`Continue? (y/n)\n`);
-  // if (answer !== 'y') {
-  //   console.log(`Exiting...`);
-  //   process.exit();
-  // }
-
-  console.log(`Continuing...`);
+  if (process.env.SKIP_DEPLOY_CONFIRMATION !== 'true') {
+    const answer = await askQuestion(`Continue? (y/n)\n`);
+    if (answer !== 'y') {
+      console.log(`Exiting...`);
+      process.exit();
+    }
+    console.log(`Continuing...`);
+  }
 
   const futureHolographAddress = await genesisDeriveFutureAddress(
     hre,

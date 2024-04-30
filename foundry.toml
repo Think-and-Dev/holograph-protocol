@@ -9,4 +9,10 @@ libs = ['node_modules', 'lib']
 bytecode_hash = "none"
 gas_reports = ['*']
 
+
+# [profile.default.fmt]
+# line_length = 120
+# bracket_spacing = true
+# wrap_comments = true
+# number_underscore = "thousands"
 fs_permissions = [{ access = "read", path = "./artifacts" }]
