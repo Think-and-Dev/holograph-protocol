@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { LedgerSigner } from '@anders-t/ethers-ledger';
-import { encryptDecrypt } from './utils';
+import { encryptDecrypt } from './custom_delay_reveal_erc721/utils';
 dotenv.config();
 
 async function main() {
