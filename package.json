@@ -42,7 +42,7 @@
     "anvil": ". ./.env ; anvil --accounts=11 --block-base-fee-per-gas=0 --mnemonic=\"$MNEMONIC\" --port=8545 --host=0.0.0.0 --chain-id=1338 & anvil --accounts=11 --mnemonic=\"$MNEMONIC\" --block-base-fee-per-gas=0 --port=9545 --host=0.0.0.0 --chain-id=1339",
     "test": "hardhat test",
     "tests": "hardhat test",
-    "quicktest": "forge test --no-match-test \"(Fuzz|Incariant)\"",
+    "quicktest": "forge test --no-match-test \"(Fuzz|Invariant)\"",
     "typechain": "hardhat typechain",
     "verify": "hardhat verify",
     "prepare": "husky install",
