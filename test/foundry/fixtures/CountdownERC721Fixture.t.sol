@@ -180,7 +180,7 @@ contract CountdownERC721Fixture is Test {
       description: "Description of the token",
       imageURI: "https://example.com/image.png",
       externalLink: "https://example.com/",
-      encryptedMediaURI: "",
+      encryptedMediaURI: "xxx",
       startDate: DEFAULT_START_DATE,
       initialMaxSupply: maxSupply,
       mintInterval: DEFAULT_MINT_INTERVAL,
@@ -220,6 +220,7 @@ contract CountdownERC721Fixture is Test {
 
     // Deploy the drop / edition
     vm.recordLogs();
+    console2.log("factory", address(factory));
     factory.deployHolographableContract(config, signature, alice); // Pass the payload hash, with the signature, and signer's address
     Vm.Log[] memory entries = vm.getRecordedLogs();
 

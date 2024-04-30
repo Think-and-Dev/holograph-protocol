@@ -481,9 +481,8 @@ library Base64 {
 library NFTMetadataRenderer {
   /// Function to create the metadata for an edition
   /// @param params MetadataParams struct containing all metadata information
-  function createMetadataEdition(MetadataParams memory params) external pure returns (string memory) {
+  function createMetadataEdition(MetadataParams memory params) internal pure returns (string memory) {
     bytes memory json = createMetadataJSON(params);
-    
     return encodeMetadataJSON(json);
   }
 
@@ -527,9 +526,7 @@ library NFTMetadataRenderer {
 
   /// Function to create the metadata json string for the nft edition
   /// @param params MetadataParams struct containing all metadata information
-  function createMetadataJSON(
-    MetadataParams memory params
-  ) internal pure returns (bytes memory) {
+  function createMetadataJSON(MetadataParams memory params) internal pure returns (bytes memory) {
     bytes memory editionSizeText;
     string memory tokenOfEditionString;
     {
@@ -542,32 +539,36 @@ library NFTMetadataRenderer {
 
     return
       abi.encodePacked(
-        '{"name": "',
-        params.name,
-        " ",
-        tokenOfEditionString,
-        editionSizeText,
-        '", "description": "',
-        params.description,
-        '", "external_url": "',
-        params.externalUrl,
-        '", "image": "',
-        params.imageURI,
-        '", "encrypted_media_url": "',
-        params.encryptedMediaUrl,
-        '", "decryption_key": "',
-        params.decryptionKey,
-        '", "hash": "',
-        params.hash,
-        '", "decrypted_media_url": "',
-        params.decryptedMediaUrl,
-        '", "animation_url": "',
-        params.animationURI,
-        '", "properties": {"number": ',
-        tokenOfEditionString,
-        ', "name": "',
-        params.name,
-        '"}}'
+        abi.encodePacked(
+          '{"name": "',
+          params.name,
+          " ",
+          tokenOfEditionString,
+          editionSizeText,
+          '", "description": "',
+          params.description,
+          '", "external_url": "',
+          params.externalUrl,
+          '", "image": "',
+          params.imageURI,
+          '", "encrypted_media_url": "',
+          params.encryptedMediaUrl
+        ),
+        abi.encodePacked(
+          '", "decryption_key": "',
+          params.decryptionKey,
+          '", "hash": "',
+          params.hash,
+          '", "decrypted_media_url": "',
+          params.decryptedMediaUrl,
+          '", "animation_url": "',
+          params.animationURI,
+          '", "properties": {"number": ',
+          tokenOfEditionString,
+          ', "name": "',
+          params.name,
+          '"}}'
+        )
       );
   }
 
