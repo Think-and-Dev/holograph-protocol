@@ -58,7 +58,7 @@ async function main() {
     imageURI: '',
     externalLink: '',
     encryptedMediaURI: '',
-    startDate: 1718822400, // Epoch time for June 3, 2024,
+    startDate: 1714512791, // Epoch time for Tuesday, April 30, 2024 9:33:11 PM
     initialMaxSupply: 4173120, // Total number of ten-minute intervals until Oct 8, 2103
     mintInterval: 600, // Duration of each interval
     initialOwner: deployerAddress,
@@ -66,7 +66,7 @@ async function main() {
     fundsRecipient: deployerAddress,
     contractURI: 'https://example.com/metadata.json',
     salesConfiguration: {
-      publicSalePrice: 100,
+      publicSalePrice: 100000000,
       maxSalePurchasePerAddress: 0, // no limit
     },
   };
