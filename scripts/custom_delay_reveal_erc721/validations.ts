@@ -83,3 +83,17 @@ export async function parseRowsContent(lines: string[][]) {
 
   return validatedData;
 }
+
+export async function parseFileContent(data: string[][]) {
+  if (data.length === 0) {
+    throw new Error(`File is empty!`);
+  }
+  const [headerKeys, ...lines] = data;
+
+  console.log(`Validating header...`);
+  validateHeader(headerKeys.filter(Boolean));
+
+  console.log(`Validating rows...`);
+  const parsedRows: FileColumnsType[] = await parseRowsContent(lines);
+  return parsedRows;
+}
