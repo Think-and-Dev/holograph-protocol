@@ -76,6 +76,27 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
       console.log('Deployed a "HolographDropERC721Proxy" empty contract for block explorer verification purposes.');
     }
 
+    const countdownERC721Proxy: Contract | null = await hre.ethers.getContractOrNull(
+      'CountdownERC721Proxy',
+      deployerAddress
+    );
+    if (countdownERC721Proxy === null) {
+      await hre.deployments.deploy('CountdownERC721Proxy', {
+        ...(await txParams({
+          hre,
+          from: deployerAddress,
+          to: '0x0000000000000000000000000000000000000000',
+          gasLimit: await hre.ethers.provider.estimateGas(
+            (await hre.ethers.getContractFactory('CountdownERC721Proxy')).getDeployTransaction()
+          ),
+        })),
+        args: [],
+        log: true,
+        waitConfirmations: 1,
+      } as any);
+      console.log('Deployed a "CountdownERC721Proxy" empty contract for block explorer verification purposes.');
+    }
+
     const holographUtilityToken: Contract | null = await hre.ethers.getContractOrNull(
       'HolographUtilityToken',
       deployerAddress
