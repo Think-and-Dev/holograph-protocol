@@ -104,7 +104,13 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
    * @notice Allows user to mint tokens at a quantity
    */
   modifier canMintTokens(uint256 quantity) {
-    // NOTE: NEED TO DECIDE IF WE WANT TO RESTRICT MINTING UNDER CERTAIN CONDITIONS
+    /// @dev Check if the countdown has completed
+    ///      END_DATE - MINT_INTERVAL * (quantity - 1) represent the time when the last mint will be allowed
+    ///      (quantity - 1) because we want to allow the last mint to be available until the END_DATE
+    if (block.timestamp >= END_DATE - MINT_INTERVAL * (quantity - 1)) {
+      revert Purchase_CountdownCompleted();
+    }
+
     _;
   }
 
@@ -338,13 +344,6 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     if (msg.value < (salePrice) * quantity) {
       // The error will display what the correct price should be
       revert Purchase_WrongPrice((salesConfig.publicSalePrice) * quantity);
-    }
-
-    /// @dev Check if the countdown has completed
-    ///      END_DATE - MINT_INTERVAL * (quantity - 1) represent the time when the last mint will be allowed
-    ///      (quantity - 1) because we want to allow the last mint to be available until the END_DATE
-    if (block.timestamp >= END_DATE - MINT_INTERVAL * (quantity - 1)) {
-      revert Purchase_CountdownCompleted();
     }
 
     // Reducing the end date by removing the quantity of mints times the mint interval
