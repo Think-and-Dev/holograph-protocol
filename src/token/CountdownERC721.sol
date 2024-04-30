@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.13;
 
@@ -17,10 +17,12 @@ import {AddressMintDetails} from "../drops/struct/AddressMintDetails.sol";
 import {CountdownERC721Initializer} from "src/struct/CountdownERC721Initializer.sol";
 import {CustomERC721SaleDetails} from "src/struct/CustomERC721SaleDetails.sol";
 import {CustomERC721SalesConfiguration} from "src/struct/CustomERC721SalesConfiguration.sol";
+import {MetadataParams} from "src/struct/MetadataParams.sol";
 
 import {Address} from "../drops/library/Address.sol";
 import {MerkleProof} from "../drops/library/MerkleProof.sol";
 import {Strings} from "./../drops/library/Strings.sol";
+import {NFTMetadataRenderer} from "../library/NFTMetadataRenderer.sol";
 
 /**
  * @dev This contract subscribes to the following HolographERC721 events:
@@ -31,10 +33,18 @@ import {Strings} from "./../drops/library/Strings.sol";
 contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC721 {
   using Strings for uint256;
 
+  // TODO: Update the base image URI
+  string private constant BASE_IMAGE_URI = "ipfs://QmNMraA4KcB1epgWfqN6krn2WUyT4qpaQzbEpMhXjBCNCW/nft.png";
+  string private constant BASE_ANIMATION_URI = ""; // Define if you have a specific animation URI
+
   /* -------------------------------------------------------------------------- */
   /*                             CONTRACT VARIABLES                             */
   /*        all variables, without custom storage slots, are defined here       */
   /* -------------------------------------------------------------------------- */
+
+  /// @notice Getter for the description
+  /// @dev This storage variable is set only once in the init and can be considered as immutable
+  string public DESCRIPTION;
 
   /// @notice Getter for the purchase start date
   /// @dev This storage variable is set only once in the init and can be considered as immutable
@@ -72,6 +82,11 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
    * @dev Internal reference used for minting incremental token ids.
    */
   uint224 private _currentTokenId;
+
+  /**
+   * @dev Internal reference to the base URI
+   */
+  string private _baseURI;
 
   /// @dev Gas limit for transferring funds
   uint256 private constant STATIC_GAS_LIMIT = 210_000;
@@ -149,6 +164,8 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     // Decode the initializer payload to get the CountdownERC721Initializer struct
     CountdownERC721Initializer memory initializer = abi.decode(initPayload, (CountdownERC721Initializer));
 
+    _setupContractURI(initializer.contractURI);
+
     // Setup the owner role
     _setOwner(initializer.initialOwner);
 
@@ -156,7 +173,11 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     _setMinter(initializer.initialMinter);
 
     // Setup the contract URI
-    _setupContractURI(initializer.contractURI);
+
+    // Set the description
+    /// @dev The description is a human-readable description of the token.
+    ///      The description is used like an immutable.
+    DESCRIPTION = initializer.description;
 
     // Set the sale start date.
     /// @dev The sale start date represents the date when the public sale starts.
@@ -174,6 +195,8 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     MINT_INTERVAL = initializer.mintInterval;
 
     // Set the funds recipient
+    /// @dev The funds recipient is the address that receives the funds from the token sales.
+    ///      The funds recipient can be updated by the owner.
     FUNDS_RECIPIENT = initializer.fundsRecipient;
 
     // Set the end dates
@@ -282,29 +305,32 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
       });
   }
 
-  // TODO: Add tokenURI, baseURI, and setBaseURI
-  // /**
-  //  * @dev Returns the URI for a given tokenId.
-  //  * @param _tokenId id of token to get URI for
-  //  * @return Token URI
-  //  */
-  // function tokenURI(uint256 _tokenId) public view returns (string memory) {
-  //   // If the URI is encrypted, return the placeholder URI
-  //   // If not, return the revealed URI with the tokenId appended
-  //   string memory batchUri = _getBaseURI(_tokenId);
+  /**
+   * @dev Returns a base64 encoded metadata URI for a given tokenId.
+   * @param tokenId The ID of the token to get URI for
+   * @return Token URI
+   */
+  function tokenURI(uint256 tokenId) public view returns (string memory) {
+    HolographERC721Interface H721 = HolographERC721Interface(holographer());
+    require(H721.exists(tokenId), "ERC721: token does not exist");
 
-  //   return string(abi.encodePacked(batchUri, _tokenId.toString()));
-  // }
+    string memory _name = H721.name();
+    MetadataParams memory params = MetadataParams({
+      name: _name,
+      description: DESCRIPTION,
+      imageURI: BASE_IMAGE_URI,
+      animationURI: BASE_ANIMATION_URI,
+      externalUrl: "https://your-nft-project.com", // This should be dynamically set or fetched
+      encryptedMediaUrl: "ar://encryptedMediaUriHere", // This should be dynamically set or fetched
+      decryptionKey: "decryptionKeyHere", // This should be dynamically set or fetched
+      hash: "uniqueNftHashHere", // This should be dynamically set or fetched
+      decryptedMediaUrl: "ar://decryptedMediaUriHere", // This should be dynamically set or fetched
+      tokenOfEdition: tokenId,
+      editionSize: 0 // Set or fetch dynamically if applicable
+    });
 
-  // /**
-  //  * @dev Returns the base URI for a given tokenId. It return the base URI corresponding to the batch the tokenId
-  //  * belongs to.
-  //  * @param _tokenId id of token to get URI for
-  //  * @return Token URI
-  //  */
-  // function baseURI(uint256 _tokenId) public view returns (string memory) {
-  //   return _getBaseURI(_tokenId);
-  // }
+    return NFTMetadataRenderer.createMetadataEdition(params);
+  }
 
   /**
    * @notice Convert USD price to current price in native Ether units
@@ -463,6 +489,19 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
   /* -------------------------------------------------------------------------- */
 
   /**
+   * @dev Internal function to return the base URI stored in the contract.
+   * Used to construct the URI for each token.
+   */
+  function baseURI() internal view returns (string memory) {
+    return _baseURI;
+  }
+
+  /// @notice Checks whether contract metadata can be set in the given execution context.
+  function _canSetContractURI() internal view override returns (bool) {
+    return msgSender() == _getOwner();
+  }
+
+  /**
    * @dev Checks if the public sale is active
    */
   function _publicSaleActive() internal view returns (bool) {
@@ -478,11 +517,6 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
       return 0;
     }
     weiAmount = dropsPriceOracle.convertUsdToWei(amount);
-  }
-
-  /// @notice Checks whether contract metadata can be set in the given execution context.
-  function _canSetContractURI() internal view override returns (bool) {
-    return msgSender() == _getOwner();
   }
 
   /* -------------------------------------------------------------------------- */

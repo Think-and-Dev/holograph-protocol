@@ -527,9 +527,13 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
 
   // Deploy the CountdownERC721 custom contract source
   const CountdownERC721InitCode = generateInitCode(
-    ['tuple(uint40,uint32,uint24,address,address,address,string,tuple(uint104,uint24))'],
+    ['tuple(string,string,string,string,uint40,uint32,uint24,address,address,address,string,tuple(uint104,uint24))'],
     [
       [
+        '', // Description
+        '', // imageURI
+        '', // externalLink
+        '', // encryptedMediaURI
         1718822400, // Epoch time for June 3, 2024
         4173120, // Total number of ten-minute intervals until Oct 8, 2103
         600, // Duration of each interval
