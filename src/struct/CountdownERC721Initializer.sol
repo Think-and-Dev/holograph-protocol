@@ -6,6 +6,7 @@ import {CustomERC721SalesConfiguration} from "src/struct/CustomERC721SalesConfig
 
 /// @title A struct for initializing a CountdownERC721 contract
 /// @dev This struct is used during the deployment of a CountdownERC721 to set initial configuration parameters.
+/// @param description The description of the token.
 /// @param startDate The maximum start date
 /// @param initialMaxSupply The maximum initial supply.
 /// @param mintInterval The maximum interval between mints
@@ -15,6 +16,10 @@ import {CustomERC721SalesConfiguration} from "src/struct/CustomERC721SalesConfig
 /// @param contractURI The URI for the contract metadata.
 /// @param salesConfiguration The initial sales configuration settings, defining how tokens are sold.
 struct CountdownERC721Initializer {
+  string description; // The description of the token.
+  string imageURI; // The URI for the image associated with this contract.
+  string externalLink; // The URI for the external metadata associated with this contract.
+  string encryptedMediaURI; // The URI for the encrypted media associated with this contract.
   uint40 startDate; // The starting date for the countdown
   uint32 initialMaxSupply; // The theoretical initial maximum supply of tokens at the start of the countdown.
   uint24 mintInterval; // The interval between possible mints,

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.13;
 
@@ -17,6 +17,7 @@ import {AddressMintDetails} from "../drops/struct/AddressMintDetails.sol";
 import {CountdownERC721Initializer} from "src/struct/CountdownERC721Initializer.sol";
 import {CustomERC721SaleDetails} from "src/struct/CustomERC721SaleDetails.sol";
 import {CustomERC721SalesConfiguration} from "src/struct/CustomERC721SalesConfiguration.sol";
+import {MetadataParams} from "src/struct/MetadataParams.sol";
 
 import {Address} from "../drops/library/Address.sol";
 import {MerkleProof} from "../drops/library/MerkleProof.sol";
@@ -40,6 +41,10 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
   /*                             CONTRACT VARIABLES                             */
   /*        all variables, without custom storage slots, are defined here       */
   /* -------------------------------------------------------------------------- */
+
+  /// @notice Getter for the description
+  /// @dev This storage variable is set only once in the init and can be considered as immutable
+  string public DESCRIPTION;
 
   /// @notice Getter for the purchase start date
   /// @dev This storage variable is set only once in the init and can be considered as immutable
@@ -153,6 +158,8 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     // Decode the initializer payload to get the CountdownERC721Initializer struct
     CountdownERC721Initializer memory initializer = abi.decode(initPayload, (CountdownERC721Initializer));
 
+    _setupContractURI(initializer.contractURI);
+
     // Setup the owner role
     _setOwner(initializer.initialOwner);
 
@@ -160,7 +167,11 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     minter = initializer.initialMinter;
 
     // Setup the contract URI
-    _setupContractURI(initializer.contractURI);
+
+    // Set the description
+    /// @dev The description is a human-readable description of the token.
+    ///      The description is used like an immutable.
+    DESCRIPTION = initializer.description;
 
     // Set the sale start date.
     /// @dev The sale start date represents the date when the public sale starts.
@@ -178,6 +189,8 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     MINT_INTERVAL = initializer.mintInterval;
 
     // Set the funds recipient
+    /// @dev The funds recipient is the address that receives the funds from the token sales.
+    ///      The funds recipient can be updated by the owner.
     FUNDS_RECIPIENT = initializer.fundsRecipient;
 
     // Set the end dates
@@ -285,6 +298,7 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
         totalMints: totalMintsByAddress[minter]
       });
   }
+
   /**
    * @dev Returns a base64 encoded metadata URI for a given tokenId.
    * @param tokenId The ID of the token to get URI for
@@ -294,15 +308,21 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     HolographERC721Interface H721 = HolographERC721Interface(holographer());
     require(H721.exists(tokenId), "ERC721: token does not exist");
 
-    return
-      NFTMetadataRenderer.createMetadataEdition(
-        HolographERC721Interface(holographer()).name(),
-        "Testing",
-        BASE_IMAGE_URI,
-        BASE_ANIMATION_URI,
-        tokenId,
-        0 // editionSize can be set if there's a limited edition size
-      );
+    MetadataParams memory params = MetadataParams({
+      name: HolographERC721Interface(holographer()).name(),
+      description: DESCRIPTION,
+      imageURI: BASE_IMAGE_URI,
+      animationURI: BASE_ANIMATION_URI,
+      externalUrl: "https://your-nft-project.com", // This should be dynamically set or fetched
+      encryptedMediaUrl: "ar://encryptedMediaUriHere", // This should be dynamically set or fetched
+      decryptionKey: "decryptionKeyHere", // This should be dynamically set or fetched
+      hash: "uniqueNftHashHere", // This should be dynamically set or fetched
+      decryptedMediaUrl: "ar://decryptedMediaUriHere", // This should be dynamically set or fetched
+      tokenOfEdition: tokenId,
+      editionSize: 0 // Set or fetch dynamically if applicable
+    });
+
+    return NFTMetadataRenderer.createMetadataEdition(params);
   }
 
   /**
