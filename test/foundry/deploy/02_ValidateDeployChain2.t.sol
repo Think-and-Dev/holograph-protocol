@@ -33,26 +33,44 @@ contract ValidateDeployChain2Test is DeployedSetUp {
     assertEq(holographInterfacesDeployed.code, bytecodeDeployed);
   }
 
-/**
- * @notice Verifies the correct deployment of the Holograph contract.
- * @dev This test checks that the Holograph contract is deployed correctly by comparing the deployed bytecode 
- * with the expected bytecode.
- * Refers to the hardhat test with the description 'Holograph:'
- */
-  function testHolograph() public {
-    bytes memory bytecodeDeployed = vm.getDeployedCode("Holograph.sol:Holograph");
-    assertEq(holographDeployed.code, bytecodeDeployed);
+  /**
+   * @notice Verifies the deployment of the CxIP ERC721 Holographer contract
+   * @dev This test function verifies that the CxIP ERC721 Holographer contract is deployed correctly by comparing
+   * the deployed bytecode with the expected bytecode.
+   * Refers to the hardhat test with the description 'CxipERC721 Holographer:'
+   * This test function is currently commented out because the address of the CxIP ERC721 Holographer contract has
+   * not been found. Test will be skipped until deployment script in Foundry is done.
+   */
+  // TODO: address not found
+  function testCxipErc721Holographer() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("Holographer.sol:Holographer");
+   // assertEq(address(Constants.getCxipERC721Holographer()).code, bytecodeDeployed);
+  }
+
+    /**
+   * @notice Verifies the deployment of the CxIP ERC721 Enforcer contract
+   * @dev This test function verifies that the CxIP ERC721 Enforcer contract is deployed correctly by comparing the
+   * deployed bytecode with the expected bytecode.
+   * Refers to the hardhat test with the description 'CxipERC721 Enforcer:'
+   * This test function is currently commented out because the address of the CxIP ERC721 Enforcer contract has not 
+   * been found. Test will be skipped until deployment script in Foundry is done.
+   */
+  // TODO: address not found
+  function testCxipERC721Enforcer() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC721.sol:HolographERC721");
+    //   bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC721.sol:HolographERC721");
   }
 
 /**
- * @notice Verifies the correct deployment of the Holograph ERC721 contract.
- * @dev This test checks that the Holograph ERC721 contract is deployed correctly by comparing the deployed bytecode 
+ * @notice Verifies the correct deployment of the CxIP ERC721 contract.
+ * @dev This test checks that the CxIP ERC721 contract is deployed correctly by comparing the deployed bytecode 
  * with the expected bytecode.
- * Refers to the hardhat test with the description 'CxipERC721 Enforcer'
+ * Refers to the hardhat test with the description 'CxipERC721:'
  */
-  function testHolographERC721() public {
-    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC721.sol:HolographERC721");
-    assertEq(holographERC721Deployed.code, bytecodeDeployed);
+  function testCxipERC721() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("CxipERC721.sol:CxipERC721");
+    assertEq(cxipERC721Deployed.code, bytecodeDeployed);
   }
 
 /**
@@ -69,17 +87,6 @@ contract ValidateDeployChain2Test is DeployedSetUp {
   }
 
 /**
- * @notice Verifies the correct deployment of the CxIP ERC721 contract.
- * @dev This test checks that the CxIP ERC721 contract is deployed correctly by comparing the deployed bytecode 
- * with the expected bytecode.
- * Refers to the hardhat test with the description 'CxipERC721:'
- */
-  function testCxipERC721() public {
-    bytes memory bytecodeDeployed = vm.getDeployedCode("CxipERC721.sol:CxipERC721");
-    assertEq(cxipERC721Deployed.code, bytecodeDeployed);
-  }
-
-/**
  * @notice Verifies the correct deployment of the ERC20Mock contract.
  * @dev This test function checks that the ERC20Mock contract is deployed correctly by comparing the deployed bytecode 
  * with the expected bytecode.
@@ -88,6 +95,17 @@ contract ValidateDeployChain2Test is DeployedSetUp {
   function testErc20Mock() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("ERC20Mock.sol:ERC20Mock");
     assertEq(erc20MockDeployed.code, bytecodeDeployed);
+  }
+
+/**
+ * @notice Verifies the correct deployment of the Holograph contract.
+ * @dev This test checks that the Holograph contract is deployed correctly by comparing the deployed bytecode 
+ * with the expected bytecode.
+ * Refers to the hardhat test with the description 'Holograph:'
+ */
+  function testHolograph() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("Holograph.sol:Holograph");
+    assertEq(holographDeployed.code, bytecodeDeployed);
   }
 
 /**
@@ -112,6 +130,21 @@ contract ValidateDeployChain2Test is DeployedSetUp {
     assertEq(holographBridgeProxyDeployed.code, bytecodeDeployed);
   }
 
+  /**
+   * @notice Verifies the deployment of the Holographer contract
+   * @dev This test function verifies that the Holographer contract is deployed correctly by comparing the deployed
+   * bytecode with the expected bytecode.
+   * Refers to the hardhat test with the description 'Holographer:'
+   * This test function is currently commented out because the address of the Holographer contract has not been found. 
+   * Test will be skipped until deployment script in Foundry is done.
+   */
+  // TODO: address not found
+  function testHolographer() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("Holographer.sol:Holographer");
+    // assertEq(address(Constants.getHolographer()).code, bytecodeDeployed);
+  }
+
 /**
  * @notice Verifies the correct deployment of the HolographERC20 contract.
  * @dev This test function checks that the HolographERC20 contract is deployed correctly by comparing the deployed 
@@ -121,6 +154,17 @@ contract ValidateDeployChain2Test is DeployedSetUp {
   function testHolographERC20() public {
     bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC20.sol:HolographERC20");
     assertEq(holographERC20Deployed.code, bytecodeDeployed);
+  }
+
+/**
+ * @notice Verifies the correct deployment of the Holograph ERC721 contract.
+ * @dev This test checks that the Holograph ERC721 contract is deployed correctly by comparing the deployed bytecode 
+ * with the expected bytecode.
+ * Refers to the hardhat test with the description 'CxipERC721 Enforcer'
+ */
+  function testHolographERC721() public {
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC721.sol:HolographERC721");
+    assertEq(holographERC721Deployed.code, bytecodeDeployed);
   }
 
 /**
@@ -221,6 +265,36 @@ contract ValidateDeployChain2Test is DeployedSetUp {
     assertEq(holographTreasuryProxyDeployed.code, bytecodeDeployed);
   }
 
+    /**
+   * @notice Verifies the deployment of the HToken Holographer contract
+   * @dev This test function verifies that the HToken Holographer contract is deployed correctly by comparing the
+   * deployed bytecode with the expected bytecode.
+   * Refers to the hardhat test with the description 'hToken Holographer:'
+   * This test function is currently commented out because the address of the HToken Holographer contract has not
+   * been found. Test will be skipped until deployment script in Foundry is done.
+   */
+  // TODO: address not found
+  function testHTokenHolographer() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("Holographer.sol:Holographer");
+    // assertEq(address(Constants.getHTokenHolographer()).code, bytecodeDeployed);
+  }
+
+    /**
+   * @notice Verifies the deployment of the HToken Enforcer contract
+   * @dev This test function verifies that the HToken Enforcer contract is deployed correctly by comparing the
+   * deployed bytecode with the expected bytecode.
+   * Refers to the hardhat test with the description 'hToken Enforcer:'
+   * This test function is currently commented out because the address of the HToken Enforcer contract has not
+   * been found. Test will be skipped until deployment script in Foundry is done.
+   */
+  // TODO: address not found
+  function testHTokenEnforcer() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC20.sol:HolographERC20");
+    // assertEq(address(Constants.getHTokenEnforcer()).code, bytecodeDeployed);
+  }
+
 /**
  * @notice Verifies the correct deployment of the hToken contract.
  * @dev This test function checks that the hToken contract is deployed correctly by comparing the deployed bytecode with the expected bytecode.
@@ -241,6 +315,21 @@ contract ValidateDeployChain2Test is DeployedSetUp {
     assertEq(mockERC721ReceiverDeployed.code, bytecodeDeployed);
   }
 
+  /**
+   * @notice Verifies the deployment of the MockLZEndpoint contract
+   * @dev This test function verifies that the MockLZEndpoint contract is deployed correctly by comparing the deployed
+   * bytecode with the expected bytecode.
+   * Refers to the hardhat test with the description 'MockLZEndpoint:'
+   * This test function is currently commented out because the address of the MockLZEndpoint contract has not been
+   * found. Test will be skipped until deployment script in Foundry is done.
+   */
+  // TODO: address not found
+  function testMockLZEndpoint() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("MockLZEndpoint.sol:MockLZEndpoint");
+    // assertEq(address(Constants.getMockLZEndpoint()).code, bytecodeDeployed);
+  }
+
 /**
  * @notice Verifies the correct deployment of the HolographRoyalties contract.
  * @dev This test function checks that the HolographRoyalties contract is deployed correctly by comparing the deployed bytecode with the expected bytecode.
@@ -251,19 +340,93 @@ contract ValidateDeployChain2Test is DeployedSetUp {
     assertEq(holographRoyaltiesDeployed.code, bytecodeDeployed);
   }
 
-  //TODO fix and add test name
-  function testFailSampleERC20() public {
+  /**
+   * @notice Verifies the deployment of the Sample ERC20 Holographer contract
+   * @dev This test function verifies that the Sample ERC20 Holographer contract is deployed correctly by comparing
+   * the deployed bytecode with the expected bytecode.
+   * Refers to the hardhat test with the description 'SampleERC20 Holographer:'
+   * This test function is currently commented out because the address of the Sample ERC20 Holographer contract has
+   * not been found. Test will be skipped until deployment script in Foundry is done.
+   */
+  // TODO: address not found
+  function testSampleERC20Holographer() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("Holographer.sol:Holographer");
+    // assertEq(address(Constants.getSampleERC20Holographer()).code, bytecodeDeployed);
+  }
+
+  /**
+   * @notice Verifies the deployment of the Sample ERC20 Enforcer contract
+   * @dev This test function verifies that the Sample ERC20 Enforcer contract is deployed correctly by comparing
+   * the deployed bytecode with the expected bytecode.
+   * Refers to the hardhat test with the description 'SampleERC20 Enforcer:'
+   * This test function is currently commented out because the address of the Sample ERC20 Enforcer contract has
+   * not been found. Test will be skipped until deployment script in Foundry is done.
+   */
+  // TODO: address not found
+  function testSampleERC20Enforcer() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC20.sol:HolographERC20");
+    // assertEq(address(Constants.getSampleERC20Enforcer()).code, bytecodeDeployed);
+  }
+
+/**
+   * @notice Verifies the deployment of the Sample ERC20 contract
+   * @dev This test function verifies that the Sample ERC20 contract is deployed correctly by comparing the deployed
+   * bytecode with the expected bytecode.
+   * Refers to the hardhat test with the description 'SampleERC20:'
+   * This test function is currently commented out because the address of the Sample ERC20 contract has not been
+   * found. Test will be skipped until deployment script in Foundry is done.
+   */
+  // TODO: address not found
+  function testSampleERC20() public {
     vm.skip(true);
     bytes memory bytecodeDeployed = vm.getDeployedCode("SampleERC20.sol:SampleERC20");
-    assertEq(sampleERC20Deployed.code, bytecodeDeployed);
+    // assertEq(address(Constants.getSampleERC20()).code, bytecodeDeployed);
   }
 
+    /**
+   * @notice Verifies the deployment of the Sample ERC721 Holographer contract
+   * @dev This test function verifies that the Sample ERC721 Holographer contract is deployed correctly by comparing
+   * the deployed bytecode with the expected bytecode.
+   * Refers to the hardhat test with the description SampleERC721 Holographer:'
+   * This test function is currently commented out because the address of the Sample ERC721 Holographer contract has
+   * not been found. Test will be skipped until deployment script in Foundry is done.
+   */
   // TODO: address not found
-  function testFailSampleERC721() public {
+  function testSampleERC721Holographer() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("Holographer.sol:Holographer");
+    // assertEq(address(Constants.getSampleERC721Holographer()).code, bytecodeDeployed);
+  }
+
+  /**
+   * @notice Verifies the deployment of the Sample ERC721 Enforcer contract
+   * @dev This test function verifies that the Sample ERC721 Enforcer contract is deployed correctly by comparing
+   * the deployed bytecode with the expected bytecode.
+   * Refers to the hardhat test with the description 'SampleERC721 Enforcer:'
+   * This test function is currently commented out because the address of the Sample ERC721 Enforcer contract has
+   * not been found. Test will be skipped until deployment script in Foundry is done.
+   */
+  // TODO: address not found
+  function testSampleERC721Enforcer() public {
+    vm.skip(true);
+    bytes memory bytecodeDeployed = vm.getDeployedCode("HolographERC721.sol:HolographERC721");
+    // assertEq(address(Constants.getSampleERC721Enforcer()).code, bytecodeDeployed);
+  }
+
+    /**
+   * @notice Verifies the deployment of the Sample ERC721 contract
+   * @dev This test function verifies that the Sample ERC721 contract is deployed correctly by comparing the
+   * deployed bytecode with the expected bytecode.
+   * Refers to the hardhat test with the description 'SampleERC721:'
+   * This test function is currently commented out because the address of the Sample ERC721 contract has not been
+   * found. Test will be skipped until deployment script in Foundry is done.
+   */
+  // TODO: address not found
+  function testSampleERC721() public {
     vm.skip(true);
     bytes memory bytecodeDeployed = vm.getDeployedCode("SampleERC721.sol:SampleERC721");
-    assertEq(sampleERC721Deployed.code, bytecodeDeployed);
+    // assertEq(address(Constants.getSampleERC721()).code, bytecodeDeployed);
   }
-
-  //TODO the remaining tests using sample erc20 and erc721
 }
