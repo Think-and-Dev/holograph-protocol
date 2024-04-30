@@ -388,17 +388,6 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
   /* -------------------------------------------------------------------------- */
 
   /**
-   * @notice Admin mint tokens to a recipient for free
-   * @param recipient recipient to mint to
-   * @param quantity quantity to mint
-   */
-  function adminMint(address recipient, uint256 quantity) external onlyOwner canMintTokens(quantity) returns (uint256) {
-    _mintNFTs(recipient, quantity);
-
-    return _currentTokenId;
-  }
-
-  /**
    * @notice Minter account mints tokens to a recipient that has paid offchain
    * @param recipient recipient to mint to
    * @param quantity quantity to mint
