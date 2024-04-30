@@ -75,31 +75,31 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
 
   /// @notice Getter for the base image URI
   /// @dev This storage variable is set during the init and can be updated by the owner
-  string public IMAGE_URI = "ar://o8eyC27OuSZF0z-zIen5NTjJOKTzOQzKJzIe3F7Lmg0/1.png";
+  string public IMAGE_URI;
 
   /// @notice Getter for the base animation URI
   /// @dev This storage variable is set during the init and can be updated by the owner
-  string public ANIMATION_URI = ""; // Define if you have a specific animation URI
+  string public ANIMATION_URI;
 
   /// @notice Getter for the external url
   /// @dev This storage variable is set during the init and can be updated by the owner
-  string public EXTERNAL_URL = "https://your-nft-project.com";
+  string public EXTERNAL_URL;
 
   /// @notice Getter for the encrypted media URI
   /// @dev This storage variable is set during the init and can be updated by the owner
-  string public ENCRYPTED_MEDIA_URL = "ar://encryptedMediaUriHere";
+  string public ENCRYPTED_MEDIA_URL;
 
   /// @notice Getter for the decryption key
   /// @dev This storage variable is set during the init and can be updated by the owner
-  string public DECRYPTION_KEY = "decryptionKeyHere";
+  string public DECRYPTION_KEY;
 
   /// @notice Getter for the hash
   /// @dev This storage variable is set during the init and can be updated by the owner
-  string public HASH = "uniqueNftHashHere";
+  string public HASH;
 
   /// @notice Getter for the decrypted media URI
   /// @dev This storage variable is set during the init and can be updated by the owner
-  string public DECRYPTED_MEDIA_URI = "ar://decryptedMediaUriHere";
+  string public DECRYPTED_MEDIA_URI;
 
   /* -------------------------------------------------------------------------- */
 
@@ -386,7 +386,6 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
    * @notice Returns the metadata params for the contract
    */
   function setMetadataParams(MetadataParams memory params) external onlyOwner {
-    DESCRIPTION = params.description;
     IMAGE_URI = params.imageURI;
     ANIMATION_URI = params.animationURI;
     EXTERNAL_URL = params.externalUrl;
