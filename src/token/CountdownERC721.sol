@@ -308,8 +308,9 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     HolographERC721Interface H721 = HolographERC721Interface(holographer());
     require(H721.exists(tokenId), "ERC721: token does not exist");
 
+    string memory _name = H721.name();
     MetadataParams memory params = MetadataParams({
-      name: HolographERC721Interface(holographer()).name(),
+      name: _name,
       description: DESCRIPTION,
       imageURI: BASE_IMAGE_URI,
       animationURI: BASE_ANIMATION_URI,
