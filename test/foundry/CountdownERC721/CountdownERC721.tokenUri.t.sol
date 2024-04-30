@@ -51,13 +51,13 @@ contract CountdownERC721PurchaseTest is CountdownERC721Fixture, ICustomERC721Err
     //     }
     // }
     string memory expectedTokenUri = NFTMetadataRenderer.encodeMetadataJSON(
-        '{"name": "Contract Name 115792089183396302089269705419353877679230723318366275194376439045705909141505", "description": "Description of the token", "external_url": "https://your-nft-project.com", "image": "ipfs://QmNMraA4KcB1epgWfqN6krn2WUyT4qpaQzbEpMhXjBCNCW/nft.png", "encrypted_media_url": "ar://encryptedMediaUriHere", "decryption_key": "decryptionKeyHere", "hash": "uniqueNftHashHere", "decrypted_media_url": "ar://decryptedMediaUriHere", "animation_url": "", "properties": {"number": 115792089183396302089269705419353877679230723318366275194376439045705909141505, "name": "Contract Name"}}'
+      '{"name": "Contract Name 115792089183396302089269705419353877679230723318366275194376439045705909141505", "description": "Description of the token", "external_url": "https://your-nft-project.com", "image": "ipfs://QmNMraA4KcB1epgWfqN6krn2WUyT4qpaQzbEpMhXjBCNCW/nft.png", "encrypted_media_url": "ar://encryptedMediaUriHere", "decryption_key": "decryptionKeyHere", "hash": "uniqueNftHashHere", "decrypted_media_url": "ar://decryptedMediaUriHere", "animation_url": "", "properties": {"number": 115792089183396302089269705419353877679230723318366275194376439045705909141505, "name": "Contract Name"}}'
     );
 
     string memory base64TokenUri = countdownErc721.tokenURI(tokenId);
 
+    console.log("base64TokenUri: ", base64TokenUri);
+
     assertEq(base64TokenUri, expectedTokenUri, "Incorrect tokenURI for newly minted token");
   }
 }
-
-
