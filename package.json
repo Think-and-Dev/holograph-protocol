@@ -55,7 +55,8 @@
     "snapshot": "FOUNDRY_PROFILE=ci forge snapshot --no-match-test \"(FFI|Fork|Fuzz)\" --offline",
     "snapshot:check": "FOUNDRY_PROFILE=ci forge snapshot --no-match-test \"(FFI|Fork|Fuzz)\" --check --offline",
     "start": "bash ./scripts/stop-protocol.sh && bash ./scripts/start-protocol.sh",
-    "stop": "bash ./scripts/stop-protocol.sh"
+    "stop": "bash ./scripts/stop-protocol.sh",
+    "coverage": "forge coverage --report lcov && genhtml lcov.info --ignore-errors inconsistent -o coverage/output/ && open coverage/output/index.html"
   },
   "dependencies": {
     "@ethersproject/abstract-provider": "^5.7.0",
