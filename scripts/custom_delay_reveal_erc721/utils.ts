@@ -1,11 +1,11 @@
 import path from 'path';
-import {parse} from 'csv-parse';
-import {Contract, ethers, Signer} from 'ethers';
-import {Log} from '@ethersproject/providers';
-import {appendFileSync, createReadStream, existsSync, unlinkSync} from 'fs';
-import {TransactionReceipt, TransactionResponse} from '@ethersproject/abstract-provider';
+import { parse } from 'csv-parse';
+import { Contract, ethers, Signer } from 'ethers';
+import { Log } from '@ethersproject/providers';
+import { appendFileSync, createReadStream, existsSync, unlinkSync } from 'fs';
+import { TransactionReceipt, TransactionResponse } from '@ethersproject/abstract-provider';
 
-import {DeploymentConfigSettings, Hex} from './types';
+import { DeploymentConfigSettings, Hex } from './types';
 
 export const writeCSVFile = (filePath: string, data: string, breakLine = true) => {
   try {

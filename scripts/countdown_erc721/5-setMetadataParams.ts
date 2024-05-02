@@ -2,6 +2,8 @@ import { Contract, Signer, ethers } from 'ethers';
 import { LedgerSigner } from '@anders-t/ethers-ledger';
 import { JsonRpcProvider, Log, TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
 import { parsedEnv } from './env.validation';
+import { MetadataParams } from './types';
+import { flattenObject } from '../utils/utils';
 
 require('dotenv').config();
 
@@ -31,20 +33,34 @@ async function main() {
    * STEP 2: SET HARDCODED VALUES
    */
 
-  const contractAddress = '0xa1c38aa78b7682a571e8a4e16115314574aef802';
-  const recipient = '0xD17e8cEe2EC7fEE30e9F9ECB82EaB918659872AF';
-  const quantity = 1;
+  const contractAddress = '';
+
+  const params: MetadataParams = {
+    name: 'NewCountdownERC721',
+    description: 'Description of the token',
+    imageURI: 'ar://o8eyC27OuSZF0z-zIen5NTjJOKTzOQzKJzIe3F7Lmg0/1.png',
+    animationURI: 'ar://animationUriHere',
+    externalUrl: 'https://your-nft-project.com',
+    encryptedMediaUrl: 'ar://encryptedMediaUriHere',
+    decryptionKey: 'decryptionKeyHere',
+    hash: 'uniqueNftHashHere',
+    decryptedMediaUrl: 'ar://decryptedMediaUriHere',
+    tokenOfEdition: 0,
+    editionSize: 0,
+  };
 
   /*
    * STEP 3: CREATE THE TX
    */
 
-  const countdownERC721ABI = ['function mintTo(address recipient, uint256 quantity) external returns (uint256)'];
+  const countdownERC721ABI = [
+    'function setMetadataParams(tuple(string,string,string,string,string,string,string,string,string,uint256,uint256) params) external',
+  ];
   const countdownErc721Contract = new Contract(contractAddress, countdownERC721ABI, deployer);
 
   let tx: TransactionResponse;
   try {
-    tx = await countdownErc721Contract.mintTo(recipient, quantity);
+    tx = await countdownErc721Contract.setMetadataParams(flattenObject(params));
   } catch (error) {
     throw new Error(`Failed to create transaction.`, { cause: error });
   }
@@ -52,21 +68,7 @@ async function main() {
   console.log('Transaction:', tx.hash);
   const receipt: TransactionReceipt = await tx.wait();
 
-  if (receipt?.status === 1) {
-    console.log('The transaction was executed successfully! Getting the Token ID from logs... ');
-
-    const nftMintedTopic = '0x3a8a89b59a31c39a36febecb987e0657ab7b7c73b60ebacb44dcb9886c2d5c8a';
-    const nftMintedLog: Log | undefined = receipt.logs.find((log: Log) => log.topics[0] === nftMintedTopic);
-
-    if (nftMintedLog) {
-      const recipient = nftMintedLog.topics[1];
-      const tokenID = nftMintedLog.topics[2];
-
-      console.log(`Successfully minted token ID ${tokenID} to address ${recipient}!`);
-    } else {
-      console.warn('WARN: Failed to extract the Token ID from the transaction receipt.');
-    }
-  } else {
+  if (receipt?.status !== 1) {
     throw new Error('Failed to confirm the transaction.');
   }
 

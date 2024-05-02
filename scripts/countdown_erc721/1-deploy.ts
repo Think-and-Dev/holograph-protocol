@@ -3,14 +3,8 @@ import { LedgerSigner } from '@anders-t/ethers-ledger';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { getNetworkByChainId } from '@holographxyz/networks';
 
-import {
-  deployHolographableContract,
-  destructSignature,
-  flattenObject,
-  getFactoryAddress,
-  getRegistryAddress,
-  parseBytes,
-} from './utils';
+import { deployHolographableContract } from './utils';
+import { destructSignature, flattenObject, getFactoryAddress, getRegistryAddress, parseBytes } from '../utils/utils';
 import { CountdownERC721Initializer, DeploymentConfig, DeploymentConfigSettings, Hex } from './types';
 import { countdownErc721ProxyBytecode } from './countdown-erc721.bytecodes';
 import { parsedEnv } from './env.validation';
@@ -56,6 +50,7 @@ async function main() {
   const customERC721Initializer: CountdownERC721Initializer = {
     description: '<ENTER MY DESCRIPTION>',
     imageURI: 'testURI', // Will not change, currently hardcoded
+    animationURI: 'ar://animationUriHere',
     externalLink: 'https://your-nft-project.com', // Will not change, currently hardcoded
     encryptedMediaURI: 'ar://encryptedMediaUriHere', // Will not change, currently hardcoded
     startDate: 1714512791, // Epoch time for Tuesday, April 30, 2024 9:33:11 PM
@@ -78,7 +73,9 @@ async function main() {
   console.log(`Preparing to deploy contract...`);
 
   const countdownERC721InitCode: Hex = ethers.utils.defaultAbiCoder.encode(
-    ['tuple(string,string,string,string,uint40,uint32,uint24,address,address,address,string,tuple(uint104,uint24))'],
+    [
+      'tuple(string,string,string,string,string,uint40,uint32,uint24,address,address,address,string,tuple(uint104,uint24))',
+    ],
     [flattenObject(customERC721Initializer)]
   ) as Hex;
 

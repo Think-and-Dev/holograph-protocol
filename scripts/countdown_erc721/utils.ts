@@ -4,8 +4,7 @@ import { JsonRpcProvider, Log } from '@ethersproject/providers';
 import { TransactionReceipt, TransactionResponse } from '@ethersproject/abstract-provider';
 
 import { DeploymentConfigSettings, Hex } from './types';
-import {getHolographAddress} from "../utils/utils";
-
+import { getHolographAddress } from '../utils/utils';
 
 export async function getFactoryAddress(provider: JsonRpcProvider, environment: Environment): Promise<Hex> {
   const getFactoryABI = ['function getFactory() view returns (address factory)'];

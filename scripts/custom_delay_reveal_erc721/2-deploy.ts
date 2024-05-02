@@ -5,14 +5,11 @@ import { LedgerSigner } from '@anders-t/ethers-ledger';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { getNetworkByChainId } from '@holographxyz/networks';
 
-import {
-  deployHolographableContract,
-  readCsvFile,
-} from './utils';
+import { deployHolographableContract, readCsvFile } from './utils';
 import { CustomERC721Initializer, DeploymentConfig, DeploymentConfigSettings, Hex } from './types';
 import { customErc721Bytecode } from './custom-erc721-bytecode';
 import { FileColumnsType, parseFileContent, parsedEnv } from './validations';
-import {destructSignature, flattenObject, getFactoryAddress, getRegistryAddress, parseBytes} from "../utils/utils";
+import { destructSignature, flattenObject, getFactoryAddress, getRegistryAddress, parseBytes } from '../utils/utils';
 
 require('dotenv').config();
 

@@ -31,7 +31,7 @@ async function main() {
    * STEP 2: SET HARDCODED VALUES
    */
 
-  const contractAddress = '0xd323e2c37ca989f5e923a12bcdf10aa3544fa8fa';
+  const contractAddress = '0xa1c38aa78b7682a571e8a4e16115314574aef802';
   const quantity = 1;
   const price = ethers.utils.parseUnits('10', 6);
 
