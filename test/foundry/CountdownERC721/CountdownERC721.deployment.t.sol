@@ -34,7 +34,7 @@ contract CountdownERC721DeploymentTest is CountdownERC721Fixture, ICustomERC721E
     assertEq(countdownErc721.MINT_INTERVAL(), DEFAULT_MINT_INTERVAL, "Wrong mint interval");
     assertEq(countdownErc721.INITIAL_MAX_SUPPLY(), DEFAULT_MAX_SUPPLY, "Wrong initial max supply");
     assertEq(
-      countdownErc721.END_DATE(),
+      countdownErc721.endDate(),
       DEFAULT_START_DATE + DEFAULT_MINT_INTERVAL * DEFAULT_MAX_SUPPLY,
       "Wrong initial end date"
     );
@@ -47,7 +47,7 @@ contract CountdownERC721DeploymentTest is CountdownERC721Fixture, ICustomERC721E
 
   function test_init() public setupTestCountdownErc721(DEFAULT_MAX_SUPPLY) {
     assertEq(countdownErc721.owner(), DEFAULT_OWNER_ADDRESS, "Default owner set wrong");
-    // assertEq(countdownErc721.FUNDS_RECIPIENT(), payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS), "FundsRecipient is wrong");
+    // assertEq(countdownErc721.fundsRecipient(), payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS), "FundsRecipient is wrong");
 
     // Setup sale config
     CustomERC721SalesConfiguration memory salesConfig = CustomERC721SalesConfiguration({
