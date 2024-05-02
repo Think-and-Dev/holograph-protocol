@@ -50,23 +50,23 @@ async function main() {
    * STEP 2: SET THE STATIC VALUES
    */
 
-  const contractName = 'CustomERC721';
-  const contractSymbol = 'C721';
+  const contractName = 'CountdownTest001';
+  const contractSymbol = 'CTO1';
 
   const customERC721Initializer: CountdownERC721Initializer = {
-    description: '',
-    imageURI: '',
-    externalLink: '',
-    encryptedMediaURI: '',
+    description: '<ENTER MY DESCRIPTION>',
+    imageURI: 'testURI', // Will not change, currently hardcoded
+    externalLink: 'https://your-nft-project.com', // Will not change, currently hardcoded
+    encryptedMediaURI: 'ar://encryptedMediaUriHere', // Will not change, currently hardcoded
     startDate: 1714512791, // Epoch time for Tuesday, April 30, 2024 9:33:11 PM
     initialMaxSupply: 4173120, // Total number of ten-minute intervals until Oct 8, 2103
     mintInterval: 600, // Duration of each interval
     initialOwner: deployerAddress,
     initialMinter: deployerAddress,
     fundsRecipient: deployerAddress,
-    contractURI: 'https://example.com/metadata.json',
+    contractURI: 'https://example.com/metadata.json', // Will not change, currently hardcoded
     salesConfiguration: {
-      publicSalePrice: 100000000,
+      publicSalePrice: 10_000_000, // Set price in USD (10_000_000 = $10 USD)
       maxSalePurchasePerAddress: 0, // no limit
     },
   };

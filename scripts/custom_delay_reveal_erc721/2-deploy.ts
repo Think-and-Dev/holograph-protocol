@@ -7,16 +7,12 @@ import { getNetworkByChainId } from '@holographxyz/networks';
 
 import {
   deployHolographableContract,
-  destructSignature,
-  flattenObject,
-  getFactoryAddress,
-  getRegistryAddress,
-  parseBytes,
   readCsvFile,
 } from './utils';
 import { CustomERC721Initializer, DeploymentConfig, DeploymentConfigSettings, Hex } from './types';
 import { customErc721Bytecode } from './custom-erc721-bytecode';
 import { FileColumnsType, parseFileContent, parsedEnv } from './validations';
+import {destructSignature, flattenObject, getFactoryAddress, getRegistryAddress, parseBytes} from "../utils/utils";
 
 require('dotenv').config();
 

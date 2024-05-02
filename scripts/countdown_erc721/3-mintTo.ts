@@ -31,8 +31,8 @@ async function main() {
    * STEP 2: SET HARDCODED VALUES
    */
 
-  const contractAddress = '';
-  const recipient = '';
+  const contractAddress = '0xc4535d9a032c0f3ef3c6e03a35d7444de9083148';
+  const recipient = '0xD17e8cEe2EC7fEE30e9F9ECB82EaB918659872AF';
   const quantity = 1;
 
   /*
