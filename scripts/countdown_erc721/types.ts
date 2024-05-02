@@ -1,5 +1,3 @@
-import { bigint } from 'zod';
-
 export type Hex = `0x${string}`;
 
 export type CustomERC721SalesConfiguration = {
@@ -10,7 +8,7 @@ export type CustomERC721SalesConfiguration = {
 export type CountdownERC721Initializer = {
   description: string; // The description of the token.
   imageURI: string; // The URI for the image associated with this contract.
-  animationURI: string;
+  animationURI: string; // The URI for the animation associated with this contract.
   externalLink: string; // The URI for the external metadata associated with this contract.
   encryptedMediaURI: string; // The URI for the encrypted media associated with this contract.
   startDate: number; // The starting date for the countdown

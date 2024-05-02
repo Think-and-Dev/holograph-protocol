@@ -30,9 +30,8 @@ async function main() {
   /*
    * STEP 2: SET HARDCODED VALUES
    */
-
-  const contractAddress = '0xa1c38aa78b7682a571e8a4e16115314574aef802';
-  const recipient = '0xD17e8cEe2EC7fEE30e9F9ECB82EaB918659872AF';
+  const contractAddress = ''; // Set the the address of your deployed contract
+  const recipient = ''; // Set to an address you control
   const quantity = 1;
 
   /*
