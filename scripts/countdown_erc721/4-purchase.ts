@@ -33,8 +33,9 @@ async function main() {
 
   const contractAddress = '0xd323e2c37ca989f5e923a12bcdf10aa3544fa8fa';
   const quantity = 1;
-  const price = ethers.utils.parseUnits('100', 6);
+  const price = ethers.utils.parseUnits('10', 6);
 
+  // DO NOT CHANGE THIS!
   const dropsPriceOracleAddress = '0xeA7f4C52cbD4CF1036CdCa8B16AcA11f5b09cF6E';
 
   /*
