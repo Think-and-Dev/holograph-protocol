@@ -6,30 +6,71 @@ import {Test, Vm, console} from "forge-std/Test.sol";
 import {HolographERC721} from "../../../src/enforcer/HolographERC721.sol";
 import {SampleERC721} from "../../../src/token/SampleERC721.sol";
 import {MockERC721Receiver} from "../../../src/mock/MockERC721Receiver.sol";
+import {Admin} from "../../../src/abstract/Admin.sol";
 import {Constants} from "../utils/Constants.sol";
 
+/// @title ERC721 Enforcer Tests Setup
+/// @notice Sets up the testing environment for ERC721 token testing with specific contracts.
 contract Erc721Enforcer is Test {
-
   event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
   event Approval(address indexed _owner, address indexed _approved, uint256 indexed _tokenId);
   event ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved);
+  event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
-  uint256 localHostFork;
-  string LOCALHOST_RPC_URL = vm.envString("LOCALHOST_RPC_URL");
-  HolographERC721 holographERC721;
-  SampleERC721 sampleERC721;
-  MockERC721Receiver mockERC721Receiver;
-  address deployer = vm.addr(0xff22437ccbedfffafa93a9f1da2e8c19c1711052799acf3b58ae5bebb5c6bd7b);
-  address alice = vm.addr(1);
-  address bob = vm.addr(2);
-  address charlie = vm.addr(3);
+  uint256 public localHostFork;
+  string public LOCALHOST_RPC_URL = vm.envString("LOCALHOST_RPC_URL");
 
+  HolographERC721 public holographERC721;
+  SampleERC721 public sampleERC721;
+  MockERC721Receiver public mockERC721Receiver;
+  Admin public admin;
+
+  address public deployer;
+  address public alice;
+  address public bob;
+  address public charlie;
+
+  // @dev Constants for the ERC721 Enforcer tests.
+  address public holographFactoryProxyAddress = Constants.getHolographFactoryProxy();
+
+  uint256 public tokenId1 = 1;
+  uint256 public tokenId2 = 2;
+  uint256 public tokenId3 = 3;
+
+  string public constant tokenURI1 = "https://holograph.xyz/sample1.json";
+  string public constant tokenURI2 = "https://holograph.xyz/sample2.json";
+  string public constant tokenURI3 = "https://holograph.xyz/sample3.json";
+
+
+  /// @notice Set up the testing environment by initializing all necessary contracts and accounts.
   function setUp() public {
-    localHostFork = vm.createFork(LOCALHOST_RPC_URL);
+    uint256 localHostFork = vm.createFork(LOCALHOST_RPC_URL);
     vm.selectFork(localHostFork);
-    holographERC721 = HolographERC721(payable(0x846Af4c87F5Af1F303E5a5D215D83A611b08069c));
-    sampleERC721 = SampleERC721(payable(0x846Af4c87F5Af1F303E5a5D215D83A611b08069c));
+
+    _setupAccounts();
+    _deployContracts();
+  }
+
+  /// @dev Initializes testing accounts.
+  function _setupAccounts() private {
+    deployer = vm.addr(0xff22437ccbedfffafa93a9f1da2e8c19c1711052799acf3b58ae5bebb5c6bd7b);
+    alice = vm.addr(1);
+    bob = vm.addr(2);
+    charlie = vm.addr(3);
+  }
+
+  /// @dev Deploys the contract instances used in the tests.
+  function _deployContracts() private {
+    holographERC721 = HolographERC721(payable(Constants.getSampleERC721()));
+    sampleERC721 = SampleERC721(payable(Constants.getSampleERC721()));
     mockERC721Receiver = MockERC721Receiver(Constants.getMockERC721Receiver());
+    admin = Admin(payable(holographFactoryProxyAddress));
+  }
+
+  /// @dev Helper to mint NFTs for testing.
+  function _mint(address _to, uint256 _tokenId, string memory _tokenURI) private {
+    vm.prank(deployer);
+    sampleERC721.mint(_to, uint224(_tokenId), _tokenURI);
   }
 
   /*
@@ -96,7 +137,9 @@ contract Erc721Enforcer is Test {
     assertTrue(holographERC721.supportsInterface(computedId));
   }
 
-  // ERC721Enumerable
+  /*
+   * ERC721Enumerable
+   */
 
   function testUntilDeployTotalSupply() public {
     bytes4 selector = holographERC721.totalSupply.selector;
@@ -122,7 +165,9 @@ contract Erc721Enforcer is Test {
     assertTrue(holographERC721.supportsInterface(computedId));
   }
 
-  // ERC721Metadata
+  /*
+   * ERC721Metadata
+   */
 
   function testUntilDeployName() public {
     bytes4 selector = holographERC721.name.selector;
@@ -144,7 +189,9 @@ contract Erc721Enforcer is Test {
     assertTrue(holographERC721.supportsInterface(computedId));
   }
 
-  // ERC721TokenReceiver
+  /*
+   * ERC721TokenReceiver
+   */
 
   function testUntilDeployOnERC721Received() public {
     bytes4 selector = holographERC721.onERC721Received.selector;
@@ -156,7 +203,9 @@ contract Erc721Enforcer is Test {
     assertTrue(holographERC721.supportsInterface(computedId));
   }
 
-  // CollectionURI
+  /*
+   * CollectionURI
+   */
 
   function testUntilDeployCollectionURI() public {
     bytes4 selector = holographERC721.contractURI.selector;
@@ -168,7 +217,9 @@ contract Erc721Enforcer is Test {
     assertTrue(holographERC721.supportsInterface(computedId));
   }
 
-  // Test Initializer
+  /*
+   * Test Initializer
+   */
 
   function testReinitializationHolographer() public {
     bytes memory initData = abi.encodePacked(address(0));
@@ -176,22 +227,25 @@ contract Erc721Enforcer is Test {
     holographERC721.init(initData);
   }
 
-  // check why this is failing
-  // function testReinitializationSample() public {
-  //   bytes memory initData = abi.encode(
-  //     address(this),
-  //     "Another Title",
-  //     "SMPL2",
-  //     uint16(500),
-  //     uint256(5000),
-  //     false,
-  //     bytes("new data")
-  //   );
-  //   vm.expectRevert("ERC721: already initialized");
-  //   sampleERC721.init(initData);
-  // }
+  // TODO: dont have sampleErc721Enforcer
+  function testReinitializationSample() public {
+    vm.skip(true);
+    bytes memory initData = abi.encode(
+      address(this),
+      "Another Title",
+      "SMPL2",
+      uint16(500),
+      uint256(5000),
+      false,
+      bytes("new data")
+    );
+    vm.expectRevert("ERC721: already initialized");
+    sampleERC721.init(initData);
+  }
 
-  // Test ERC721Metadata
+  /*
+   * Test ERC721Metadata
+   */
 
   function testName() public {
     assertEq(holographERC721.name(), "Sample ERC721 Contract (localhost)");
@@ -203,199 +257,180 @@ contract Erc721Enforcer is Test {
 
   // TODO: find a way to autogenerate the base64 string
   function testContractURI() public {
-    string memory expectedURI = "data:application/json;base64,eyJuYW1lIjoiU2FtcGxlIEVSQzcyMSBDb250cmFjdCAobG9jYWxob3N0KSIsImRlc2NyaXB0aW9uIjoiU2FtcGxlIEVSQzcyMSBDb250cmFjdCAobG9jYWxob3N0KSIsImltYWdlIjoiIiwiZXh0ZXJuYWxfbGluayI6IiIsInNlbGxlcl9mZWVfYmFzaXNfcG9pbnRzIjoxMDAwLCJmZWVfcmVjaXBpZW50IjoiMHg4NDZhZjRjODdmNWFmMWYzMDNlNWE1ZDIxNWQ4M2E2MTFiMDgwNjljIn0";
+    string
+      memory expectedURI = "data:application/json;base64,eyJuYW1lIjoiU2FtcGxlIEVSQzcyMSBDb250cmFjdCAobG9jYWxob3N0KSIsImRlc2NyaXB0aW9uIjoiU2FtcGxlIEVSQzcyMSBDb250cmFjdCAobG9jYWxob3N0KSIsImltYWdlIjoiIiwiZXh0ZXJuYWxfbGluayI6IiIsInNlbGxlcl9mZWVfYmFzaXNfcG9pbnRzIjoxMDAwLCJmZWVfcmVjaXBpZW50IjoiMHg4NDZhZjRjODdmNWFmMWYzMDNlNWE1ZDIxNWQ4M2E2MTFiMDgwNjljIn0";
     assertEq(holographERC721.contractURI(), expectedURI, "The contract URI does not match.");
   }
 
-  // Mint ERC721 NFTs
+  /*
+   * Mint ERC721 NFTs
+   */
 
-  // should have a total supply of 0 SMPLR NFts
+  /// @notice should have a total supply of 0 SMPLR NFts
   function testTotalSupply() public {
     assertEq(holographERC721.totalSupply(), 0);
   }
 
-  // should not exist #1 SMPLR NFT
+  /// @notice should not exist #1 SMPLR NFT
   function testTokenByIndex() public {
     uint256 tokenId = 1;
     assertFalse(holographERC721.exists(tokenId));
   }
 
-  // NFT index 0 should fail
+  /// @notice NFT index 0 should fail
   function testTokenIndex0() public {
     vm.expectRevert("ERC721: index out of bounds");
     holographERC721.tokenByIndex(0);
   }
 
-  // NFT owner index 0 should fail
+  /// @notice NFT owner index 0 should fail
   function testTokenOwnerIndex0() public {
     vm.expectRevert("ERC721: index out of bounds");
     holographERC721.tokenOfOwnerByIndex(deployer, 0);
   }
 
-  // should emit Transfer event for #1 SMPLR NFT
+  /// @notice should emit Transfer event for #1 SMPLR NFT
   function testMint() public {
-    uint224 tokenId = 1;
-
     vm.expectEmit(true, true, true, false);
-    emit Transfer(address(0), alice, tokenId);
+    emit Transfer(address(0), alice, tokenId1);
 
-    vm.prank(deployer);
-    sampleERC721.mint(alice, tokenId, "https://holograph.xyz/sample1.json");
+    _mint(alice, tokenId1, tokenURI1);
 
     assertEq(holographERC721.totalSupply(), 1);
 
-    // should exist #1 SMPLR NFT
-    assertTrue(holographERC721.exists(tokenId));
+    /// @notice should exist #1 SMPLR NFT
+    assertTrue(holographERC721.exists(tokenId1));
 
-    // should not mark as burned #1 SMPLR NFT
-    assertFalse(holographERC721.burned(tokenId));
+    /// @notice should not mark as burned #1 SMPLR NFT
+    assertFalse(holographERC721.burned(tokenId1));
 
-    // should specify alice as owner of #1 SMPLR NFT
-    assertEq(holographERC721.ownerOf(tokenId), alice);
+    /// @notice should specify alice as owner of #1 SMPLR NFT
+    assertEq(holographERC721.ownerOf(tokenId1), alice);
 
-    // NFT index 0 should return #1 SMPLR NFT
-    assertEq(holographERC721.tokenByIndex(0), tokenId);
+    /// @notice NFT index 0 should return #1 SMPLR NFT
+    assertEq(holographERC721.tokenByIndex(0), tokenId1);
 
-    // NFT owner index 0 should return #1 SMPLR NFT
-    assertEq(holographERC721.tokenOfOwnerByIndex(alice, 0), tokenId);
+    /// @notice NFT owner index 0 should return #1 SMPLR NFT
+    assertEq(holographERC721.tokenOfOwnerByIndex(alice, 0), tokenId1);
   }
 
-  // should emit Transfer event for #2 SMPLR NFT
+  /// @notice should emit Transfer event for #2 SMPLR NFT
   function testMint2() public {
-    uint224 tokenId = 1;
-
-    vm.startPrank(deployer);
-    sampleERC721.mint(alice, tokenId, "https://holograph.xyz/sample1.json");
-
-    tokenId = 2;
+    _mint(alice, tokenId1, tokenURI1);
 
     vm.expectEmit(true, true, true, false);
-    emit Transfer(address(0), bob, tokenId);
+    emit Transfer(address(0), bob, tokenId2);
 
-    sampleERC721.mint(bob, tokenId, "https://holograph.xyz/sample2.json");
-
-    vm.stopPrank();
+    _mint(bob, tokenId2, tokenURI2);
+    
     assertEq(holographERC721.totalSupply(), 2);
   }
 
-  // should fail minting to zero address
+  /// @notice should fail minting to zero address
   function testMintToZeroAddress() public {
     vm.expectRevert("ERC721: minting to burn address");
-    vm.prank(deployer);
-    sampleERC721.mint(address(0), 1, "");
+    _mint(address(0), tokenId1, tokenURI1);
   }
 
-  // should fail minting existing #1 SMPLR NFT
+  /// @notice should fail minting existing #1 SMPLR NFT
   function testMintExisting() public {
-    vm.startPrank(deployer);
-    sampleERC721.mint(alice, 1, "https://holograph.xyz/sample1.json");
+    _mint(alice, tokenId1, tokenURI1);
 
     vm.expectRevert("ERC721: token already exists");
-    sampleERC721.mint(alice, 1, "https://holograph.xyz/sample1.json");
+    _mint(alice, tokenId1, tokenURI1);
   }
-  
-  // should fail minting burned #3 SMPLR NFT
+
+  /// @notice should fail minting burned #3 SMPLR NFT
   function testMintBurned() public {
-    uint224 tokenId = 3;
-    vm.prank(deployer);
-    sampleERC721.mint(alice, tokenId, "https://holograph.xyz/sample3.json");
+    _mint(alice, tokenId3, tokenURI3);
 
     vm.expectEmit(true, true, true, false);
-    emit Transfer(alice, address(0), tokenId);
+    emit Transfer(alice, address(0), tokenId3);
 
     vm.prank(alice);
-    holographERC721.burn(tokenId);
+    holographERC721.burn(tokenId3);
 
     vm.expectRevert("ERC721: can't mint burned token");
-    vm.prank(deployer);
-    sampleERC721.mint(alice, tokenId, "https://holograph.xyz/sample3.json");
+    _mint(alice, tokenId3, tokenURI3);
 
-    // should mark as burned #3 SMPLR NFT
-    assertTrue(holographERC721.burned(tokenId));
+    /// @notice should mark as burned #3 SMPLR NFT
+    assertTrue(holographERC721.burned(tokenId3));
   }
 
   function testMintBalances() public {
-    vm.startPrank(deployer);
-    sampleERC721.mint(alice, 1, "https://holograph.xyz/sample1.json");
-    sampleERC721.mint(alice, 2, "https://holograph.xyz/sample2.json");
-    vm.stopPrank();
+    _mint(alice, tokenId1, tokenURI1);
+    _mint(alice, tokenId2, tokenURI2);
 
-    // should have a total supply of 2 SMPLR NFts
+    /// @notice should have a total supply of 2 SMPLR NFts
     assertEq(holographERC721.totalSupply(), 2);
 
-    // alice address should have 2 SMPLR NFts
+    /// @notice alice address should have 2 SMPLR NFts
     assertEq(holographERC721.balanceOf(alice), 2);
 
-    // should return an array of token ids
+    /// @notice should return an array of token ids
     uint256[] memory tokenIds = holographERC721.tokens(0, 10);
     assertEq(tokenIds.length, 2);
-    assertEq(tokenIds[0], 1);
-    assertEq(tokenIds[1], 2);
+    assertEq(tokenIds[0], tokenId1);
+    assertEq(tokenIds[1], tokenId2);
 
-    // should return an array of owner token ids
+    /// @notice should return an array of owner token ids
     uint256[] memory ownerTokenIds = holographERC721.tokensOfOwner(alice);
     assertEq(ownerTokenIds.length, 2);
-    assertEq(ownerTokenIds[0], 1);
-    assertEq(ownerTokenIds[1], 2);
+    assertEq(ownerTokenIds[0], tokenId1);
+    assertEq(ownerTokenIds[1], tokenId2);
 
-    // check NFT data
-    assertEq(holographERC721.tokenURI(1), "https://holograph.xyz/sample1.json");
-    assertEq(holographERC721.tokenURI(2), "https://holograph.xyz/sample2.json");
+    /// @notice check NFT data
+    assertEq(holographERC721.tokenURI(tokenId1), tokenURI1);
+    assertEq(holographERC721.tokenURI(tokenId2), tokenURI2);
   }
 
-  // should return no approval for #1 SMPLR NFT
+  /// @notice should return no approval for #1 SMPLR NFT
   function testApprove() public {
-    uint224 tokenId = 1;
+    _mint(alice, tokenId1, tokenURI1);
 
-    vm.prank(deployer);
-    sampleERC721.mint(alice, tokenId, "https://holograph.xyz/sample1.json");
+    assertEq(holographERC721.getApproved(tokenId1), address(0));
 
-    assertEq(holographERC721.getApproved(tokenId), address(0));
-
-    // should succeed when approving bob for #1 SMPLR NFT
+    /// @notice should succeed when approving bob for #1 SMPLR NFT
     vm.expectEmit(true, true, true, false);
-    emit Approval(alice, bob, tokenId);
+    emit Approval(alice, bob, tokenId1);
 
     vm.prank(alice);
-    holographERC721.approve(bob, tokenId);
+    holographERC721.approve(bob, tokenId1);
 
-    // should return bob as approved for #1 SMPLR NFT
-    assertEq(holographERC721.getApproved(tokenId), bob);
+    /// @notice should return bob as approved for #1 SMPLR NFT
+    assertEq(holographERC721.getApproved(tokenId1), bob);
 
-    // should succeed when unsetting approval for #1 SMPLR NFT
+    /// @notice should succeed when unsetting approval for #1 SMPLR NFT
     vm.expectEmit(true, true, true, false);
-    emit Approval(alice, address(0), tokenId);
+    emit Approval(alice, address(0), tokenId1);
 
     vm.prank(alice);
-    holographERC721.approve(address(0), tokenId);
+    holographERC721.approve(address(0), tokenId1);
 
-    // should return no approval for #1 SMPLR NFT
-    assertEq(holographERC721.getApproved(tokenId), address(0));
+    /// @notice should return no approval for #1 SMPLR NFT
+    assertEq(holographERC721.getApproved(tokenId1), address(0));
   }
 
-  // should clear approval on transfer #1 SMPLR NFT
+  /// @notice should clear approval on transfer #1 SMPLR NFT
   function testTransferApproval() public {
-    uint224 tokenId = 1;
-
-    vm.prank(deployer);
-    sampleERC721.mint(alice, tokenId, "https://holograph.xyz/sample1.json");
+    _mint(alice, tokenId1, tokenURI1);
 
     vm.startPrank(alice);
-    holographERC721.approve(bob, tokenId);
+    holographERC721.approve(bob, tokenId1);
 
-    assertEq(holographERC721.getApproved(tokenId), bob);
+    assertEq(holographERC721.getApproved(tokenId1), bob);
 
-    holographERC721.transfer(charlie, tokenId);
+    holographERC721.transfer(charlie, tokenId1);
 
-    assertEq(holographERC721.getApproved(tokenId), address(0));
+    assertEq(holographERC721.getApproved(tokenId1), address(0));
   }
 
-  // should bob not be approved operator for alice
+  /// @notice should bob not be approved operator for alice
   function testIsApprovedForAll() public {
     assertFalse(holographERC721.isApprovedForAll(alice, bob));
   }
 
-  // should succeed setting bob as approved operator for alice
+  /// @notice should succeed setting bob as approved operator for alice
   function testSetApprovalForAll() public {
     vm.expectEmit(true, true, false, false);
     emit ApprovalForAll(alice, bob, true);
@@ -403,201 +438,184 @@ contract Erc721Enforcer is Test {
     vm.prank(alice);
     holographERC721.setApprovalForAll(bob, true);
 
-    // should return bob as approved operator for alice
+    /// @notice should return bob as approved operator for alice
     assertTrue(holographERC721.isApprovedForAll(alice, bob));
 
-    // should succeed unsetting bob as approved operator for alice
+    /// @notice should succeed unsetting bob as approved operator for alice
     vm.expectEmit(true, true, false, false);
     emit ApprovalForAll(alice, bob, false);
 
     vm.prank(alice);
     holographERC721.setApprovalForAll(bob, false);
 
-    // should bob not be approved operator for alice
+    /// @notice should bob not be approved operator for alice
     assertFalse(holographERC721.isApprovedForAll(alice, bob));
   }
 
-  // Failed transfer
+  /*
+   * Failed transfer
+   */
 
-  // should fail if sender doesn't own #1 SMPLR NFT
+  /// @notice should fail if sender doesn't own #1 SMPLR NFT
   function testTransfer() public {
-    vm.prank(deployer);
-    sampleERC721.mint(alice, 1, "https://holograph.xyz/sample1.json");
+    _mint(alice, tokenId1, tokenURI1);
 
     vm.expectRevert("ERC721: not approved sender");
-    holographERC721.transfer(bob, 1);
+    holographERC721.transfer(bob, tokenId1);
 
-    // should fail if transferring to zero address
+    /// @notice should fail if transferring to zero address
     vm.expectRevert("ERC721: use burn instead");
 
     vm.prank(alice);
-    holographERC721.transfer(address(0), 1);
+    holographERC721.transfer(address(0), tokenId1);
 
-    // should fail if transferring from zero address
+    /// @notice should fail if transferring from zero address
     vm.expectRevert("ERC721: token not owned");
 
     vm.prank(alice);
-    holographERC721.transferFrom(address(0), bob, 1);
+    holographERC721.transferFrom(address(0), bob, tokenId1);
 
-    // should fail if transferring not owned NFT
+    /// @notice should fail if transferring not owned NFT
     vm.expectRevert("ERC721: not approved sender");
 
-    holographERC721.transferFrom(alice, bob, 1);
+    holographERC721.transferFrom(alice, bob, tokenId1);
   }
 
-  // should fail if transferring non-existent #3 SMPLR NFT
+  /// @notice should fail if transferring non-existent #3 SMPLR NFT
   function testTransferNonExistent() public {
     vm.expectRevert("ERC721: token does not exist");
     holographERC721.transfer(alice, 3);
   }
 
-  // should fail safe transfer for broken ERC721TokenReceiver
+  /// @notice should fail safe transfer for broken ERC721TokenReceiver
   function testSafeTransferBrokenReceiver() public {
-    uint224 tokenId = 1;
-
-    vm.startPrank(deployer);
-    sampleERC721.mint(deployer, tokenId, "https://holograph.xyz/sample1.json");
+    _mint(deployer, tokenId1, tokenURI1);
 
     mockERC721Receiver.toggleWorks(false);
 
     vm.expectRevert("ERC721: onERC721Received fail");
-    holographERC721.safeTransferFrom(deployer, address(mockERC721Receiver), tokenId);
+    vm.prank(deployer);
+    holographERC721.safeTransferFrom(deployer, address(mockERC721Receiver), tokenId1);
   }
 
-  // should fail for non-contract onERC721Received call
+  /// @notice should fail for non-contract onERC721Received call
   function testSafeTransferNonContractReceiver() public {
     vm.expectRevert("ERC721: operator not contract");
-    holographERC721.onERC721Received(deployer, deployer, 1, "0x");
+    holographERC721.onERC721Received(deployer, deployer, tokenId1, "0x");
   }
 
-  // should fail for non-existant NFT onERC721Received call
+  /// @notice should fail for non-existant NFT onERC721Received call
   function testSafeTransferNonExistentNFT() public {
     vm.expectRevert("ERC721: token does not exist");
-    holographERC721.onERC721Received(Constants.getCxipERC721(), deployer, 1, "0x");
+    holographERC721.onERC721Received(Constants.getCxipERC721(), deployer, tokenId1, "0x");
   }
 
-  // should fail for fake onERC721Received call
+  /// @notice should fail for fake onERC721Received call
   function testSafeTransferFakeReceiver() public {
-    uint224 tokenId = 1;
-
-    vm.prank(deployer);
-    sampleERC721.mint(deployer, tokenId, "https://holograph.xyz/sample1.json");
+    _mint(deployer, tokenId1, tokenURI1);
 
     vm.expectRevert("ERC721: contract not token owner");
-    holographERC721.onERC721Received(address(holographERC721), deployer, tokenId, "0x");
+    holographERC721.onERC721Received(address(holographERC721), deployer, tokenId1, "0x");
   }
 
-  // Successful transfer
+  /*
+   * Successful transfer
+   */
 
-  // deployer should succeed transferring #1 SMPLR NFT to alice
+  /// @notice deployer should succeed transferring #1 SMPLR NFT to alice
   function testTransferSuccess() public {
-    uint224 tokenId = 1;
-
-    vm.startPrank(deployer);
-    sampleERC721.mint(deployer, tokenId, "https://holograph.xyz/sample1.json");
+    _mint(deployer, tokenId1, tokenURI1);
 
     vm.expectEmit(true, true, true, false);
-    emit Transfer(deployer, alice, tokenId);
+    emit Transfer(deployer, alice, tokenId1);
 
-    holographERC721.transfer(alice, tokenId);
+    vm.prank(deployer);
+    holographERC721.transfer(alice, tokenId1);
 
-    // should return alice as owner of #1 SMPLR NFT
-    assertEq(holographERC721.ownerOf(tokenId), alice);
+    /// @notice should return alice as owner of #1 SMPLR NFT
+    assertEq(holographERC721.ownerOf(tokenId1), alice);
 
-    vm.stopPrank();
-
-    // alice should succeed safely transferring #1 SMPLR NFT to deployer
+    /// @notice alice should succeed safely transferring #1 SMPLR NFT to deployer
     vm.prank(alice);
 
     vm.expectEmit(true, true, true, false);
-    emit Transfer(alice, deployer, tokenId);
+    emit Transfer(alice, deployer, tokenId1);
 
-    holographERC721.safeTransferFrom(alice, deployer, tokenId);
+    holographERC721.safeTransferFrom(alice, deployer, tokenId1);
 
-    // should return deployer as owner of #1 SMPLR NFT
-    assertEq(holographERC721.ownerOf(tokenId), deployer);
+    /// @notice should return deployer as owner of #1 SMPLR NFT
+    assertEq(holographERC721.ownerOf(tokenId1), deployer);
   }
 
-  // should succeed safe transfer #1 SMPLR NFT to ERC721TokenReceiver
+  /// @notice should succeed safe transfer #1 SMPLR NFT to ERC721TokenReceiver
   function testSafeTransfer() public {
-    uint224 tokenId = 1;
-
+    _mint(deployer, tokenId1, tokenURI1);
     vm.startPrank(deployer);
-    sampleERC721.mint(deployer, tokenId, "https://holograph.xyz/sample1.json");
 
     vm.expectEmit(true, true, true, false);
-    emit Transfer(deployer, address(mockERC721Receiver), tokenId);
+    emit Transfer(deployer, address(mockERC721Receiver), tokenId1);
 
-    holographERC721.safeTransferFrom(deployer, address(mockERC721Receiver), tokenId);
+    holographERC721.safeTransferFrom(deployer, address(mockERC721Receiver), tokenId1);
 
-    // should return mockERC721Receiver as owner of #1 SMPLR NFT
-    assertEq(holographERC721.ownerOf(tokenId), address(mockERC721Receiver));
+    /// @notice should return mockERC721Receiver as owner of #1 SMPLR NFT
+    assertEq(holographERC721.ownerOf(tokenId1), address(mockERC721Receiver));
 
     vm.expectEmit(true, true, true, false);
-    emit Transfer(address(mockERC721Receiver), deployer, tokenId);
+    emit Transfer(address(mockERC721Receiver), deployer, tokenId1);
 
-    mockERC721Receiver.transferNFT(payable(address(holographERC721)), tokenId, deployer);
+    mockERC721Receiver.transferNFT(payable(address(holographERC721)), tokenId1, deployer);
 
-    // should return deployer as owner of #1 SMPLR NFT
-    assertEq(holographERC721.ownerOf(tokenId), deployer);
+    /// @notice should return deployer as owner of #1 SMPLR NFT
+    assertEq(holographERC721.ownerOf(tokenId1), deployer);
   }
 
-  // approved should succeed transferring #1 SMPLR NFT
+  /// @notice approved should succeed transferring #1 SMPLR NFT
   function testTransferFrom() public {
-    uint224 tokenId = 1;
-
-    vm.startPrank(deployer);
-    sampleERC721.mint(deployer, tokenId, "https://holograph.xyz/sample1.json");
+    _mint(deployer, tokenId1, tokenURI1);
 
     vm.expectEmit(true, true, true, false);
-    emit Approval(deployer, alice, tokenId);
+    emit Approval(deployer, alice, tokenId1);
 
-    holographERC721.approve(alice, tokenId);
+    vm.prank(deployer);
+    holographERC721.approve(alice, tokenId1);
 
-    assertEq(holographERC721.getApproved(tokenId), alice);
+    assertEq(holographERC721.getApproved(tokenId1), alice);
     assertEq(holographERC721.isApprovedForAll(deployer, alice), false);
 
-    vm.stopPrank();
-
     vm.expectEmit(true, true, true, false);
-    emit Transfer(deployer, bob, tokenId);
+    emit Transfer(deployer, bob, tokenId1);
 
     vm.prank(alice);
-    holographERC721.transferFrom(deployer, bob, tokenId);
+    holographERC721.transferFrom(deployer, bob, tokenId1);
 
-    // should return bob as owner of #1 SMPLR NFT
-    assertEq(holographERC721.ownerOf(tokenId), bob);
-    assertEq(holographERC721.getApproved(tokenId), address(0));
+    /// @notice should return bob as owner of #1 SMPLR NFT
+    assertEq(holographERC721.ownerOf(tokenId1), bob);
+    assertEq(holographERC721.getApproved(tokenId1), address(0));
 
     vm.expectEmit(true, true, true, false);
-    emit Transfer(bob, deployer, tokenId);
+    emit Transfer(bob, deployer, tokenId1);
 
     vm.prank(bob);
-    holographERC721.transfer(deployer, tokenId);
+    holographERC721.transfer(deployer, tokenId1);
 
-    // should return deployer as owner of #1 SMPLR NFT
-    assertEq(holographERC721.ownerOf(tokenId), deployer);
+    /// @notice should return deployer as owner of #1 SMPLR NFT
+    assertEq(holographERC721.ownerOf(tokenId1), deployer);
   }
 
-  // approved operator should succeed transferring #1 and #2 SMPLR NFTs
+  /// @notice approved operator should succeed transferring #1 and #2 SMPLR NFTs
   function testTransferFromOperator() public {
-    uint224 tokenId1 = 1;
-    uint224 tokenId2 = 2;
-
-    vm.startPrank(deployer);
-    sampleERC721.mint(deployer, tokenId1, "https://holograph.xyz/sample1.json");
-    sampleERC721.mint(deployer, tokenId2, "https://holograph.xyz/sample2.json");
+    _mint(deployer, tokenId1, tokenURI1);
+    _mint(deployer, tokenId2, tokenURI2);
 
     vm.expectEmit(true, true, true, false);
     emit ApprovalForAll(deployer, alice, true);
 
+    vm.prank(deployer);
     holographERC721.setApprovalForAll(alice, true);
 
     assertEq(holographERC721.getApproved(tokenId1), address(0));
     assertEq(holographERC721.getApproved(tokenId2), address(0));
     assertEq(holographERC721.isApprovedForAll(deployer, alice), true);
-
-    vm.stopPrank();
 
     vm.expectEmit(true, true, true, false);
     emit Transfer(deployer, bob, tokenId1);
@@ -610,7 +628,7 @@ contract Erc721Enforcer is Test {
 
     holographERC721.transferFrom(deployer, bob, tokenId2);
 
-    // should return bob as owner of #1 and #2 SMPLR NFTs
+    /// @notice should return bob as owner of #1 and #2 SMPLR NFTs
     assertEq(holographERC721.ownerOf(tokenId1), bob);
     assertEq(holographERC721.ownerOf(tokenId2), bob);
     assertEq(holographERC721.isApprovedForAll(deployer, alice), true);
@@ -637,136 +655,173 @@ contract Erc721Enforcer is Test {
 
     holographERC721.transfer(deployer, tokenId2);
 
-    // should return deployer as owner of #1 and #2 SMPLR NFTs
+    /// @notice should return deployer as owner of #1 and #2 SMPLR NFTs
     assertEq(holographERC721.ownerOf(tokenId1), deployer);
     assertEq(holographERC721.ownerOf(tokenId2), deployer);
   }
 
-  // Burn NFTs
+  /*
+   * Burn NFTs
+   */
 
-  // should fail burning non-existent #4 SMPLR NFT
+  /// @notice should fail burning non-existent #4 SMPLR NFT
   function testBurnNonExistent() public {
     vm.expectRevert("ERC721: token does not exist");
-    holographERC721.burn(4);
+    holographERC721.burn(tokenId3);
   }
 
-  // should fail burning not owned #1 SMPLR NFT
+  /// @notice should fail burning not owned #1 SMPLR NFT
   function testBurnNotOwned() public {
-    vm.prank(deployer);
-    sampleERC721.mint(deployer, 1, "https://holograph.xyz/sample1.json");
+    _mint(alice, tokenId1, tokenURI1);
 
     vm.expectRevert("ERC721: not approved sender");
-    holographERC721.burn(1);
+    holographERC721.burn(tokenId1);
   }
 
-  // should succeed burning owned #1 SMPLR NFT
+  /// @notice should succeed burning owned #1 SMPLR NFT
   function testBurn() public {
-    uint224 tokenId = 1;
-
-    vm.startPrank(deployer);
-    sampleERC721.mint(deployer, tokenId, "https://holograph.xyz/sample1.json");
-
-    assertEq(holographERC721.burned(tokenId), false);
+    _mint(deployer, tokenId1, tokenURI1);
+    assertEq(holographERC721.burned(tokenId1), false);
 
     vm.expectEmit(true, true, true, false);
-    emit Transfer(deployer, address(0), tokenId);
+    emit Transfer(deployer, address(0), tokenId1);
 
-    holographERC721.burn(tokenId);
+    vm.prank(deployer);
+    holographERC721.burn(tokenId1);
 
-    // should mark as burned #1 SMPLR NFT
-    assertTrue(holographERC721.burned(tokenId));
+    /// @notice should mark as burned #1 SMPLR NFT
+    assertTrue(holographERC721.burned(tokenId1));
   }
 
-  // should succeed burning approved #1 SMPLR NFT
+  /// @notice should succeed burning approved #1 SMPLR NFT
   function testBurnApproved() public {
-    uint224 tokenId = 1;
-
-    vm.startPrank(deployer);
-    sampleERC721.mint(deployer, tokenId, "https://holograph.xyz/sample1.json");
-    
-    assertEq(holographERC721.burned(tokenId), false);
+    _mint(deployer, tokenId1, tokenURI1);
+    assertEq(holographERC721.burned(tokenId1), false);
 
     vm.expectEmit(true, true, true, false);
-    emit Approval(deployer, alice, tokenId);
+    emit Approval(deployer, alice, tokenId1);
 
-    holographERC721.approve(alice, tokenId);
+    vm.prank(deployer);
+    holographERC721.approve(alice, tokenId1);
 
-    assertEq(holographERC721.getApproved(tokenId), alice);
+    assertEq(holographERC721.getApproved(tokenId1), alice);
     assertEq(holographERC721.isApprovedForAll(deployer, alice), false);
 
-    vm.stopPrank();
-
     vm.expectEmit(true, true, true, false);
-    emit Transfer(deployer, address(0), tokenId);
+    emit Transfer(deployer, address(0), tokenId1);
 
     vm.prank(alice);
-    holographERC721.burn(tokenId);
+    holographERC721.burn(tokenId1);
 
-    // should mark as burned #1 SMPLR NFT
-    assertTrue(holographERC721.burned(tokenId));
+    /// @notice should mark as burned #1 SMPLR NFT
+    assertTrue(holographERC721.burned(tokenId1));
   }
 
-  // operator should succeed burning #1 SMPLR NFT
+  /// @notice operator should succeed burning #1 SMPLR NFT
   function testBurnOperator() public {
-    uint224 tokenId = 1;
+    _mint(deployer, tokenId1, tokenURI1);
 
-    vm.startPrank(deployer);
-    sampleERC721.mint(deployer, tokenId, "https://holograph.xyz/sample1.json");
-
-    assertEq(holographERC721.burned(tokenId), false);
-    assertEq(holographERC721.getApproved(tokenId), address(0));
+    assertEq(holographERC721.burned(tokenId1), false);
+    assertEq(holographERC721.getApproved(tokenId1), address(0));
     assertEq(holographERC721.isApprovedForAll(deployer, alice), false);
 
     vm.expectEmit(true, true, true, false);
     emit ApprovalForAll(deployer, alice, true);
 
+    vm.prank(deployer);
     holographERC721.setApprovalForAll(alice, true);
 
-    assertEq(holographERC721.getApproved(tokenId), address(0));
+    assertEq(holographERC721.getApproved(tokenId1), address(0));
     assertEq(holographERC721.isApprovedForAll(deployer, alice), true);
 
-    vm.stopPrank();
-
     vm.expectEmit(true, true, true, false);
-    emit Transfer(deployer, address(0), tokenId);
+    emit Transfer(deployer, address(0), tokenId1);
 
     vm.prank(alice);
-    holographERC721.burn(tokenId);
+    holographERC721.burn(tokenId1);
 
-    // should mark as burned #1 SMPLR NFT
-    assertTrue(holographERC721.burned(tokenId));
+    /// @notice should mark as burned #1 SMPLR NFT
+    assertTrue(holographERC721.burned(tokenId1));
     assertEq(holographERC721.isApprovedForAll(deployer, alice), true);
   }
 
-  // Ownership
+  /*
+   * Ownership
+   */
 
-  // holographERC721 owner should return deployer address
+  /// @notice holographERC721 owner should return deployer address
   function testOwner() public {
     assertEq(holographERC721.owner(), deployer);
   }
 
-  // deployer should return true for isOwner
+  /// @notice deployer should return true for isOwner
   function testIsOwner() public {
     vm.startPrank(deployer);
     assertTrue(sampleERC721.isOwner());
     assertTrue(SampleERC721(payable(address(holographERC721))).isOwner());
     vm.stopPrank();
 
-    // alice should return false for isOwner
+    /// @notice alice should return false for isOwner
     vm.prank(alice);
     assertFalse(sampleERC721.isOwner());
   }
 
-  // should return "HolographFactoryProxy" address
+  /// @notice should return "HolographFactoryProxy" address
   function testHolographer() public {
-    assertEq(holographERC721.getOwner(), Constants.getHolographFactoryProxy());
+    assertEq(holographERC721.getOwner(), holographFactoryProxyAddress);
   }
 
-  // deployer should fail transferring ownership
+  /// @notice deployer should fail transferring ownership
   function testTransferOwnership() public {
     vm.expectRevert("HOLOGRAPH: owner only function");
     holographERC721.setOwner(alice);
   }
 
-  // deployer should set owner to deployer
+  /// @notice deployer should set owner to deployer
+  function testSetOwner() public {
+    bytes memory data = abi.encodeWithSelector(bytes4(keccak256("setOwner(address)")), deployer);
+    vm.expectEmit(true, true, false, false);
+    emit OwnershipTransferred(address(admin), address(deployer));
+    vm.prank(deployer);
+    admin.adminCall(address(holographERC721), data);
+    assertEq(holographERC721.getOwner(), deployer);
+
+    /// @notice deployer should transfer ownership to "HolographFactoryProxy"
+    vm.expectEmit(true, true, false, false);
+    emit OwnershipTransferred(address(deployer), holographFactoryProxyAddress);
+    vm.prank(deployer);
+    holographERC721.setOwner(holographFactoryProxyAddress);
+    assertEq(holographERC721.getOwner(), holographFactoryProxyAddress);
+  }
+
+  /*
+   * Admi
+   */
+
+  /// @notice admin() should return "HolographFactoryProxy" address
+  function testAdmin() public {
+    assertEq(holographERC721.admin(), holographFactoryProxyAddress);
+  }
+
+  /// @notice getAdmin() should return "HolographFactoryProxy" address
+  function testGetAdmin() public {
+    assertEq(holographERC721.getAdmin(), holographFactoryProxyAddress);
+  }
+
+  /// @notice wallet1 should fail setting admin
+  function testSetAdmin() public {
+    vm.expectRevert("HOLOGRAPH: admin only function");
+    holographERC721.setAdmin(alice);
+  }
+
+  /// @notice deployer should succeed setting admin via "HolographFactoryProxy"
+  function testSetAdminViaProxy() public {
+    bytes memory data = abi.encodeWithSelector(bytes4(keccak256("setAdmin(address)")), deployer);
+    vm.startPrank(deployer);
+    admin.adminCall(address(holographERC721), data);
+    assertEq(holographERC721.admin(), address(deployer));
+    holographERC721.setAdmin(holographFactoryProxyAddress);
+    assertEq(holographERC721.admin(), holographFactoryProxyAddress);
+    vm.stopPrank();
+  }
 }
