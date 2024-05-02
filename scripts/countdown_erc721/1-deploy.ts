@@ -3,14 +3,8 @@ import { LedgerSigner } from '@anders-t/ethers-ledger';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { getNetworkByChainId } from '@holographxyz/networks';
 
-import {
-  deployHolographableContract,
-  destructSignature,
-  flattenObject,
-  getFactoryAddress,
-  getRegistryAddress,
-  parseBytes,
-} from './utils';
+import { deployHolographableContract } from './utils';
+import { destructSignature, flattenObject, getFactoryAddress, getRegistryAddress, parseBytes } from '../utils/utils';
 import { CountdownERC721Initializer, DeploymentConfig, DeploymentConfigSettings, Hex } from './types';
 import { countdownErc721ProxyBytecode } from './countdown-erc721.bytecodes';
 import { parsedEnv } from './env.validation';
