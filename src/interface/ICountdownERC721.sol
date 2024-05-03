@@ -96,6 +96,11 @@ interface ICountdownERC721 {
   /// @param id id of the minted nft with chain id prefix
   event NFTMinted(address indexed recipient, uint256 indexed tokenId, uint256 id);
 
+  /// @notice Event emitted when the contract URI is updated.
+  /// @param prevURI The previous contract URI
+  /// @param newURI The new contract URI
+  event ContractURIUpdated(string prevURI, string newURI);
+  
   /// @notice Getter for the contract description
   function DESCRIPTION() external view returns (string memory);
 

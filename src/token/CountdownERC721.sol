@@ -8,7 +8,7 @@ import {NonReentrant} from "../abstract/NonReentrant.sol";
 import {HolographERC721Interface} from "../interface/HolographERC721Interface.sol";
 import {HolographerInterface} from "../interface/HolographerInterface.sol";
 import {HolographInterface} from "../interface/HolographInterface.sol";
-import {ICustomERC721} from "../interface/ICustomERC721.sol";
+import {ICountdownERC721} from "../interface/ICountdownERC721.sol";
 import {IDropsPriceOracle} from "../drops/interface/IDropsPriceOracle.sol";
 import {HolographTreasuryInterface} from "../interface/HolographTreasuryInterface.sol";
 
@@ -29,7 +29,7 @@ import {NFTMetadataRenderer} from "../library/NFTMetadataRenderer.sol";
  *
  *       Do not enable or subscribe to any other events unless you modified the source code for them.
  */
-contract CountdownERC721 is NonReentrant, ERC721H, ICustomERC721 {
+contract CountdownERC721 is NonReentrant, ERC721H, ICountdownERC721 {
   using Strings for uint256;
 
   /* -------------------------------------------------------------------------- */
@@ -283,7 +283,7 @@ contract CountdownERC721 is NonReentrant, ERC721H, ICustomERC721 {
   }
 
   function supportsInterface(bytes4 interfaceId) external pure override returns (bool) {
-    return interfaceId == type(ICustomERC721).interfaceId;
+    return interfaceId == type(ICountdownERC721).interfaceId;
   }
 
   /* -------------------------------------------------------------------------- */
@@ -291,7 +291,7 @@ contract CountdownERC721 is NonReentrant, ERC721H, ICustomERC721 {
   /*                                   dynamic                                  */
   /* -------------------------------------------------------------------------- */
 
-  function owner() external view override(ERC721H, ICustomERC721) returns (address) {
+  function owner() external view override(ERC721H, ICountdownERC721) returns (address) {
     return _getOwner();
   }
 
