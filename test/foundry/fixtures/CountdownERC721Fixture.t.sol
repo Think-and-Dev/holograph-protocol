@@ -143,7 +143,7 @@ contract CountdownERC721Fixture is Test {
       });
   }
 
-  function _setUpPurchase() private {
+  function _setUpPurchase() internal {
     // We assume that the amount is at least one and less than or equal to the edition size given in modifier
     vm.prank(DEFAULT_OWNER_ADDRESS);
 

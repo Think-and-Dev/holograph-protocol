@@ -568,6 +568,8 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
         i++;
       }
     }
+
+    totalMintsByAddress[recipient] += quantity;
   }
 
   /**
