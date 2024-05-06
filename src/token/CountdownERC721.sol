@@ -33,18 +33,10 @@ import {NFTMetadataRenderer} from "../library/NFTMetadataRenderer.sol";
 contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC721 {
   using Strings for uint256;
 
-  // TODO: Update the base image URI
-  string private constant BASE_IMAGE_URI = "ipfs://QmNMraA4KcB1epgWfqN6krn2WUyT4qpaQzbEpMhXjBCNCW/nft.png";
-  string private constant BASE_ANIMATION_URI = ""; // Define if you have a specific animation URI
-
   /* -------------------------------------------------------------------------- */
   /*                             CONTRACT VARIABLES                             */
   /*        all variables, without custom storage slots, are defined here       */
   /* -------------------------------------------------------------------------- */
-
-  /// @notice Getter for the description
-  /// @dev This storage variable is set only once in the init and can be considered as immutable
-  string public DESCRIPTION;
 
   /// @notice Getter for the purchase start date
   /// @dev This storage variable is set only once in the init and can be considered as immutable
@@ -73,6 +65,44 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
   /// @dev This account tokens on behalf of those that purchase them offchain
   address public minter;
 
+  /* -------------------------------------------------------------------------- */
+  /*                             METADATA VARAIBLES                             */
+  /* -------------------------------------------------------------------------- */
+
+  /// @notice Getter for the description
+  /// @dev This storage variable is set only once in the init and can be considered as immutable
+  string public DESCRIPTION;
+
+  /// @notice Getter for the base image URI
+  /// @dev This storage variable is set during the init and can be updated by the owner
+  string public IMAGE_URI;
+
+  /// @notice Getter for the base animation URI
+  /// @dev This storage variable is set during the init and can be updated by the owner
+  string public ANIMATION_URI;
+
+  /// @notice Getter for the external url
+  /// @dev This storage variable is set during the init and can be updated by the owner
+  string public EXTERNAL_URL;
+
+  /// @notice Getter for the encrypted media URI
+  /// @dev This storage variable is set during the init and can be updated by the owner
+  string public ENCRYPTED_MEDIA_URL;
+
+  /// @notice Getter for the decryption key
+  /// @dev This storage variable is set during the init and can be updated by the owner
+  string public DECRYPTION_KEY;
+
+  /// @notice Getter for the hash
+  /// @dev This storage variable is set during the init and can be updated by the owner
+  string public HASH;
+
+  /// @notice Getter for the decrypted media URI
+  /// @dev This storage variable is set during the init and can be updated by the owner
+  string public DECRYPTED_MEDIA_URI;
+
+  /* -------------------------------------------------------------------------- */
+
   /**
    * @dev Address of the price oracle proxy
    */
@@ -82,11 +112,6 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
    * @dev Internal reference used for minting incremental token ids.
    */
   uint224 private _currentTokenId;
-
-  /**
-   * @dev Internal reference to the base URI
-   */
-  string private _baseURI;
 
   /// @dev Gas limit for transferring funds
   uint256 private constant STATIC_GAS_LIMIT = 210_000;
@@ -164,7 +189,9 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     // Decode the initializer payload to get the CountdownERC721Initializer struct
     CountdownERC721Initializer memory initializer = abi.decode(initPayload, (CountdownERC721Initializer));
 
-    _setupContractURI(initializer.contractURI);
+    /* -------------------------------------------------------------------------- */
+    /*                                    ADMIN                                   */
+    /* -------------------------------------------------------------------------- */
 
     // Setup the owner role
     _setOwner(initializer.initialOwner);
@@ -172,12 +199,9 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     // Setup the minter role
     _setMinter(initializer.initialMinter);
 
-    // Setup the contract URI
-
-    // Set the description
-    /// @dev The description is a human-readable description of the token.
-    ///      The description is used like an immutable.
-    DESCRIPTION = initializer.description;
+    /* -------------------------------------------------------------------------- */
+    /*                                SALES CONFIG                                */
+    /* -------------------------------------------------------------------------- */
 
     // Set the sale start date.
     /// @dev The sale start date represents the date when the public sale starts.
@@ -209,6 +233,32 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
 
     // Set the sales configuration
     salesConfig = initializer.salesConfiguration;
+
+    /* -------------------------------------------------------------------------- */
+    /*                                  METADATA                                  */
+    /* -------------------------------------------------------------------------- */
+
+    _setupContractURI(initializer.contractURI);
+
+    // Set the description
+    /// @dev The description is a human-readable description of the token.
+    ///      The description is used like an immutable.
+    DESCRIPTION = initializer.description;
+
+    // Set the image URI
+    /// @dev The image URI is the base URI for the images associated with the tokens.
+    IMAGE_URI = initializer.imageURI;
+
+    // Set the animation URI
+    /// @dev The animation URI is the base URI for the animations associated with the tokens.
+    ANIMATION_URI = initializer.animationURI;
+
+    // Set the external link
+    /// @dev The external link is the base URI for the external metadata associated with the tokens.
+    EXTERNAL_URL = initializer.externalLink;
+
+    // Set the hash
+    /// @dev The hash is a unique hash associated with the tokens.
 
     setStatus(1);
 
@@ -322,13 +372,13 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     MetadataParams memory params = MetadataParams({
       name: _name,
       description: DESCRIPTION,
-      imageURI: BASE_IMAGE_URI,
-      animationURI: BASE_ANIMATION_URI,
-      externalUrl: "https://your-nft-project.com", // This should be dynamically set or fetched
-      encryptedMediaUrl: "ar://encryptedMediaUriHere", // This should be dynamically set or fetched
-      decryptionKey: "decryptionKeyHere", // This should be dynamically set or fetched
-      hash: "uniqueNftHashHere", // This should be dynamically set or fetched
-      decryptedMediaUrl: "ar://decryptedMediaUriHere", // This should be dynamically set or fetched
+      imageURI: IMAGE_URI,
+      animationURI: ANIMATION_URI,
+      externalUrl: EXTERNAL_URL,
+      encryptedMediaUrl: ENCRYPTED_MEDIA_URL,
+      decryptionKey: DECRYPTION_KEY,
+      hash: HASH,
+      decryptedMediaUrl: DECRYPTED_MEDIA_URI,
       tokenOfEdition: tokenId,
       editionSize: 0 // Set or fetch dynamically if applicable
     });
@@ -418,6 +468,20 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
   /* -------------------------------------------------------------------------- */
 
   /**
+   * @dev Returns the metadata params for the contract
+   * @notice This only sets the subset of metadata params that are settable by the owner
+   */
+  function setMetadataParams(MetadataParams memory params) external onlyOwner {
+    IMAGE_URI = params.imageURI;
+    ANIMATION_URI = params.animationURI;
+    EXTERNAL_URL = params.externalUrl;
+    ENCRYPTED_MEDIA_URL = params.encryptedMediaUrl;
+    DECRYPTION_KEY = params.decryptionKey;
+    HASH = params.hash;
+    DECRYPTED_MEDIA_URI = params.decryptedMediaUrl;
+  }
+
+  /**
    * @notice Minter account mints tokens to a recipient that has paid offchain
    * @param recipient recipient to mint to
    * @param quantity quantity to mint
@@ -505,14 +569,6 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
   /*                             INTERNAL FUNCTIONS                             */
   /*                             non state changing                             */
   /* -------------------------------------------------------------------------- */
-
-  /**
-   * @dev Internal function to return the base URI stored in the contract.
-   * Used to construct the URI for each token.
-   */
-  function baseURI() internal view returns (string memory) {
-    return _baseURI;
-  }
 
   /// @notice Checks whether contract metadata can be set in the given execution context.
   function _canSetContractURI() internal view override returns (bool) {

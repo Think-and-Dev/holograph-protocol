@@ -70,12 +70,14 @@
     "@holographxyz/networks": "0.2.10",
     "@types/yargs": "^17.0.32",
     "chai-ethers": "^0.0.1",
+    "csv-parse": "^5.5.5",
     "ganache": "7.8.0",
     "hardhat-preprocessor": "^0.1.5",
     "path": "^0.12.7",
     "truffle-hdwallet-provider": "^1.0.17",
     "web3": "1.9.0",
-    "zksync-web3": "0.14.3"
+    "zksync-web3": "0.14.3",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@anders-t/ethers-ledger": "^1.0.4",

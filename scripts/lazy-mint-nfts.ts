@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { LedgerSigner } from '@anders-t/ethers-ledger';
+import { encryptDecrypt } from './custom_delay_reveal_erc721/utils';
 dotenv.config();
 
 async function main() {
@@ -79,35 +80,6 @@ async function main() {
   // Wait for the transaction to be mined
   const receipt = await tx.wait();
   console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
-}
-
-/**
- * Encrypts or decrypts the given URL using the provided key (Replicate the behavior of DelayedReveal.sol::encryptDecrypt function)
- * @param url The URL to encrypt or decrypt
- * @param hexKey The key to use for encryption or decryption
- * @returns The encrypted or decrypted URL
- */
-function encryptDecrypt(url: string, hexKey: string): string {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(url);
-  const key = ethers.utils.arrayify(hexKey);
-
-  const length = data.length;
-  const result = new Uint8Array(length);
-
-  for (let i = 0; i < length; i += 32) {
-    const segmentLength = Math.min(32, length - i);
-    const indexBytes = ethers.utils.zeroPad(ethers.utils.arrayify(i), 32); // Padding the index to 32 bytes
-    const keySegment = ethers.utils.concat([key, indexBytes]); // Concatenating key and padded index
-
-    const hash = ethers.utils.arrayify(ethers.utils.keccak256(keySegment));
-
-    for (let j = 0; j < segmentLength; j++) {
-      result[i + j] = data[i + j] ^ hash[j % 32];
-    }
-  }
-
-  return ethers.utils.hexlify(result);
 }
 
 main().catch((error) => {
