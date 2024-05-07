@@ -29,11 +29,18 @@ contract CountdownERC721Fixture is Test {
   /// @param amount amount that was withdrawn
   event FundsWithdrawn(address indexed withdrawnBy, address indexed withdrawnTo, uint256 amount);
 
-  /* -------------------------------- Addresses ------------------------------- */
-  address sourceContractAddress;
+  /* ----------------------------- Default values ----------------------------- */
   address public constant DEFAULT_OWNER_ADDRESS = address(0x1);
   address public constant DEFAULT_MINTER_ADDRESS = address(0x11);
   address payable public constant DEFAULT_FUNDS_RECIPIENT_ADDRESS = payable(address(0x2));
+  string public DEFAULT_DESCRIPTION = "Description of the token";
+  string public DEFAULT_IMAGE_URI = "https://example.com/image.png";
+  string public DEFAULT_EXTERNAL_LINK = "https://example.com/";
+  string public DEFAULT_ENCRYPTED_MEDIA_URI = "xxx";
+  string public DEFAULT_CONTRACT_URI = "https://example.com/metadata.json";
+
+  /* -------------------------------- Addresses ------------------------------- */
+  address sourceContractAddress;
   address payable public constant HOLOGRAPH_TREASURY_ADDRESS = payable(address(0x3));
   address payable constant TEST_ACCOUNT = payable(address(0x888));
   address public constant MEDIA_CONTRACT = address(0x666);
@@ -136,7 +143,7 @@ contract CountdownERC721Fixture is Test {
       });
   }
 
-  function _setUpPurchase() private {
+  function _setUpPurchase() internal {
     // We assume that the amount is at least one and less than or equal to the edition size given in modifier
     vm.prank(DEFAULT_OWNER_ADDRESS);
 
@@ -177,18 +184,18 @@ contract CountdownERC721Fixture is Test {
 
     // Create initializer
     CountdownERC721Initializer memory initializer = CountdownERC721Initializer({
-      description: "Description of the token",
-      imageURI: "ar://o8eyC27OuSZF0z-zIen5NTjJOKTzOQzKJzIe3F7Lmg0/1.png",
-      animationURI: "",
-      externalLink: "https://example.com",
-      encryptedMediaURI: "xxx",
+      description: DEFAULT_DESCRIPTION,
+      imageURI: DEFAULT_IMAGE_URI,
+      animationURI: DEFAULT_IMAGE_URI,
+      externalLink: DEFAULT_EXTERNAL_LINK,
+      encryptedMediaURI: DEFAULT_ENCRYPTED_MEDIA_URI,
       startDate: DEFAULT_START_DATE,
       initialMaxSupply: maxSupply,
       mintInterval: DEFAULT_MINT_INTERVAL,
       initialOwner: payable(DEFAULT_OWNER_ADDRESS),
       initialMinter: payable(DEFAULT_MINTER_ADDRESS),
       fundsRecipient: payable(DEFAULT_FUNDS_RECIPIENT_ADDRESS),
-      contractURI: "https://example.com/metadata.json",
+      contractURI: DEFAULT_CONTRACT_URI,
       salesConfiguration: saleConfig
     });
 

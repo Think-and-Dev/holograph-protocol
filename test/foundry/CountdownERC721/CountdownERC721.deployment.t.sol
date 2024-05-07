@@ -34,7 +34,7 @@ contract CountdownERC721DeploymentTest is CountdownERC721Fixture, ICustomERC721E
     assertEq(countdownErc721.MINT_INTERVAL(), DEFAULT_MINT_INTERVAL, "Wrong mint interval");
     assertEq(countdownErc721.INITIAL_MAX_SUPPLY(), DEFAULT_MAX_SUPPLY, "Wrong initial max supply");
     assertEq(
-      countdownErc721.END_DATE(),
+      countdownErc721.endDate(),
       DEFAULT_START_DATE + DEFAULT_MINT_INTERVAL * DEFAULT_MAX_SUPPLY,
       "Wrong initial end date"
     );
@@ -103,4 +103,22 @@ contract CountdownERC721DeploymentTest is CountdownERC721Fixture, ICustomERC721E
 
     countdownErc721.init(abi.encode(contractName, contractSymbol, contractBps, EVENT_CONFIG, skipInit, initCode));
   }
+
+  function test_DefaultValues() public  setupTestCountdownErc721(DEFAULT_MAX_SUPPLY) {
+    uint256 expectedEndDate = DEFAULT_START_DATE + DEFAULT_MAX_SUPPLY * DEFAULT_MINT_INTERVAL;
+
+    /* -------------------------- Not updatable values -------------------------- */
+    assertEq(countdownErc721.START_DATE(), DEFAULT_START_DATE, "Wrong start date");
+    assertEq(countdownErc721.INITIAL_MAX_SUPPLY(), DEFAULT_MAX_SUPPLY, "Wrong initial max supply");
+    assertEq(countdownErc721.MINT_INTERVAL(), DEFAULT_MINT_INTERVAL, "Wrong mint interval");
+    assertEq(countdownErc721.INITIAL_END_DATE(), expectedEndDate, "Wrong initial end date");
+    assertEq(countdownErc721.DESCRIPTION(), DEFAULT_DESCRIPTION, "Wrong description");
+
+    /* ---------------------------- Updatable values ---------------------------- */
+    assertEq(countdownErc721.fundsRecipient(), DEFAULT_FUNDS_RECIPIENT_ADDRESS, "Wrong funds recipient");
+    assertEq(countdownErc721.endDate(), expectedEndDate, "Wrong end date");
+    assertEq(countdownErc721.minter(), DEFAULT_MINTER_ADDRESS, "Wrong minter");
+    assertEq(countdownErc721.contractURI(), DEFAULT_CONTRACT_URI, "Wrong contract URI");
+  }
 }
+

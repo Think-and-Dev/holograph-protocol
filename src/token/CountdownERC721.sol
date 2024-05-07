@@ -52,14 +52,14 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
 
   /// @notice Getter for the mint interval
   /// @dev This storage variable is set only once in the init and can be considered as immutable
-  address payable FUNDS_RECIPIENT;
+  address payable public fundsRecipient;
 
   /// @notice Getter for the initial end date
   /// @dev This storage variable is set only once in the init and can be considered as immutable
   uint256 public INITIAL_END_DATE;
 
   /// @notice Getter for the end date
-  uint256 public END_DATE;
+  uint256 public endDate;
 
   /// @notice Getter for the minter
   /// @dev This account tokens on behalf of those that purchase them offchain
@@ -145,9 +145,9 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
    */
   modifier canMintTokens(uint256 quantity) {
     /// @dev Check if the countdown has completed
-    ///      END_DATE - MINT_INTERVAL * (quantity - 1) represent the time when the last mint will be allowed
-    ///      (quantity - 1) because we want to allow the last mint to be available until the END_DATE
-    if (block.timestamp >= END_DATE - MINT_INTERVAL * (quantity - 1)) {
+    ///      endDate - MINT_INTERVAL * (quantity - 1) represent the time when the last mint will be allowed
+    ///      (quantity - 1) because we want to allow the last mint to be available until the endDate
+    if (block.timestamp >= endDate - MINT_INTERVAL * (quantity - 1)) {
       revert Purchase_CountdownCompleted();
     }
 
@@ -214,20 +214,20 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     INITIAL_MAX_SUPPLY = initializer.initialMaxSupply;
 
     // Set the mint interval.
-    /// @dev The mint interval specifies the duration by which the END_DATE is decreased after each mint operation.
+    /// @dev The mint interval specifies the duration by which the endDate is decreased after each mint operation.
     ///      The sale start date is used like an immutable.
     MINT_INTERVAL = initializer.mintInterval;
 
     // Set the funds recipient
     /// @dev The funds recipient is the address that receives the funds from the token sales.
     ///      The funds recipient can be updated by the owner.
-    FUNDS_RECIPIENT = initializer.fundsRecipient;
+    fundsRecipient = initializer.fundsRecipient;
 
     // Set the end dates
-    /// @dev The END_DATE is calculated by adding the initial max supply times the mint interval to the start date.
-    ///      The END_DATE is decreased after each mint operation by the mint interval.
-    uint256 endDate = initializer.startDate + initializer.initialMaxSupply * initializer.mintInterval;
-    END_DATE = endDate;
+    /// @dev The endDate is calculated by adding the initial max supply times the mint interval to the start date.
+    ///      The endDate is decreased after each mint operation by the mint interval.
+    uint256 _endDate = initializer.startDate + initializer.initialMaxSupply * initializer.mintInterval;
+    endDate = _endDate;
     /// @dev The sale start date is used like an immutable.
     INITIAL_END_DATE = endDate;
 
@@ -423,7 +423,7 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     }
 
     // Reducing the end date by removing the quantity of mints times the mint interval
-    END_DATE = END_DATE - quantity * MINT_INTERVAL;
+    endDate = endDate - quantity * MINT_INTERVAL;
 
     uint256 remainder = msg.value - (salePrice * quantity);
 
@@ -508,7 +508,7 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     if (newRecipientAddress == address(0)) {
       revert("Funds Recipient cannot be 0 address");
     }
-    FUNDS_RECIPIENT = newRecipientAddress;
+    fundsRecipient = newRecipientAddress;
     emit FundsRecipientChanged(newRecipientAddress, msgSender());
   }
 
@@ -516,7 +516,7 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
    * @notice This withdraws native tokens from the contract to the contract owner.
    */
   function withdraw() external override nonReentrant {
-    if (FUNDS_RECIPIENT == address(0)) {
+    if (fundsRecipient == address(0)) {
       revert("Funds Recipient address not set");
     }
     address sender = msgSender();
@@ -525,18 +525,18 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     uint256 funds = address(this).balance;
 
     // Check if withdraw is allowed for sender
-    if (sender != FUNDS_RECIPIENT && sender != _getOwner()) {
+    if (sender != fundsRecipient && sender != _getOwner()) {
       revert Access_WithdrawNotAllowed();
     }
 
     // Payout recipient
-    (bool successFunds, ) = FUNDS_RECIPIENT.call{value: funds, gas: STATIC_GAS_LIMIT}("");
+    (bool successFunds, ) = fundsRecipient.call{value: funds, gas: STATIC_GAS_LIMIT}("");
     if (!successFunds) {
       revert Withdraw_FundsSendFailure();
     }
 
     // Emit event for indexing
-    emit FundsWithdrawn(sender, FUNDS_RECIPIENT, funds);
+    emit FundsWithdrawn(sender, fundsRecipient, funds);
   }
 
   /**
@@ -606,6 +606,8 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
         i++;
       }
     }
+
+    totalMintsByAddress[recipient] += quantity;
   }
 
   /**
