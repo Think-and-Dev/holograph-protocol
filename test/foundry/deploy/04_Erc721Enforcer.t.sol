@@ -44,11 +44,10 @@ contract Erc721Enforcer is Test {
 
   /// @notice Set up the testing environment by initializing all necessary contracts and accounts.
   function setUp() public {
-    uint256 localHostFork = vm.createFork(LOCALHOST_RPC_URL);
-    vm.selectFork(localHostFork);
+    vm.createSelectFork(LOCALHOST_RPC_URL);
 
     _setupAccounts();
-    _deployContracts();
+    _setupContracts();
   }
 
   /// @dev Initializes testing accounts.
@@ -60,7 +59,7 @@ contract Erc721Enforcer is Test {
   }
 
   /// @dev Deploys the contract instances used in the tests.
-  function _deployContracts() private {
+  function _setupContracts() private {
     holographERC721 = HolographERC721(payable(Constants.getSampleERC721()));
     sampleERC721 = SampleERC721(payable(Constants.getSampleERC721()));
     mockERC721Receiver = MockERC721Receiver(Constants.getMockERC721Receiver());
@@ -77,52 +76,62 @@ contract Erc721Enforcer is Test {
    * CHECK INTERFACES
    */
 
-  function testUntilDeployBalanceOf() public {
+  /// @notice Should support balanceOf interface
+  function testBalanceOfInterface() public {
     bytes4 selector = holographERC721.balanceOf.selector;
     assertTrue(holographERC721.supportsInterface(selector));
   }
 
-  function testUntilDeployOwnerOf() public {
+  /// @notice Should support ownerOf interface
+  function testOwnerOfInterface() public {
     bytes4 selector = holographERC721.ownerOf.selector;
     assertTrue(holographERC721.supportsInterface(selector));
   }
 
-  function testUntilDeploySafeTransferFrom() public {
+  /// @notice Should support safeTransferFrom interface
+  function testSafeTransferFromInterface() public {
     bytes4 selector = bytes4(keccak256("safeTransferFrom(address,address,uint256)"));
     assertTrue(holographERC721.supportsInterface(selector));
   }
 
-  function testUntilDeploySafeTransferFromWithBytes() public {
+  /// @notice Should support safeTransferFrom data interface
+  function testSafeTransferFromDataInterface() public {
     bytes4 selector = bytes4(keccak256("safeTransferFrom(address,address,uint256,bytes)"));
     assertTrue(holographERC721.supportsInterface(selector));
   }
 
-  function testUntilDeployTransferFrom() public {
+  /// @notice Should support transferFrom interface
+  function testTransferFromInterface() public {
     bytes4 selector = bytes4(keccak256("transferFrom(address,address,uint256)"));
     assertTrue(holographERC721.supportsInterface(selector));
   }
 
-  function testUntilDeployApprove() public {
+  /// @notice Should support approve interface
+  function testApproveInterface() public {
     bytes4 selector = holographERC721.approve.selector;
     assertTrue(holographERC721.supportsInterface(selector));
   }
 
-  function testUntilDeploySetApprovalForAll() public {
+  /// @notice Should support setApprovalForAll interface
+  function testSetApprovalForAllInterface() public {
     bytes4 selector = holographERC721.setApprovalForAll.selector;
     assertTrue(holographERC721.supportsInterface(selector));
   }
 
-  function testUntilDeployGetApproved() public {
+  /// @notice Should support getApproved interface
+  function testGetApprovedInterface() public {
     bytes4 selector = holographERC721.getApproved.selector;
     assertTrue(holographERC721.supportsInterface(selector));
   }
 
-  function testUntilDeployIsApprovedForAll() public {
+  /// @notice Should support isApprovedForAll interface
+  function testIsApprovedForAllInterface() public {
     bytes4 selector = holographERC721.isApprovedForAll.selector;
     assertTrue(holographERC721.supportsInterface(selector));
   }
 
-  function testUntilDeployInterfaceSupported() public {
+  /// @notice Should support ERC721 interface
+  function testInterfaceSupportedERC721() public {
     bytes4 computedId = bytes4(
       keccak256("balanceOf(address)") ^
         keccak256("ownerOf(uint256)") ^
@@ -141,22 +150,26 @@ contract Erc721Enforcer is Test {
    * ERC721Enumerable
    */
 
-  function testUntilDeployTotalSupply() public {
+  /// @notice Should support totalSupply interface
+  function testTotalSupplyInterface() public {
     bytes4 selector = holographERC721.totalSupply.selector;
     assertTrue(holographERC721.supportsInterface(selector));
   }
 
-  function testUntilDeployTokenByIndex() public {
+  /// @notice Should support tokenByIndex interface
+  function testTokenByIndexInterface() public {
     bytes4 selector = holographERC721.tokenByIndex.selector;
     assertTrue(holographERC721.supportsInterface(selector));
   }
 
-  function testUntilDeployTokenOfOwnerByIndex() public {
+  /// @notice Should support tokenOfOwnerByIndex interface
+  function testTokenOfOwnerByIndexInterface() public {
     bytes4 selector = holographERC721.tokenOfOwnerByIndex.selector;
     assertTrue(holographERC721.supportsInterface(selector));
   }
 
-  function testUntilDeployInterfaceSupportedEnumerable() public {
+  /// @notice Should support enumerable interface
+  function testInterfaceSupportedEnumerable() public {
     bytes4 computedId = bytes4(
       keccak256("totalSupply()") ^
         keccak256("tokenByIndex(uint256)") ^
@@ -169,22 +182,26 @@ contract Erc721Enforcer is Test {
    * ERC721Metadata
    */
 
-  function testUntilDeployName() public {
+  /// @notice Should support name interface
+  function testNameInterface() public {
     bytes4 selector = holographERC721.name.selector;
     assertTrue(holographERC721.supportsInterface(selector));
   }
 
-  function testUntilDeploySymbol() public {
+  /// @notice Should support symbol interface
+  function testSymbolInterface() public {
     bytes4 selector = holographERC721.symbol.selector;
     assertTrue(holographERC721.supportsInterface(selector));
   }
 
-  function testUntilDeployTokenURI() public {
+  /// @notice Should support tokenURI interface
+  function testTokenURIInterface() public {
     bytes4 selector = holographERC721.tokenURI.selector;
     assertTrue(holographERC721.supportsInterface(selector));
   }
 
-  function testUntilDeployInterfaceSupportedMetadata() public {
+  /// @notice Should support metadata interface
+  function testInterfaceSupportedMetadata() public {
     bytes4 computedId = bytes4(keccak256("name()") ^ keccak256("symbol()") ^ keccak256("tokenURI(uint256)"));
     assertTrue(holographERC721.supportsInterface(computedId));
   }
@@ -193,12 +210,14 @@ contract Erc721Enforcer is Test {
    * ERC721TokenReceiver
    */
 
-  function testUntilDeployOnERC721Received() public {
+  /// @notice Should support onERC721Received interface
+  function testOnERC721ReceivedInterface() public {
     bytes4 selector = holographERC721.onERC721Received.selector;
     assertTrue(holographERC721.supportsInterface(selector));
   }
 
-  function testUntilDeployInterfaceSupportedReceiver() public {
+  /// @notice Should support onERC721Received data interface
+  function testOnERC721ReceivedDataInterface() public {
     bytes4 computedId = bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
     assertTrue(holographERC721.supportsInterface(computedId));
   }
@@ -207,12 +226,14 @@ contract Erc721Enforcer is Test {
    * CollectionURI
    */
 
-  function testUntilDeployCollectionURI() public {
+  /// @notice Should support contractURI interface
+  function testContractURIInterface() public {
     bytes4 selector = holographERC721.contractURI.selector;
     assertTrue(holographERC721.supportsInterface(selector));
   }
 
-  function testUntilDeployInterfaceSupportedCollectionURI() public {
+  /// @notice Should support collectionURI interface
+  function testInterfaceSupportedCollectionURI() public {
     bytes4 computedId = bytes4(keccak256("contractURI()"));
     assertTrue(holographERC721.supportsInterface(computedId));
   }
@@ -221,6 +242,7 @@ contract Erc721Enforcer is Test {
    * Test Initializer
    */
 
+  /// @notice Should fail reinitializing HolographERC721
   function testReinitializationHolographer() public {
     bytes memory initData = abi.encodePacked(address(0));
     vm.expectRevert("HOLOGRAPHER: already initialized");
@@ -228,6 +250,7 @@ contract Erc721Enforcer is Test {
   }
 
   // TODO: dont have sampleErc721Enforcer
+  /// @notice Should fail reinitializing SampleERC721Enforcer
   function testReinitializationSample() public {
     vm.skip(true);
     bytes memory initData = abi.encode(
@@ -247,15 +270,18 @@ contract Erc721Enforcer is Test {
    * Test ERC721Metadata
    */
 
+  /// @notice Should return "Sample ERC721 Contract (localhost)" as name
   function testName() public {
     assertEq(holographERC721.name(), "Sample ERC721 Contract (localhost)");
   }
 
+  /// @notice Should return "SMPLR" as symbol
   function testSymbol() public {
     assertEq(holographERC721.symbol(), "SMPLR");
   }
 
   // TODO: find a way to autogenerate the base64 string
+  /// @notice Should return contract URI as base64 string
   function testContractURI() public {
     string
       memory expectedURI = "data:application/json;base64,eyJuYW1lIjoiU2FtcGxlIEVSQzcyMSBDb250cmFjdCAobG9jYWxob3N0KSIsImRlc2NyaXB0aW9uIjoiU2FtcGxlIEVSQzcyMSBDb250cmFjdCAobG9jYWxob3N0KSIsImltYWdlIjoiIiwiZXh0ZXJuYWxfbGluayI6IiIsInNlbGxlcl9mZWVfYmFzaXNfcG9pbnRzIjoxMDAwLCJmZWVfcmVjaXBpZW50IjoiMHg4NDZhZjRjODdmNWFmMWYzMDNlNWE1ZDIxNWQ4M2E2MTFiMDgwNjljIn0";
