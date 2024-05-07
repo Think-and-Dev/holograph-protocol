@@ -98,11 +98,6 @@ interface ICustomERC721 {
   /// @param id id of the minted nft with chain id prefix
   event NFTMinted(address indexed recipient, uint256 indexed tokenId, uint256 id);
 
-  /// @notice Event emitted when the ownership of the contract is transferred
-  /// @param previousOwner address of the previous owner
-  /// @param newOwner address of the new owner
-  event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-
   /// @notice Getter for the sale start date
   function START_DATE() external view returns (uint256);
 

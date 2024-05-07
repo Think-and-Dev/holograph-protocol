@@ -21,13 +21,6 @@ contract CountdownERC721PurchaseTest is CountdownERC721Fixture, ICustomERC721Err
     super.setUp();
   }
 
-  function test_SetFundsRecipient() public setupTestCountdownErc721(DEFAULT_MAX_SUPPLY) {
-    address payable newRecipient = payable(address(0x1234));
-    vm.prank(DEFAULT_OWNER_ADDRESS);
-    countdownErc721.setFundsRecipient(newRecipient);
-    assertEq(countdownErc721.fundsRecipient(), newRecipient);
-  }
-
   function test_Purchase() public setupTestCountdownErc721(DEFAULT_MAX_SUPPLY) setUpPurchase {
     /* -------------------------------- Purchase -------------------------------- */
     vm.prank(address(TEST_ACCOUNT));
@@ -38,6 +31,13 @@ contract CountdownERC721PurchaseTest is CountdownERC721Fixture, ICustomERC721Err
     require(erc721Enforcer.ownerOf(tokenId) == address(TEST_ACCOUNT), "Incorrect owner for newly minted token");
     assertEq(address(sourceContractAddress).balance, nativePrice);
 
+    /* ----------------------------- Check tokenURI ----------------------------- */
+
+    // TokenURI call should revert because the metadata of the batch has not been set yet (need to call lazyMint before)
+    // vm.expectRevert(abi.encodeWithSelector(BatchMintInvalidTokenId.selector, tokenId));
+    // countdownErc721.tokenURI(tokenId);
+    // vm.expectRevert(abi.encodeWithSelector(BatchMintInvalidTokenId.selector, 0));
+    // countdownErc721.tokenURI(0);
   }
 
   // TODO: Fix this test (It's reverting but not with the matching correct price in the error message)

@@ -226,14 +226,6 @@ contract HolographERC721 is Admin, Owner, HolographERC721Interface, Initializabl
   }
 
   /**
-   * @dev Use this modifier to lock public functions that should not be accesible to non-owners.
-   */
-  modifier onlyOwner() override {
-    require(isOwner(), "ROYALTIES: caller not an owner");
-    _;
-  }
-
-  /**
    * @dev Constructor is left empty and init is used instead
    */
   constructor() {}
@@ -1031,27 +1023,19 @@ contract HolographERC721 is Admin, Owner, HolographERC721Interface, Initializabl
   }
 
   function owner() public view override returns (address) {
-    return getOwner();
-  }
-
-  function setOwner(address ownerAddress) public virtual override onlyOwner {
-    // Update the owner of this contract
-    address previousOwner = getOwner();
     assembly {
-      sstore(_ownerSlot, ownerAddress)
+      calldatacopy(0, 0, calldatasize())
+      mstore(calldatasize(), caller())
+      let result := staticcall(gas(), sload(_sourceContractSlot), 0, add(calldatasize(), 0x20), 0, 0)
+      returndatacopy(0, 0, returndatasize())
+      switch result
+      case 0 {
+        revert(0, returndatasize())
+      }
+      default {
+        return(0, returndatasize())
+      }
     }
-    emit OwnershipTransferred(previousOwner, ownerAddress);
-  }
-
-  /**
-   * @notice Check if message sender is a legitimate owner of the smart contract
-   * @dev We check owner, admin, and identity for a more comprehensive coverage.
-   * @return Returns true is message sender is an owner.
-   */
-  function isOwner() private view returns (bool) {
-    return (msg.sender == getOwner() ||
-      msg.sender == getAdmin() ||
-      msg.sender == Owner(HolographerInterface(address(this)).getSourceContract()).owner());
   }
 
   function _holograph() private view returns (HolographInterface holograph) {

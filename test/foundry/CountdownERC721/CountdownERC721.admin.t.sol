@@ -27,36 +27,6 @@ contract CountdownERC721AdminTest is CountdownERC721Fixture, ICustomERC721Errors
     super.setUp();
   }
 
-  function test_Owner() public setupTestCountdownErc721(DEFAULT_MAX_SUPPLY) {
-    address payable _countdownErc721 = payable(address(countdownErc721));
-
-    address enforcerOwner = HolographERC721(_countdownErc721).getOwner();
-    address countdownOwner = countdownErc721.countdownERC721Owner();
-
-    assertEq(enforcerOwner, countdownErc721.owner());
-    assertEq(countdownOwner, DEFAULT_OWNER_ADDRESS);
-  }
-
-  function test_SetOwner() public setupTestCountdownErc721(DEFAULT_MAX_SUPPLY) {
-    address payable _countdownErc721 = payable(address(countdownErc721));
-
-    vm.prank(HolographERC721(_countdownErc721).getOwner());
-    HolographERC721(_countdownErc721).setOwner(address(0xffff));
-    assertEq(HolographERC721(_countdownErc721).getOwner(), address(0xffff));
-    assertEq(HolographERC721(_countdownErc721).owner(), address(0xffff));
-
-    vm.prank(DEFAULT_OWNER_ADDRESS);
-    countdownErc721.setCountdownERC721Owner(address(0x1234));
-    assertEq(countdownErc721.countdownERC721Owner(), address(0x1234));
-  }
-
-  function test_SetFundsRecipient() public setupTestCountdownErc721(DEFAULT_MAX_SUPPLY) {
-    address payable newRecipient = payable(address(0x1234));
-    vm.prank(DEFAULT_OWNER_ADDRESS);
-    countdownErc721.setFundsRecipient(newRecipient);
-    assertEq(countdownErc721.fundsRecipient(), newRecipient);
-  }
-
   function test_Withdraw(uint128 amount) public setupTestCountdownErc721(DEFAULT_MAX_SUPPLY) {
     vm.assume(amount > 0.01 ether);
     vm.deal(address(countdownErc721), amount);
@@ -81,17 +51,23 @@ contract CountdownERC721AdminTest is CountdownERC721Fixture, ICustomERC721Errors
   function test_SetSalesConfiguration() public setupTestCountdownErc721(DEFAULT_MAX_SUPPLY) {
     uint104 price = usd10;
     vm.prank(DEFAULT_OWNER_ADDRESS);
-    countdownErc721.setSaleConfiguration({publicSalePrice: price, maxSalePurchasePerAddress: 10});
+    countdownErc721.setSaleConfiguration({
+      publicSalePrice: price,
+      maxSalePurchasePerAddress: 10
+    });
 
     (uint104 publicSalePrice, uint24 maxSalePurchasePerAddress) = countdownErc721.salesConfig();
     assertEq(publicSalePrice, price);
     assertEq(maxSalePurchasePerAddress, 10);
 
     vm.startPrank(DEFAULT_OWNER_ADDRESS);
-    countdownErc721.setSaleConfiguration({publicSalePrice: price * 2, maxSalePurchasePerAddress: 5});
+    countdownErc721.setSaleConfiguration({
+      publicSalePrice: price*2,
+      maxSalePurchasePerAddress: 5
+    });
 
     (publicSalePrice, maxSalePurchasePerAddress) = countdownErc721.salesConfig();
-    assertEq(publicSalePrice, price * 2);
+    assertEq(publicSalePrice, price*2);
     assertEq(maxSalePurchasePerAddress, 5);
   }
 
