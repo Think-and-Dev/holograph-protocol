@@ -24,7 +24,7 @@ contract CountdownERC721CountdownTest is CountdownERC721Fixture, ICustomERC721Er
     assertEq(countdownErc721.MINT_INTERVAL(), DEFAULT_MINT_INTERVAL, "Wrong mint interval");
     assertEq(countdownErc721.INITIAL_MAX_SUPPLY(), DEFAULT_MAX_SUPPLY, "Wrong initial max supply");
     assertEq(
-      countdownErc721.END_DATE(),
+      countdownErc721.endDate(),
       DEFAULT_START_DATE + DEFAULT_MINT_INTERVAL * DEFAULT_MAX_SUPPLY,
       "Wrong initial end date"
     );
@@ -65,7 +65,7 @@ contract CountdownERC721CountdownTest is CountdownERC721Fixture, ICustomERC721Er
     countdownErc721.purchase{value: mintEthPrice}(1);
 
     assertEq(countdownErc721.totalMinted(), maxSupply, "Wrong total minted");
-    assertEq(countdownErc721.END_DATE(), start, "Wrong end date");
+    assertEq(countdownErc721.endDate(), start, "Wrong end date");
   }
 
   function test_purchaseCantExceedMaxSupply() public setupTestCountdownErc721(1000) setUpPurchase {
