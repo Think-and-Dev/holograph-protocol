@@ -51,7 +51,7 @@ contract CountdownERC721ViewsTest is CountdownERC721Fixture, ICustomERC721Errors
 
   function test_salesConfig() public setupTestCountdownErc721(DEFAULT_MAX_SUPPLY) {
     (uint104 publicSalePrice, uint24 maxSalePurchasePerAddress) = countdownErc721.salesConfig();
-    assertEq(publicSalePrice, 100_000_000, "Wrong public sale price");
+    assertEq(publicSalePrice, mintEthPrice, "Wrong public sale price");
     assertEq(maxSalePurchasePerAddress, 0, "Wrong max sale purchase per address");
 
     vm.prank(DEFAULT_OWNER_ADDRESS);
@@ -61,7 +61,7 @@ contract CountdownERC721ViewsTest is CountdownERC721Fixture, ICustomERC721Errors
     assertEq(publicSalePrice, 101010, "Wrong public sale price");
     assertEq(maxSalePurchasePerAddress, 101010, "Wrong max sale purchase per address");
   }
-  
+
   function test_ownerEnforcerLevel() public setupTestCountdownErc721(DEFAULT_MAX_SUPPLY) {
     address payable _countdownErc721 = payable(address(countdownErc721));
 
@@ -89,8 +89,8 @@ contract CountdownERC721ViewsTest is CountdownERC721Fixture, ICustomERC721Errors
   function test_totalMinted() public setupTestCountdownErc721(SMALL_MAX_SUPPLY) setUpPurchase {
     for (uint256 i = 0; i < SMALL_MAX_SUPPLY; i++) {
       vm.prank(address(TEST_ACCOUNT));
-      vm.deal(address(TEST_ACCOUNT), totalCost);
-      uint256 tokenId = countdownErc721.purchase{value: totalCost}(1);
+      vm.deal(address(TEST_ACCOUNT), mintEthPrice);
+      uint256 tokenId = countdownErc721.purchase{value: mintEthPrice}(1);
 
       assertEq(countdownErc721.totalMinted(), i + 1, "Wrong total minted");
     }
@@ -100,7 +100,7 @@ contract CountdownERC721ViewsTest is CountdownERC721Fixture, ICustomERC721Errors
     CustomERC721SaleDetails memory salesDetails = countdownErc721.saleDetails();
 
     assertEq(salesDetails.publicSaleActive, false, "Wrong public sale active");
-    assertEq(salesDetails.publicSalePrice, 100_000_000, "Wrong public sale price");
+    assertEq(salesDetails.publicSalePrice, mintEthPrice, "Wrong public sale price");
     assertEq(salesDetails.publicSaleStart, DEFAULT_START_DATE, "Wrong public sale start");
     assertEq(salesDetails.maxSalePurchasePerAddress, 0, "Wrong max sale purchase per address");
     assertEq(salesDetails.totalMinted, 0, "Wrong total minted");
@@ -110,7 +110,7 @@ contract CountdownERC721ViewsTest is CountdownERC721Fixture, ICustomERC721Errors
     salesDetails = countdownErc721.saleDetails();
 
     assertEq(salesDetails.publicSaleActive, true, "Wrong public sale active");
-    assertEq(salesDetails.publicSalePrice, 100_000_000, "Wrong public sale price");
+    assertEq(salesDetails.publicSalePrice, mintEthPrice, "Wrong public sale price");
     assertEq(salesDetails.publicSaleStart, DEFAULT_START_DATE, "Wrong public sale start");
     assertEq(salesDetails.maxSalePurchasePerAddress, 0, "Wrong max sale purchase per address");
     assertEq(salesDetails.totalMinted, 0, "Wrong total minted");
@@ -118,20 +118,20 @@ contract CountdownERC721ViewsTest is CountdownERC721Fixture, ICustomERC721Errors
   }
 
   function test_totalMintsByAddress() public setupTestCountdownErc721(SMALL_MAX_SUPPLY) setUpPurchase {
-    for (uint256 i = 0; i < SMALL_MAX_SUPPLY/2; i++) {
+    for (uint256 i = 0; i < SMALL_MAX_SUPPLY / 2; i++) {
       address account = address(uint160(uint256(keccak256(abi.encodePacked(i)))));
 
       vm.prank(account);
-      vm.deal(account, totalCost);
-      uint256 tokenId = countdownErc721.purchase{value: totalCost}(1);
+      vm.deal(account, mintEthPrice);
+      uint256 tokenId = countdownErc721.purchase{value: mintEthPrice}(1);
 
       assertEq(countdownErc721.totalMintsByAddress(account), 1, "Wrong total minted");
     }
 
-    for (uint256 i = 0; i < SMALL_MAX_SUPPLY/2; i++) {
+    for (uint256 i = 0; i < SMALL_MAX_SUPPLY / 2; i++) {
       vm.prank(TEST_ACCOUNT);
-      vm.deal(TEST_ACCOUNT, totalCost);
-      uint256 tokenId = countdownErc721.purchase{value: totalCost}(1);
+      vm.deal(TEST_ACCOUNT, mintEthPrice);
+      uint256 tokenId = countdownErc721.purchase{value: mintEthPrice}(1);
 
       assertEq(countdownErc721.totalMintsByAddress(TEST_ACCOUNT), i + 1, "Wrong total minted");
     }
