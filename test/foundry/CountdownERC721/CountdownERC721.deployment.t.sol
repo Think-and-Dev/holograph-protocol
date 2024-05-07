@@ -34,7 +34,7 @@ contract CountdownERC721DeploymentTest is CountdownERC721Fixture, ICustomERC721E
     assertEq(countdownErc721.MINT_INTERVAL(), DEFAULT_MINT_INTERVAL, "Wrong mint interval");
     assertEq(countdownErc721.INITIAL_MAX_SUPPLY(), DEFAULT_MAX_SUPPLY, "Wrong initial max supply");
     assertEq(
-      countdownErc721.END_DATE(),
+      countdownErc721.endDate(),
       DEFAULT_START_DATE + DEFAULT_MINT_INTERVAL * DEFAULT_MAX_SUPPLY,
       "Wrong initial end date"
     );

@@ -186,6 +186,7 @@ contract CountdownERC721Fixture is Test {
     CountdownERC721Initializer memory initializer = CountdownERC721Initializer({
       description: DEFAULT_DESCRIPTION,
       imageURI: DEFAULT_IMAGE_URI,
+      animationURI: DEFAULT_IMAGE_URI,
       externalLink: DEFAULT_EXTERNAL_LINK,
       encryptedMediaURI: DEFAULT_ENCRYPTED_MEDIA_URI,
       startDate: DEFAULT_START_DATE,

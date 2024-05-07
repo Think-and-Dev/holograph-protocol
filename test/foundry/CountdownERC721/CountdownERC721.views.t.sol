@@ -61,24 +61,14 @@ contract CountdownERC721ViewsTest is CountdownERC721Fixture, ICustomERC721Errors
     assertEq(publicSalePrice, 101010, "Wrong public sale price");
     assertEq(maxSalePurchasePerAddress, 101010, "Wrong max sale purchase per address");
   }
-
-  function test_countdownErc721Owner() public setupTestCountdownErc721(DEFAULT_MAX_SUPPLY) {
-    assertEq(countdownErc721.countdownERC721Owner(), DEFAULT_OWNER_ADDRESS, "Wrong owner");
-
-    vm.prank(DEFAULT_OWNER_ADDRESS);
-    countdownErc721.setCountdownERC721Owner(address(0xffffff));
-
-    assertEq(countdownErc721.countdownERC721Owner(), address(0xffffff), "Owner is wrong");
-  }
-
-  function test_owner() public setupTestCountdownErc721(DEFAULT_MAX_SUPPLY) {
+  
+  function test_ownerEnforcerLevel() public setupTestCountdownErc721(DEFAULT_MAX_SUPPLY) {
     address payable _countdownErc721 = payable(address(countdownErc721));
-    assertEq(countdownErc721.owner(), HolographERC721(_countdownErc721).owner(), "Wrong owner");
 
-    vm.prank(HolographERC721(_countdownErc721).owner());
+    vm.prank(HolographERC721(_countdownErc721).getOwner());
     HolographERC721(_countdownErc721).setOwner(address(0xffffff));
 
-    assertEq(HolographERC721(_countdownErc721).owner(), address(0xffffff));
+    assertEq(HolographERC721(_countdownErc721).getOwner(), address(0xffffff));
   }
 
   function test_isAdmin() public setupTestCountdownErc721(DEFAULT_MAX_SUPPLY) {
