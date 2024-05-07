@@ -34,8 +34,8 @@ contract CountdownERC721Fixture is Test {
   address public constant DEFAULT_MINTER_ADDRESS = address(0x11);
   address payable public constant DEFAULT_FUNDS_RECIPIENT_ADDRESS = payable(address(0x2));
   string public DEFAULT_DESCRIPTION = "Description of the token";
-  string public DEFAULT_IMAGE_URI = "https://example.com/image.png";
-  string public DEFAULT_EXTERNAL_LINK = "https://example.com/";
+  string public DEFAULT_IMAGE_URI = "ar://o8eyC27OuSZF0z-zIen5NTjJOKTzOQzKJzIe3F7Lmg0/1.png";
+  string public DEFAULT_EXTERNAL_LINK = "https://example.com";
   string public DEFAULT_ENCRYPTED_MEDIA_URI = "xxx";
   string public DEFAULT_CONTRACT_URI = "https://example.com/metadata.json";
 
@@ -186,7 +186,7 @@ contract CountdownERC721Fixture is Test {
     CountdownERC721Initializer memory initializer = CountdownERC721Initializer({
       description: DEFAULT_DESCRIPTION,
       imageURI: DEFAULT_IMAGE_URI,
-      animationURI: DEFAULT_IMAGE_URI,
+      animationURI: "",
       externalLink: DEFAULT_EXTERNAL_LINK,
       encryptedMediaURI: DEFAULT_ENCRYPTED_MEDIA_URI,
       startDate: DEFAULT_START_DATE,
