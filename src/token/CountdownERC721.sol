@@ -4,12 +4,11 @@ pragma solidity 0.8.13;
 
 import {ERC721H} from "../abstract/ERC721H.sol";
 import {NonReentrant} from "../abstract/NonReentrant.sol";
-import {ContractMetadata} from "../abstract/ContractMetadata.sol";
 
 import {HolographERC721Interface} from "../interface/HolographERC721Interface.sol";
 import {HolographerInterface} from "../interface/HolographerInterface.sol";
 import {HolographInterface} from "../interface/HolographInterface.sol";
-import {ICustomERC721} from "../interface/ICustomERC721.sol";
+import {ICountdownERC721} from "../interface/ICountdownERC721.sol";
 import {IDropsPriceOracle} from "../drops/interface/IDropsPriceOracle.sol";
 import {HolographTreasuryInterface} from "../interface/HolographTreasuryInterface.sol";
 
@@ -30,7 +29,7 @@ import {NFTMetadataRenderer} from "../library/NFTMetadataRenderer.sol";
  *
  *       Do not enable or subscribe to any other events unless you modified the source code for them.
  */
-contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC721 {
+contract CountdownERC721 is NonReentrant, ERC721H, ICountdownERC721 {
   using Strings for uint256;
 
   /* -------------------------------------------------------------------------- */
@@ -100,6 +99,9 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
   /// @notice Getter for the decrypted media URI
   /// @dev This storage variable is set during the init and can be updated by the owner
   string public DECRYPTED_MEDIA_URI;
+
+  /// @notice Getter for the contract URI
+  string public contractURI;
 
   /* -------------------------------------------------------------------------- */
 
@@ -238,8 +240,6 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     /*                                  METADATA                                  */
     /* -------------------------------------------------------------------------- */
 
-    _setupContractURI(initializer.contractURI);
-
     // Set the description
     /// @dev The description is a human-readable description of the token.
     ///      The description is used like an immutable.
@@ -256,6 +256,9 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     // Set the external link
     /// @dev The external link is the base URI for the external metadata associated with the tokens.
     EXTERNAL_URL = initializer.externalLink;
+
+    // Set the content URI
+    _setupContractURI(initializer.contractURI);
 
     // Set the hash
     /// @dev The hash is a unique hash associated with the tokens.
@@ -280,7 +283,7 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
   }
 
   function supportsInterface(bytes4 interfaceId) external pure override returns (bool) {
-    return interfaceId == type(ICustomERC721).interfaceId;
+    return interfaceId == type(ICountdownERC721).interfaceId;
   }
 
   /* -------------------------------------------------------------------------- */
@@ -288,7 +291,7 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
   /*                                   dynamic                                  */
   /* -------------------------------------------------------------------------- */
 
-  function owner() external view override(ERC721H, ICustomERC721) returns (address) {
+  function owner() external view override(ERC721H, ICountdownERC721) returns (address) {
     return _getOwner();
   }
 
@@ -383,13 +386,6 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
   }
 
   /**
-   * @notice Convert USD price to current price in native Ether units
-   */
-  function getNativePrice() external view returns (uint256) {
-    return _usdToWei(salesConfig.publicSalePrice);
-  }
-
-  /**
    * @notice Returns the name of the token through the holographer entrypoint
    */
   function name() external view returns (string memory) {
@@ -415,7 +411,7 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
   function purchase(
     uint256 quantity
   ) external payable nonReentrant canMintTokens(quantity) onlyPublicSaleActive returns (uint256) {
-    uint256 salePrice = _usdToWei(salesConfig.publicSalePrice);
+    uint256 salePrice = salesConfig.publicSalePrice;
 
     if (msg.value < (salePrice) * quantity) {
       // The error will display what the correct price should be
@@ -475,6 +471,22 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     DECRYPTION_KEY = params.decryptionKey;
     HASH = params.hash;
     DECRYPTED_MEDIA_URI = params.decryptedMediaUrl;
+  }
+
+  /**
+   *  @notice         Lets a contract admin set the URI for contract-level metadata.
+   *  @dev            Caller should be authorized to setup contractURI, e.g. contract admin.
+   *                  See {_canSetContractURI}.
+   *                  Emits {ContractURIUpdated Event}.
+   *
+   *  @param _uri     keccak256 hash of the role. e.g. keccak256("TRANSFER_ROLE")
+   */
+  function setContractURI(string memory _uri) external {
+    if (!_canSetContractURI()) {
+      revert Access_OnlyAdmin();
+    }
+
+    _setupContractURI(_uri);
   }
 
   /**
@@ -553,7 +565,7 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
   /* -------------------------------------------------------------------------- */
 
   /// @notice Checks whether contract metadata can be set in the given execution context.
-  function _canSetContractURI() internal view override returns (bool) {
+  function _canSetContractURI() internal view returns (bool) {
     return msgSender() == _getOwner();
   }
 
@@ -564,21 +576,18 @@ contract CountdownERC721 is NonReentrant, ContractMetadata, ERC721H, ICustomERC7
     return START_DATE <= block.timestamp;
   }
 
-  /**
-   * @dev Converts the given amount in USD to the equivalent amount in wei using the price oracle.
-   * @param amount The amount in USD to convert to wei
-   */
-  function _usdToWei(uint256 amount) internal view returns (uint256 weiAmount) {
-    if (amount == 0) {
-      return 0;
-    }
-    weiAmount = dropsPriceOracle.convertUsdToWei(amount);
-  }
-
   /* -------------------------------------------------------------------------- */
   /*                             INTERNAL FUNCTIONS                             */
   /*                               state changing                               */
   /* -------------------------------------------------------------------------- */
+
+  /// @dev Lets a contract admin set the URI for contract-level metadata.
+  function _setupContractURI(string memory _uri) internal {
+    string memory prevURI = contractURI;
+    contractURI = _uri;
+
+    emit ContractURIUpdated(prevURI, _uri);
+  }
 
   function _mintNFTs(address recipient, uint256 quantity) internal {
     HolographERC721Interface H721 = HolographERC721Interface(holographer());
