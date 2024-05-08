@@ -15,7 +15,7 @@ import {ICountdownERC721} from "src/interface/ICountdownERC721.sol";
 import {Strings} from "src/library/Strings.sol";
 import {NFTMetadataRenderer} from "src/library/NFTMetadataRenderer.sol";
 
-contract CountdownERC721PurchaseTest is CountdownERC721Fixture, ICustomERC721Errors {
+contract CountdownERC721TokenUriTest is CountdownERC721Fixture, ICustomERC721Errors {
   using Strings for uint256;
 
   constructor() {}
@@ -53,6 +53,9 @@ contract CountdownERC721PurchaseTest is CountdownERC721Fixture, ICustomERC721Err
     //     }
     // }
     string memory expectedTokenUri = NFTMetadataRenderer.encodeMetadataJSON(
+      '{"name": "Contract Name 115792089183396302089269705419353877679230723318366275194376439045705909141505", "description": "Description of the token", "external_url": "https://example.com", "image": "ar://o8eyC27OuSZF0z-zIen5NTjJOKTzOQzKJzIe3F7Lmg0/1.png", "encrypted_media_url": "", "decryption_key": "", "hash": "", "decrypted_media_url": "", "animation_url": "", "properties": {"number": 115792089183396302089269705419353877679230723318366275194376439045705909141505, "name": "Contract Name"}}'
+    );
+    expectedTokenUri = NFTMetadataRenderer.encodeMetadataJSON(
       '{"name": "Contract Name 115792089183396302089269705419353877679230723318366275194376439045705909141505", "description": "Description of the token", "external_url": "https://example.com", "image": "ar://o8eyC27OuSZF0z-zIen5NTjJOKTzOQzKJzIe3F7Lmg0/1.png", "encrypted_media_url": "", "decryption_key": "", "hash": "", "decrypted_media_url": "", "animation_url": "", "properties": {"number": 115792089183396302089269705419353877679230723318366275194376439045705909141505, "name": "Contract Name"}}'
     );
 
