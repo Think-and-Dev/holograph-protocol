@@ -27,7 +27,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const accounts = await hre.ethers.getSigners();
     let deployer: SignerWithAddress = accounts[0];
     let network = networks[hre.network.name];
-    const environment: Environment = getEnvironment();
+    const environment: Environment = Environment.develop;
     // const currentNetworkType: NetworkType = network.type;
     const definedOracleNames = {
       avalanche: 'Avalanche',

@@ -218,7 +218,7 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
 
   const network = networks[hre.networkName];
 
-  const environment: Environment = getEnvironment();
+  const environment: Environment = Environment.develop;
 
   let tokenAmount: BigNumber = BigNumber.from('100000000');
   let targetChain: BigNumber = BigNumber.from('0');

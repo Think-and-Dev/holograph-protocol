@@ -35,7 +35,7 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
   const web3 = new Web3();
   const salt = hre.deploymentSalt;
   const network = networks[hre.networkName];
-  const environment: Environment = getEnvironment();
+  const environment: Environment = Environment.develop;
   const chainId = '0x' + network.holographId.toString(16).padStart(8, '0');
 
   const holograph = await hre.ethers.getContract('Holograph', deployerAddress);
