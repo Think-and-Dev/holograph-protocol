@@ -29,6 +29,7 @@ import {HolographRoyalties} from "../../../src/enforcer/HolographRoyalties.sol";
 import {SampleERC20} from "../../../src/token/SampleERC20.sol";
 import {SampleERC721} from "../../../src/token/SampleERC721.sol";
 import {DeploymentConfig} from "../../../src/struct/DeploymentConfig.sol";
+import {Verification} from "../../../src/struct/Verification.sol";
 
 contract CrossChainConfiguration is Test {
     event BridgeableContractDeployed(address indexed _address, bytes32 _hash);
@@ -41,6 +42,7 @@ contract CrossChainConfiguration is Test {
     Holograph holograph;
     Holograph holographChain1;
     Holograph holographChain2;
+    SampleERC20 sampleERC20;
     SampleERC20 sampleERC20Chain1;
     SampleERC20 sampleERC20Chain2;    
     ERC20Mock erc20Mock;
@@ -51,6 +53,8 @@ contract CrossChainConfiguration is Test {
     HolographBridge holographBridge;
     HolographBridge holographBridgeChain1;
     HolographBridge holographBridgeChain2;
+    HolographBridge bridgeChain1;
+    HolographBridge bridgeChain2;
     HolographBridgeProxy holographBridgeProxy;
     HolographBridgeProxy holographBridgeProxyChain1;
     HolographBridgeProxy holographBridgeProxyChain2;
@@ -65,21 +69,27 @@ contract CrossChainConfiguration is Test {
     HolographFactory holographFactory;
     HolographFactory holographFactoryChain1;
     HolographFactory holographFactoryChain2;   
+    HolographFactory factoryChain1;
+    HolographFactory factoryChain2;   
     HolographFactoryProxy holographFactoryProxy;
     HolographFactoryProxy holographFactoryProxyChain1;
     HolographFactoryProxy holographFactoryProxyChain2; 
     HolographGenesis holographGenesis;
     HolographGenesis holographGenesisChain1;
     HolographGenesis holographGenesisChain2;
-
+    HolographRegistry holographRegistry;
     HolographRegistry holographRegistryChain1;
     HolographRegistry holographRegistryChain2;
-    HolographRegistry registry;
     HolographRegistry registryChain1;
-    HolographRegistry registryChain2;
+    HolographRegistry registryChain2;    
+    HolographRegistryProxy holographRegistryProxy;
     HolographRegistryProxy holographRegistryProxyChain1;
     HolographRegistryProxy holographRegistryProxyChain2;
+    hToken htoken;
     hToken hTokenChain1;
+    hToken hTokenChain2;
+    HolographOperator operatorChain1;
+    HolographOperator operatorChain2;
     HolographOperator holographOperator;
     HolographOperator holographOperatorChain1;
     HolographOperator holographOperatorChain2;
@@ -90,6 +100,8 @@ contract CrossChainConfiguration is Test {
     address public constant zeroAddress = address(0x0000000000000000000000000000000000000000);     
 
 function setUp() public {
+    cxipERC721ProxyChain1 = CxipERC721Proxy(payable(Constants.getCxipERC721Proxy())); 
+    cxipERC721ProxyChain2 = CxipERC721Proxy(payable(Constants.getCxipERC721Proxy_L2())); 
     erc20Mock = ERC20Mock(payable(Constants.getERC20Mock()));
     holograph = Holograph(payable(Constants.getHolograph()));
     holographBridge = HolographBridge(payable(Constants.getHolographBridge()));
@@ -101,46 +113,35 @@ function setUp() public {
     holographGenesis = HolographGenesis(payable(Constants.getHolographGenesis()));
     holographOperator = HolographOperator(payable(Constants.getHolographOperator()));
     holographOperatorProxy = HolographOperatorProxy(payable(Constants.getHolographOperatorProxy()));
-    //registry = HolographRegistry(payable(holograph.getRegistry()));
+    holographRegistry = HolographRegistry(payable(Constants.getHolographRegistry()));
+    holographRegistryProxy = HolographRegistryProxy(payable(Constants.getHolographRegistryProxy()));
+    sampleERC20 = SampleERC20(payable(Constants.getSampleERC20()));
+    htoken = hToken(payable(Constants.getHToken()));
+    //factory = HolographFactory(payable(holograph.getFactory()));
 
     localHostFork = vm.createFork(LOCALHOST_RPC_URL);
-    vm.selectFork(localHostFork);
-    //erc20MockChain1 = ERC20Mock(payable(Constants.getERC20Mock()));
-    holographChain1 = Holograph(payable(Constants.getHolograph()));
-    sampleERC20Chain1 = SampleERC20(payable(Constants.getSampleERC20()));
-    cxipERC721ProxyChain1 = CxipERC721Proxy(payable(Constants.getCxipERC721Proxy())); 
-    //holographBridgeChain1 = HolographBridge(payable(Constants.getHolographBridge()));
-    //holographBridgeProxyChain1 = HolographBridgeProxy(payable(Constants.getHolographBridgeProxy()));
-    // holographerChain1 = Holographer(payable(Constants.getHolographer()));
-    //holographERC20Chain1 = HolographERC20(payable(Constants.getSampleERC20())); /// VER EL ADDRESS...
-    //holographERC721Chain1 = HolographERC721(payable(Constants.getHolographERC721()));
-    //holographFactoryChain1 = HolographFactory(payable(Constants.getHolographFactory()));
-    //holographFactoryProxyChain1 = HolographFactoryProxy(payable(Constants.getHolographFactoryProxy()));
-    //holographGenesisChain1 = HolographGenesis(payable(Constants.getHolographGenesis()));
-    holographRegistryChain1 = HolographRegistry(payable(Constants.getHolographRegistry()));
-    holographRegistryProxyChain1 = HolographRegistryProxy(payable(Constants.getHolographRegistryProxy()));
-    hTokenChain1 = hToken(payable(Constants.getHToken()));
-    //holographOperatorChain1 = HolographOperator(payable(Constants.getHolographOperator()));
-    //holographOperatorProxyChain1 = HolographOperatorProxy(payable(Constants.getHolographOperatorProxy()));
-
     localHost2Fork = vm.createFork(LOCALHOST2_RPC_URL);
-    vm.selectFork(localHost2Fork);    
-    //erc20MockChain2 = ERC20Mock(payable(Constants.getERC20Mock()));
-    holographChain2 = Holograph(payable(Constants.getHolograph()));
-    sampleERC20Chain2 = SampleERC20(payable(Constants.getSampleERC20()));
-    cxipERC721ProxyChain2 = CxipERC721Proxy(payable(Constants.getCxipERC721Proxy_L2())); 
-    //holographBridgeChain2 = HolographBridge(payable(Constants.getHolographBridge()));
-    //holographBridgeProxyChain2 = HolographBridgeProxy(payable(Constants.getHolographBridgeProxy()));
-    // holographerChain2 = Holographer(payable(Constants.getHolographer_L2()));
-    //holographERC20Chain2 = HolographERC20(payable(Constants.getSampleERC20())); /// VER EL ADDRESS..
-    //holographERC721Chain2 = HolographERC721(payable(Constants.getHolographERC721()));
-    //holographFactoryChain2 = HolographFactory(payable(Constants.getHolographFactory()));
-    //holographFactoryProxyChain2 = HolographFactoryProxy(payable(Constants.getHolographFactoryProxy()));
-    holographRegistryChain2 = HolographRegistry(payable(Constants.getHolographRegistry()));
-    //holographGenesisChain2 = HolographGenesis(payable(Constants.getHolographGenesis()));
-    holographRegistryProxyChain2 = HolographRegistryProxy(payable(Constants.getHolographRegistryProxy()));
-    //holographOperatorChain2 = HolographOperator(payable(Constants.getHolographOperator()));
-    //holographOperatorProxyChain1 = HolographOperatorProxy(payable(Constants.getHolographOperatorProxy()));
+    
+    vm.selectFork(localHostFork);
+    registryChain1 = HolographRegistry(payable(holograph.getRegistry()));
+    vm.selectFork(localHost2Fork);
+    registryChain2 = HolographRegistry(payable(holograph.getRegistry()));
+
+
+    vm.selectFork(localHostFork);
+    factoryChain1 = HolographFactory(payable(holograph.getFactory()));
+    vm.selectFork(localHost2Fork);
+    factoryChain2 = HolographFactory(payable(holograph.getFactory()));
+
+    vm.selectFork(localHostFork);
+    operatorChain1 = HolographOperator(payable(holograph.getOperator()));
+    vm.selectFork(localHost2Fork);
+    operatorChain2 = HolographOperator(payable(holograph.getOperator()));
+
+    vm.selectFork(localHostFork);
+    bridgeChain1 = HolographBridge(payable(holograph.getBridge()));
+    vm.selectFork(localHost2Fork);
+    bridgeChain2 = HolographBridge(payable(holograph.getBridge()));
 }
 
 function testprueba() public {
@@ -149,7 +150,7 @@ function testprueba() public {
     vm.prank(deployer);
     sampleERC20Chain1.mint(alice, 1);
     //vm.selectFork(localHost2Fork);
-    assertEq(holographERC20Chain1.balanceOf(alice), 1);
+    assertEq(holographERC20.balanceOf(alice), 1);
 }
 
 /*
@@ -323,11 +324,8 @@ function testHolographOperatorProxyAddress() public {
  * @dev This test is considered as a validation test on the deployment performed.
  * Refers to the hardhat test with the description 'HolographRegistry'
  */
+// TODO Falla el test
 function testRegistryAddress() public {
-    vm.selectFork(localHostFork);
-    registryChain1 = registry;    
-    vm.selectFork(localHost2Fork); 
-    registryChain2 = registry; 
     assertEq(address(registryChain1), address(registryChain2));
 }
 
@@ -360,6 +358,10 @@ function testRegistryAddress() public {
  * Refers to the hardhat test with the description 'HolographRegistry'
  */
 function testHolographRegistryAddress() public {
+    vm.selectFork(localHostFork);
+    holographRegistryChain1 = holographRegistry;    
+    vm.selectFork(localHost2Fork); 
+    holographRegistryChain2 = holographRegistry; 
     assertEq(address(holographRegistryChain1), address(holographRegistryChain2));
 }
 
@@ -369,6 +371,10 @@ function testHolographRegistryAddress() public {
  * Refers to the hardhat test with the description 'HolographRegistryProxy'
  */
 function testHolographRegistryProxyAddress() public {
+    vm.selectFork(localHostFork);
+    holographRegistryProxyChain1 = holographRegistryProxy;    
+    vm.selectFork(localHost2Fork); 
+    holographRegistryProxyChain2 = holographRegistryProxy; 
     assertEq(address(holographRegistryProxyChain1), address(holographRegistryProxyChain2));
 }
 
@@ -402,12 +408,6 @@ struct ERC20ConfigParams {
     string salt;
 }
 
-struct Signature {
-    bytes32 r;
-    bytes32 s;
-    uint8 v;
-}
-
 function encodeInitParams(
     string memory tokenName,
     string memory tokenSymbol,
@@ -437,7 +437,7 @@ function generateErc20Config(ERC20ConfigParams memory params)
         returns (
             DeploymentConfig memory erc20Config,
             bytes32 erc20ConfigHash,
-            bytes memory erc20ConfigHashBytes
+            bytes32 erc20ConfigHashBytes
         )
     {
     bytes32 erc20Hash = keccak256(abi.encodePacked("HolographERC20")); //REVISAR
@@ -474,7 +474,8 @@ function generateErc20Config(ERC20ConfigParams memory params)
             )
         );
 
-    erc20ConfigHashBytes = abi.encodePacked(erc20ConfigHash);
+    bytes memory data = abi.encodePacked(erc20ConfigHash);
+    bytes32 erc20ConfigHashBytes = keccak256(data);
 
     return (erc20Config, erc20ConfigHash, erc20ConfigHashBytes);
     }
@@ -507,30 +508,31 @@ function testDeployChain1EquivalentOnChain2() public {
     eventConfig: "0x0000000000000000000000000000000000000000000000000000000000000000",
     initCodeParam: abi.encodePacked(
         keccak256(abi.encodePacked("hToken")), 
-        address(holographRegistryChain1), 
+        address(holographRegistry), 
         abi.encodePacked(deployer, uint16(0))
     ),
     salt: "0x0000000000000000000000000000000000000000000000000000000000001000"
     });
 
-    (DeploymentConfig memory erc20Config, bytes32 erc20ConfigHash, bytes memory erc20ConfigHashBytes) = generateErc20Config(params);
+    (DeploymentConfig memory erc20Config, bytes32 erc20ConfigHash, bytes32 erc20ConfigHashBytes) = generateErc20Config(params);
 
-    // Verify that the contract does not exist on chain2("Valor de la variable:", value);
-    assertEq(address(registry.getHolographedHashAddress(erc20ConfigHash)), zeroAddress);
-    
+    // Verify that the contract does not exist on chain2
+    assertEq(address(registryChain1.getHolographedHashAddress(erc20ConfigHash)), zeroAddress);
+    address hTokenErc20Address = address(registryChain2.getHolographedHashAddress(erc20ConfigHash));
+
     // Sign the ERC20 configuration
-    //(uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, erc20ConfigHashBytes);
-    // Signature memory signature = Signature({
-    //     r: r,
-    //     s: s,
-    //     v: v
-    // });
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, erc20ConfigHashBytes);
+    Verification memory signature = Verification({
+        r: r,
+        s: s,
+        v: v
+    });
 
     // Deploy the holographable contract on chain2
     vm.startPrank(deployer);
     vm.expectEmit(true, true, false, true);
-    emit BridgeableContractDeployed(address(0), erc20ConfigHash);
-    //holographFactoryChain2.deployHolographableContract(erc20Config, signature, deployer);
+    emit BridgeableContractDeployed(hTokenErc20Address, erc20ConfigHash);
+    holographFactoryChain2.deployHolographableContract(erc20Config, signature, deployer);
     vm.stopPrank();
     }
 
@@ -538,23 +540,29 @@ function testDeployChain1EquivalentOnChain2() public {
 VERIFY CHAIN CONFIGS
 */
 
-function testMessagingModuleNotZero() public {
-    assertNotEq(holographOperatorChain1.getMessagingModule(), zeroAddress);
-    assertNotEq(holographOperatorChain2.getMessagingModule(), zeroAddress);    
+function testMessagingModuleNotZeroChain1() public {
+    vm.selectFork(localHostFork);
+    assertNotEq(operatorChain1.getMessagingModule(), zeroAddress);
+}
+
+function testMessagingModuleNotZeroChain2() public {
+    vm.selectFork(localHost2Fork);
+    assertNotEq(operatorChain2.getMessagingModule(), zeroAddress);  
 }
 
 function testMessagingModuleSameAddress() public {
-    assertEq(holographOperatorChain1.getMessagingModule(), holographOperatorChain2.getMessagingModule());    
+    assertEq(operatorChain1.getMessagingModule(), operatorChain2.getMessagingModule());    
 }
 
-// TODO
-// function testChainId1() public {
-//     assertEq(holographChain1.getHolographChainId(),);
-// }
-// TODO
-// function testChainId1() public {
-//     assertEq(holographChain2.getHolographChainId(),);
-// }
+function testChainId1() public {
+    vm.selectFork(localHostFork);
+    assertEq(holograph.getHolographChainId(),4294967294);
+}
+
+function testChainId2() public {
+    vm.selectFork(localHostFork);
+    assertEq(holograph.getHolographChainId(),4294967294);
+}
 
 
 /*
@@ -562,13 +570,12 @@ GET GAS CALCULATIONS
 */
 
 // TODO falta definición de gasUsage
-    // mapping(string => uint256) public gasUsage;
+    mapping(string => uint256) public gasUsage;
 
-    // function testGasHTokenDeployChain1OnChain2() public {
-    //     gasUsage["hToken deploy chain1 on chain2"] = 0;
-    //     string memory name = "hToken deploy chain1 on chain2";
-    //     //console.log("          ", name,": ", gasUsage[name].toString());
-    //     assert(gasUsage[name] != 0);
-    // }
-    
+    function testGasHTokenDeployChain1OnChain2() public {
+        //gasUsage["hToken deploy chain1 on chain2"] = 0;
+        string memory name = "hToken deploy chain1 on chain2";
+        //console.log(name,": ", gasUsage[name].toString());
+        assert(gasUsage[name] != 0);
+    }    
 }
