@@ -41,7 +41,7 @@ library Constants {
   }
 
   function getHolographOperator() internal pure returns (address) {
-    return address(0x0d173B3F4Da8e50333734F36E40c5f475874A7b3);
+    return address(0x443d6F2051716473e0849fb475e19f09ed488404);
   }
 
   function getHolographOperatorProxy() internal pure returns (address) {
@@ -109,7 +109,7 @@ library Constants {
   }
 
   function getHToken() internal pure returns (address) {
-    return address(0x0533A3bfB526Af481FEA67BDC6dF1E09e91084ec);
+    return address(0xEe7804e943659DB09338718F0B4123117A085109);
   }
 
   function getMockERC721Receiver() internal pure returns (address) {
