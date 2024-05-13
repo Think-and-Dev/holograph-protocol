@@ -29,6 +29,8 @@ import {HolographRoyalties} from "../../../src/enforcer/HolographRoyalties.sol";
 import {SampleERC20} from "../../../src/token/SampleERC20.sol";
 import {SampleERC721} from "../../../src/token/SampleERC721.sol";
 import {DeploymentConfig} from "../../../src/struct/DeploymentConfig.sol";
+import {HolographDropERC721} from "../../../src/drops/token/HolographDropERC721.sol" ;
+import {HolographDropERC721V2} from "../../../src/drops/token/HolographDropERC721V2.sol" ;
 import {Verification} from "../../../src/struct/Verification.sol";
 
 contract CrossChainConfiguration is Test {
@@ -132,6 +134,13 @@ contract CrossChainConfiguration is Test {
     HolographERC721 cxipErc721Enforcer;
     HolographERC721 cxipErc721EnforcerChain1;
     HolographERC721 cxipErc721EnforcerChain2;
+    HolographDropERC721 holographDropERC721;
+    HolographDropERC721 holographDropERC721Chain1;
+    HolographDropERC721 holographDropERC721Chain2;
+    HolographDropERC721V2 holographDropERC721V2;
+    HolographDropERC721V2 holographDropERC721V2Chain1;
+    HolographDropERC721V2 holographDropERC721V2Chain2;
+
 
     address public constant zeroAddress = address(0x0000000000000000000000000000000000000000);     
 
@@ -164,6 +173,8 @@ function setUp() public {
     hTokenEnforcer = HolographERC20(payable(Constants.getHolographERC20()));
     sampleErc20Enforcer = HolographERC20(payable(Constants.getHolographERC20()));
     cxipErc721Enforcer = HolographERC721(payable(Constants.getHolographERC721()));
+    holographDropERC721 = HolographDropERC721(payable(Constants.getHolographDropERC721()));
+    holographDropERC721V2 = HolographDropERC721V2(payable(Constants.getHolographDropERC721V2()));
 
     localHostFork = vm.createFork(LOCALHOST_RPC_URL);
     localHost2Fork = vm.createFork(LOCALHOST2_RPC_URL);
@@ -606,6 +617,29 @@ function testCxipErc721EnforcerAddress() public {
     assertEq(address(cxipErc721EnforcerChain1), address(cxipErc721EnforcerChain2));
 }
 
+/**
+ * @notice This test checks if the addresses of the `'holographDropERC721` contracts deployed in chain1 and chain2 are the same.
+ * @dev This test is considered as a validation test on the deployment performed.
+ */
+function testHolographDropERC721Address() public {
+    vm.selectFork(localHostFork);
+    holographDropERC721Chain1 = holographDropERC721;    
+    vm.selectFork(localHost2Fork); 
+    holographDropERC721Chain2 = holographDropERC721; 
+    assertEq(address(holographDropERC721Chain1), address(holographDropERC721Chain2));
+}
+
+/**
+ * @notice This test checks if the addresses of the `'holographDropERC721V2` contracts deployed in chain1 and chain2 are the same.
+ * @dev This test is considered as a validation test on the deployment performed.
+ */
+function testHolographDropERC721V2Address() public {
+    vm.selectFork(localHostFork);
+    holographDropERC721V2Chain1 = holographDropERC721V2;    
+    vm.selectFork(localHost2Fork); 
+    holographDropERC721V2Chain2 = holographDropERC721V2; 
+    assertEq(address(holographDropERC721V2Chain1), address(holographDropERC721V2Chain2));
+}
 /*
 DEPLOY CROSS-CHAIN CONTRACTS
 */
@@ -670,6 +704,7 @@ function generateErc20Config(ERC20ConfigParams memory params)
     {
     bytes32 erc20Hash = keccak256(abi.encodePacked("HolographERC20")); //REVISAR
     uint32 chainId = uint32(block.chainid);
+    console.logBytes32(erc20Hash);
     bytes memory byteCode = vm.getCode(params.contractName);
     bytes memory initCode = encodeInitParams(
         params.tokenName,
@@ -708,7 +743,7 @@ function generateErc20Config(ERC20ConfigParams memory params)
     return (erc20Config, erc20ConfigHash, erc20ConfigHashBytes);
     }
 
-// function testDeployChain1EquivalentOnChain2() public {
+// function testDeployHTokenChain1EquivalentOnChain2() public {
 //     ERC20ConfigParams memory params = ERC20ConfigParams({
 //     network: "Localhost",
 //     deployer: deployer,
@@ -723,7 +758,7 @@ function generateErc20Config(ERC20ConfigParams memory params)
 //     salt: "0x0000000000000000000000000000000000000000000000000000000000001000"
 // });
 
-function testDeployChain1EquivalentOnChain2() public {
+function testDeployHTokenChain1EquivalentOnChain2() public {
     ERC20ConfigParams memory params = ERC20ConfigParams({
     network: "Localhost",
     deployer: deployer,
@@ -762,6 +797,50 @@ function testDeployChain1EquivalentOnChain2() public {
     emit BridgeableContractDeployed(hTokenErc20Address, erc20ConfigHash);
     holographFactoryChain2.deployHolographableContract(erc20Config, signature, deployer);
     vm.stopPrank();
+    }
+
+function testDeployHTokenChain2EquivalentOnChain1() public {
+    vm.skip(true);
+    }
+
+function testDeploySampleErc20Chain1EquivalentOnChain2() public {
+    vm.skip(true);
+    }
+
+function testDeploySampleErc20Chain2EquivalentOnChain1() public {
+    vm.skip(true);
+    }
+
+function testDeploySampleErc721Chain1EquivalentOnChain2() public {
+    vm.skip(true);
+    }
+
+function testDeploySampleErc721Chain2EquivalentOnChain1() public {
+    vm.skip(true);
+    }
+
+function testDeployCxipERC721ProxyChain1EquivalentOnChain2() public {
+    vm.skip(true);
+    }
+
+function testDeployCxipERC721ProxyChain2EquivalentOnChain1() public {
+    vm.skip(true);
+    }
+
+function testDeployHolographDropERC721Chain1EquivalentOnChain2() public {
+    vm.skip(true);
+    }
+
+function testDeployHolographDropERC721Chain2EquivalentOnChain1() public {
+    vm.skip(true);
+    }
+
+function testDeployHolographDropERC721V2Chain1EquivalentOnChain2() public {
+    vm.skip(true);
+    }
+
+function testDeployHolographDropERC721V2Chain2EquivalentOnChain1() public {
+    vm.skip(true);
     }
 
 /*
@@ -815,107 +894,4 @@ function testChainId2() public {
     assertEq(holograph.getHolographChainId(),4294967294);
 }
 
-
-/*
-GET GAS CALCULATIONS
-*/
-
-// TODO falta definición de gasUsage
-    mapping(string => uint256) public gasUsage;
-
-/**
- * @notice Tests the gas usage for deploying an hToken contract from Chain1 to Chain2
- * @dev This function retrieves the gas usage for the specified deployment and asserts that it is not zero.
- * Refers to the hardhat test with the description 'hToken deploy chain1 on chain2'
- */
-    function testGasHTokenDeployChain1OnChain2() public {
-        vm.skip(true);
-        string memory name = "hToken deploy chain1 on chain2";
-        console.log(name,": ", gasUsage[name]);
-        assert(gasUsage[name] != 0);
-    }    
-
-/**
- * @notice Tests the gas usage for deploying an hToken contract from Chain2 to Chain1
- * @dev This function retrieves the gas usage for the specified deployment and asserts that it is not zero.
- * Refers to the hardhat test with the description 'hToken deploy chain2 on chain1'
- */
-    function testGasHTokenDeployChain2OnChain1() public {
-        vm.skip(true);
-        string memory name = "hToken deploy chain2 on chain1";
-        console.log(name,": ", gasUsage[name]);
-        assert(gasUsage[name] != 0);
-    }    
-
-/**
- * @notice Tests the gas usage for deploying a SampleERC20 contract from Chain1 to Chain2
- * @dev This function retrieves the gas usage for the specified deployment and asserts that it is not zero.
- * Refers to the hardhat test with the description 'SampleERC20 deploy chain1 on chain2'
- */
-    function testGasSampleErc20DeployChain1OnChain2() public {
-        vm.skip(true);
-        string memory name = "SampleERC20 deploy chain1 on chain2";
-        console.log(name,": ", gasUsage[name]);
-        assert(gasUsage[name] != 0);
-    }    
-
-/**
- * @notice Tests the gas usage for deploying a SampleERC20 contract from Chain2 to Chain1
- * @dev This function retrieves the gas usage for the specified deployment and asserts that it is not zero.
- * Refers to the hardhat test with the description 'SampleERC20 deploy chain2 on chain1'
- */
-    function testGasSampleErc20DeployChain2OnChain1() public {
-        vm.skip(true);
-        string memory name = "SampleERC20 deploy chain2 on chain1";
-        console.log(name,": ", gasUsage[name]);
-        assert(gasUsage[name] != 0);
-    }    
-
-/**
- * @notice Tests the gas usage for deploying a SampleERC721 contract from Chain1 to Chain2
- * @dev This function retrieves the gas usage for the specified deployment and asserts that it is not zero.
- * Refers to the hardhat test with the description 'SampleERC721 deploy chain1 on chain2'
- */
-    function testGasSampleErc721DeployChain1OnChain2() public {
-        vm.skip(true);
-        string memory name = "SampleERC721 deploy chain1 on chain2";
-        console.log(name,": ", gasUsage[name]);
-        assert(gasUsage[name] != 0);
-    }    
-
-/**
- * @notice Tests the gas usage for deploying a SampleERC721 contract from Chain2 to Chain1
- * @dev This function retrieves the gas usage for the specified deployment and asserts that it is not zero.
- * Refers to the hardhat test with the description 'SampleERC721 deploy chain2 on chain1'
- */
-    function testGasSampleErc721DeployChain2OnChain1() public {
-        vm.skip(true);
-        string memory name = "SampleERC721 deploy chain2 on chain1";
-        console.log(name,": ", gasUsage[name]);
-        assert(gasUsage[name] != 0);
-    }    
-
-/**
- * @notice Tests the gas usage for deploying a CxipERC721 contract from Chain1 to Chain2
- * @dev This function retrieves the gas usage for the specified deployment and asserts that it is not zero.
- * Refers to the hardhat test with the description 'CxipERC721 deploy chain1 on chain2'
- */
-    function testGasCxipErc721DeployChain1OnChain2() public {
-        vm.skip(true);
-        string memory name = "CxipERC721 deploy chain1 on chain2";
-        console.log(name,": ", gasUsage[name]);
-        assert(gasUsage[name] != 0);
-    }    
-
-/**
- * @notice Tests the gas usage for deploying a CxipERC721 contract from Chain2 to Chain1
- * @dev This function retrieves the gas usage for the specified deployment and asserts that it is not zero.
- * Refers to the hardhat test with the description 'CxipERC721 deploy chain2 on chain1'
- */
-    function testGasCxipErc721DeployChain2OnChain1() public {
-        vm.skip(true);
-        string memory name = "CxipERC721 deploy chain2 on chain1";
-        console.log(name,": ", gasUsage[name]);
-        assert(gasUsage[name] != 0);
-    }    
 }
