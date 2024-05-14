@@ -105,7 +105,7 @@ library Constants {
   }
 
   function getERC20Mock() internal pure returns (address) {
-    return address(0x6eF2a267742D2EdA91cE4f3D875a91c599e5e079);
+    return address(0x5a34f1eD352232BE5d68F195b2A2285a11660740);
   }
 
   function getHToken() internal pure returns (address) {
@@ -113,7 +113,7 @@ library Constants {
   }
 
   function getMockERC721Receiver() internal pure returns (address) {
-    return address(0x01b03bC53D35925930Accb84345eA839b6c77dCF);
+    return address(0x60E958822604C6F85d1b23C08B915Ac8C784C59a);
   }
 
   function getSampleERC20() internal pure returns (address) {
