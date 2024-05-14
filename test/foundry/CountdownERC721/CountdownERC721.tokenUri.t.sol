@@ -67,10 +67,9 @@ contract CountdownERC721TokenUriTest is CountdownERC721Fixture, ICustomERC721Err
       tokenUriLength := mload(base64TokenUri)
       // Token uri data pointer (adding 0x20 to skip the length of the bytes array)
       tokenUriDataPtr := add(add(base64TokenUri, 0x20), 29)
-      // Calculate the pointer of the memory to write 
+      // Calculate the pointer of the memory to write
       // => rawBase64TokenUri + 0x20 to skip the length of the bytes array
       let resultData := add(rawBase64TokenUri, 0x20)
-
 
       // Copy the data from the input string to the result string, starting from the 30th character
       for {
@@ -81,14 +80,11 @@ contract CountdownERC721TokenUriTest is CountdownERC721Fixture, ICustomERC721Err
         // Write the byte from the token uri data to the result data
         mstore8(
           // Location to write the byte to
-          add(resultData, i), 
+          add(resultData, i),
           // Load the 1st byte from the token uri data loaded from memory
           // => Since the mload function loads 32 bytes and mstore8 writes the last byte of the value passed to it,
           //    We need to fetch the fist byte using the function `byte`, which returns the byte at the given index
-          byte(
-            0, 
-            mload(add(tokenUriDataPtr, i))
-          )
+          byte(0, mload(add(tokenUriDataPtr, i)))
         )
       }
 
