@@ -631,7 +631,7 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
 
   const hologrpahLegacyErc721Hash =
     '0x' + web3.utils.asciiToHex('HolographLegacyERC721').substring(2).padStart(64, '0');
-  console.log(`cxipErc721Hash: ${hologrpahLegacyErc721Hash}`);
+  console.log(`holographLegacyErc721Hash: ${hologrpahLegacyErc721Hash}`);
   if ((await holographRegistry.getContractTypeAddress(hologrpahLegacyErc721Hash)) !== futureHolographLegacy721Address) {
     const holographLegacyErc721Tx = await MultisigAwareTx(
       hre,
@@ -656,7 +656,9 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
     console.log('Transaction hash:', holographLegacyErc721Tx.hash);
     await holographLegacyErc721Tx.wait();
     console.log(
-      `Registered "CxipERC721" to: ${await holographRegistry.getContractTypeAddress(hologrpahLegacyErc721Hash)}`
+      `Registered "HolographLegacyERC721" to: ${await holographRegistry.getContractTypeAddress(
+        hologrpahLegacyErc721Hash
+      )}`
     );
   } else {
     console.log('"HolographLegacyERC721" is already registered');
