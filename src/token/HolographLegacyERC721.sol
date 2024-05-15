@@ -62,10 +62,7 @@ contract HolographLegacyERC721 is ERC721H {
    * @return string The URI.
    */
   function tokenURI(uint256 _tokenId) external view onlyHolographer returns (string memory) {
-    TokenUriType uriType = _tokenUriType[_tokenId];
-    if (uriType == TokenUriType.UNDEFINED) {
-      uriType = _uriType;
-    }
+    TokenUriType uriType = _getEffectiveUriType(_tokenId);
     return
       string(
         abi.encodePacked(
@@ -77,6 +74,13 @@ contract HolographLegacyERC721 is ERC721H {
       );
   }
 
+  /**
+   * @notice Mints a new token with a given URI.
+   * @dev Only callable by the Holographer and the owner.
+   * @param tokenId The ID of the token to be minted.
+   * @param uriType The type of the URI for the token.
+   * @param tokenUri The URI of the token.
+   */
   function mint(uint224 tokenId, TokenUriType uriType, string calldata tokenUri) external onlyHolographer onlyOwner {
     HolographERC721Interface H721 = HolographERC721Interface(holographer());
     uint256 chainPrepend = H721.sourceGetChainPrepend();
@@ -98,6 +102,13 @@ contract HolographLegacyERC721 is ERC721H {
     _tokenURIs[id][uriType] = tokenUri;
   }
 
+  /**
+   * @notice Handles the bridging in of a token.
+   * @dev Only callable by the Holographer.
+   * @param _tokenId The ID of the token being bridged in.
+   * @param _data The data containing the URI type and URI of the token.
+   * @return bool indicating the success of the operation.
+   */
   function bridgeIn(
     uint32 /* _chainId*/,
     address /* _from*/,
@@ -111,25 +122,41 @@ contract HolographLegacyERC721 is ERC721H {
     return true;
   }
 
+  /**
+   * @notice Handles the bridging out of a token.
+   * @dev Only callable by the Holographer.
+   * @param _tokenId The ID of the token being bridged out.
+   * @return _data The data containing the URI type and URI of the token.
+   */
   function bridgeOut(
     uint32 /* _chainId*/,
     address /* _from*/,
     address /* _to*/,
     uint256 _tokenId
   ) external view onlyHolographer returns (bytes memory _data) {
-    TokenUriType uriType = _tokenUriType[_tokenId];
-    if (uriType == TokenUriType.UNDEFINED) {
-      uriType = _uriType;
-    }
+    TokenUriType uriType = _getEffectiveUriType(_tokenId);
     _data = abi.encode(uriType, _tokenURIs[_tokenId][uriType]);
   }
 
+  /**
+   * @notice Handles the after burn logic for a token.
+   * @dev Only callable by the Holographer.
+   * @param _tokenId The ID of the token that was burned.
+   * @return bool indicating the success of the operation.
+   */
   function afterBurn(address /* _owner*/, uint256 _tokenId) external onlyHolographer returns (bool) {
-    TokenUriType uriType = _tokenUriType[_tokenId];
-    if (uriType == TokenUriType.UNDEFINED) {
-      uriType = _uriType;
-    }
+    TokenUriType uriType = _getEffectiveUriType(_tokenId);
     delete _tokenURIs[_tokenId][uriType];
     return true;
+  }
+
+  /**
+   * @notice Retrieves the effective URI type of a token.
+   * @param _tokenId The ID of the token.
+   * @return uriType The effective URI type of the token.
+   */
+  function _getEffectiveUriType(uint256 _tokenId) internal view returns (TokenUriType) {
+    TokenUriType uriType = _tokenUriType[_tokenId];
+    return uriType == TokenUriType.UNDEFINED ? _uriType : uriType;
   }
 }
