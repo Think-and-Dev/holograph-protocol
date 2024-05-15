@@ -98,7 +98,7 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
     'HolographLegacyERC721',
     generateInitCode(['address'], [deployerAddress])
   );
-  console.log('the future "CxipERC721" address is', futureHolographLegacyErc721Address);
+  console.log('the future "HolographLegacyERC721" address is', futureHolographLegacyErc721Address);
 
   let holographLegacyErc721DeployedCode: string = await hre.provider.send('eth_getCode', [
     futureHolographLegacyErc721Address,
