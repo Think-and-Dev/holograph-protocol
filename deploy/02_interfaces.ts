@@ -18,21 +18,21 @@ import {
 } from '../scripts/utils/helpers';
 import { MultisigAwareTx } from '../scripts/utils/multisig-aware-tx';
 import { ConfigureEvents } from '../scripts/utils/events';
-import {
-  ERC20,
-  ERC20Burnable,
-  ERC20Metadata,
-  ERC20Permit,
-  ERC20Safer,
-  ERC165,
-  ERC721,
-  ERC721Enumerable,
-  ERC721Metadata,
-  ERC721TokenReceiver,
-  HolographInterfaces,
-  InitializableInterface,
-  HolographRoyaltiesInterface,
-} from '../typechain-types';
+// import {
+//   ERC20,
+//   ERC20Burnable,
+//   ERC20Metadata,
+//   ERC20Permit,
+//   ERC20Safer,
+//   ERC165,
+//   ERC721,
+//   ERC721Enumerable,
+//   ERC721Metadata,
+//   ERC721TokenReceiver,
+//   HolographInterfaces,
+//   InitializableInterface,
+//   HolographRoyaltiesInterface,
+// } from '../typechain-types';
 
 const web3 = new Web3();
 
