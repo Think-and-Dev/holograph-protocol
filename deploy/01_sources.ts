@@ -4,19 +4,19 @@ import Web3 from 'web3';
 import { BigNumber, BytesLike } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from '@holographxyz/hardhat-deploy-holographed/types';
-import {
-  Holograph,
-  HolographBridge,
-  HolographBridgeProxy,
-  HolographFactory,
-  HolographFactoryProxy,
-  HolographOperator,
-  HolographOperatorProxy,
-  HolographRegistry,
-  HolographRegistryProxy,
-  HolographTreasury,
-  HolographTreasuryProxy,
-} from '../typechain-types';
+// import {
+//   Holograph,
+//   HolographBridge,
+//   HolographBridgeProxy,
+//   HolographFactory,
+//   HolographFactoryProxy,
+//   HolographOperator,
+//   HolographOperatorProxy,
+//   HolographRegistry,
+//   HolographRegistryProxy,
+//   HolographTreasury,
+//   HolographTreasuryProxy,
+// } from '../typechain-types';
 import {
   genesisDeriveFutureAddress,
   genesisDeployHelper,
