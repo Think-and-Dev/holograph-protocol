@@ -5,11 +5,7 @@ import {Test, Vm, console} from "forge-std/Test.sol";
 import {Constants} from "../utils/Constants.sol";
 import {Holograph} from "../../../src/Holograph.sol";
 import {MockExternalCall} from "../../../src/mock/MockExternalCall.sol";
-import {HolographInterface} from "../../../src/interface/HolographInterface.sol";
-
 contract HolographTests is Test {
-    uint256 localHostFork;
-    string LOCALHOST_RPC_URL = vm.envString("LOCALHOST_RPC_URL");
     address admin = vm.addr(1);
     address user = vm.addr(2);
     uint256 privateKeyDeployer = 0xff22437ccbedfffafa93a9f1da2e8c19c1711052799acf3b58ae5bebb5c6bd7b;
@@ -27,7 +23,6 @@ contract HolographTests is Test {
 
     Holograph holograph;
     MockExternalCall mockExternalCall;
-    HolographInterface holographInterface;
 
     function randomAddress() public view returns (address) {
         uint256 randomNum = uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty)));
@@ -35,7 +30,6 @@ contract HolographTests is Test {
     }
 
     function setUp() public {
-    localHostFork = vm.createFork(LOCALHOST_RPC_URL);
     
     // Deploy contracts
     vm.startPrank(deployer);
@@ -97,11 +91,11 @@ contract HolographTests is Test {
     GET BRIDGE
 */
 
-    function testReturnValidBridge() public {
+    function testReturnValid_bridgeSlot() public {
         assertEq(holograph.getBridge(), bridge);
     }
 
-    function testAllowExternalContract() public {
+    function testAllowExternalContractToCallGetBridge() public {
         bytes memory  encodeSignature = abi.encodeWithSignature('getBridge()');
         mockExternalCall.callExternalFn(address(holograph), encodeSignature);
     }
@@ -131,11 +125,11 @@ contract HolographTests is Test {
 */
 
     function testReturnValid_chainIdSlot() public {
-        //TODO ChainId vació es igualo a ChainId = 0 ??
+        //TODO Empty ChainId equals ChainId = 0 ??
         assertNotEq(holograph.getChainId(), 0);
     }
 
-    function testAllowExternalContractToCallFnGethainID() public {
+    function testAllowExternalContractToCallGetChainID() public {
         bytes memory  encodeSignature = abi.encodeWithSignature('getChainId()');
         mockExternalCall.callExternalFn(address(holograph), encodeSignature);        
     }
@@ -168,7 +162,7 @@ contract HolographTests is Test {
         assertEq(holograph.getFactory(), factory);
     }
 
-    function testAllowExternalContractToCallFnGetFactory() public {
+    function testAllowExternalContractToCallGetFactory() public {
         bytes memory  encodeSignature = abi.encodeWithSignature('getFactory()');
         mockExternalCall.callExternalFn(address(holograph), encodeSignature);
     }
@@ -201,7 +195,7 @@ contract HolographTests is Test {
         assertEq(holograph.getHolographChainId(), holographChainId);
     }
 
-    function testAllowExternalContractToCallFnGetHolographChainId() public {
+    function testAllowExternalContractToCallGetHolographChainId() public {
         bytes memory encodeSignature = abi.encodeWithSignature('getHolographChainId()');
         mockExternalCall.callExternalFn(address(holograph), encodeSignature);
     }
@@ -234,7 +228,7 @@ contract HolographTests is Test {
         assertEq(holograph.getInterfaces(), interfaces);
     }
 
-    function testAllowExternalContractToCallFnGetInterfaces() public {
+    function testAllowExternalContractToCallGetInterfaces() public {
         bytes memory encodeSignature = abi.encodeWithSignature('getInterfaces()');
         mockExternalCall.callExternalFn(address(holograph), encodeSignature);
     }    
@@ -267,7 +261,7 @@ contract HolographTests is Test {
         assertEq(holograph.getOperator(), operator);
     }
 
-    function testAllowExternalContractToCallFnGetOperator() public {
+    function testAllowExternalContractToCallGetOperator() public {
         bytes memory encodeSignature = abi.encodeWithSignature('getOperator()');
         mockExternalCall.callExternalFn(address(holograph), encodeSignature);
     }
@@ -300,7 +294,7 @@ contract HolographTests is Test {
         assertEq(holograph.getRegistry(), registry);
     }
 
-    function testAllowExternalContractToCallFnGetRegistry() public {
+    function testAllowExternalContractToCallGetRegistry() public {
         bytes memory encodeSignature = abi.encodeWithSignature('getRegistry()');
         mockExternalCall.callExternalFn(address(holograph), encodeSignature);
     }
@@ -333,7 +327,7 @@ contract HolographTests is Test {
         assertEq(holograph.getTreasury(), treasury);
     }
 
-    function testAllowExternalContractToCallFnGetTreasury() public {
+    function testAllowExternalContractToCallGetTreasury() public {
         bytes memory encodeSignature = abi.encodeWithSignature('getTreasury()');
         mockExternalCall.callExternalFn(address(holograph), encodeSignature);
     }
@@ -366,7 +360,7 @@ contract HolographTests is Test {
         assertEq(holograph.getTreasury(), treasury);
     }
 
-    function testAllowExternalContractToCallFnGetUtilityToken() public {
+    function testAllowExternalContractToCallGetUtilityToken() public {
         bytes memory encodeSignature = abi.encodeWithSignature('getUtilityToken()');
         mockExternalCall.callExternalFn(address(holograph), encodeSignature);
     }
