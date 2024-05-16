@@ -128,4 +128,4 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
 
 export default func;
 func.tags = ['Faucet'];
-func.dependencies = [];
+func.dependencies = ['SampleERC20'];
