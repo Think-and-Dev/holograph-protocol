@@ -492,12 +492,12 @@ describe('Testing cross-chain minting (CHAIN1 & CHAIN2)', async function () {
         );
 
         let originalMessagingModule = await chain2.operator.getMessagingModule();
+        // temporarily set MockLZEndpoint as messaging module, to allow for easy sending
+        await chain2.operator.setMessagingModule(chain2.mockLZEndpoint.address);
         let payload: BytesLike = await getRequestPayload(chain1, chain2, chain1.factory.address, data);
         let gasEstimates = await getEstimatedGas(chain1, chain2, chain1.factory.address, data, payload);
         payload = gasEstimates.payload;
         let payloadHash: string = HASH(payload);
-        // temporarily set MockLZEndpoint as messaging module, to allow for easy sending
-        await chain2.operator.setMessagingModule(chain2.mockLZEndpoint.address);
         // make call with mockLZEndpoint AS messaging module
         await chain2.mockLZEndpoint.crossChainMessage(chain2.operator.address, getLzMsgGas(payload), payload, {
           gasLimit: TESTGASLIMIT,

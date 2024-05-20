@@ -10,7 +10,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log(`Starting deploy script: ${path.basename(__filename)} 👇`);
 
   const network = networks[hre.network.name];
-  const environment: Environment = getEnvironment();
+  const environment: Environment = Environment.develop
   const currentNetworkType: NetworkType = network.type;
 
   // TODO: Goerli testnet should be deprecated and removed once Sepolia is ready

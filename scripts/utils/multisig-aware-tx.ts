@@ -170,7 +170,7 @@ const MultisigAwareTx = async (
     }
   }
   const network: Network = networks[hre.networkName];
-  const environment: Environment = getEnvironment();
+  const environment: Environment = Environment.develop;
   let contract: Contract = await hre.ethers.getContractAt('Admin', futureTx.to, deployerAddress);
   let admin: string = (await contract.admin()).toLowerCase(); // just in case, get it, in case?
   // accomodate factory deployed contracts, which use owner storage slot instead of admin

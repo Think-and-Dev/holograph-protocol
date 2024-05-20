@@ -191,7 +191,7 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
     // NOTE: Use hardcoded version of deployerAddress from Ledger hardware only for testnet and mainnet envs
     // If environment is develop use the signers deployerAddress
     let erc20DeployerAddress = '0xBB566182f35B9E5Ae04dB02a5450CC156d2f89c1'; // Ledger deployerAddress
-    const environment: Environment = getEnvironment();
+    const environment: Environment = Environment.develop;
     console.log(`Environment: ${environment}`);
 
     if (environment === Environment.develop) {

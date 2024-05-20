@@ -27,8 +27,8 @@ dependencies:
     specifier: 0.1.10
     version: 0.1.10
   '@holographxyz/hardhat-deploy-holographed':
-    specifier: ^0.0.6
-    version: 0.0.6
+    specifier: 0.0.5
+    version: 0.0.5
   '@holographxyz/holograph-genesis':
     specifier: 0.2.2
     version: 0.2.2(@ethersproject/abi@5.7.0)(eslint@8.57.0)(hardhat@2.14.0)(lodash@4.17.21)
@@ -759,6 +759,30 @@ packages:
     dependencies:
       dotenv: 10.0.0
       path: 0.12.7
+    dev: false
+
+  /@holographxyz/hardhat-deploy-holographed@0.0.5:
+    resolution: {integrity: sha512-68J2i3jIxC2dI6c9Etq9NHOxloA9W+RBtJiTQyZ3P/eqKj3CKKiWn2fc4CZaBFYnomIj1CczmMFDAA8vSDdJpw==}
+    dependencies:
+      '@ethersproject/providers': 5.7.2
+      '@types/qs': 6.9.15
+      axios: 0.21.4(debug@4.3.4)
+      chalk: 4.1.2
+      chokidar: 3.6.0
+      debug: 4.3.4(supports-color@8.1.1)
+      enquirer: 2.4.1
+      ethers: 5.7.2
+      form-data: 4.0.0
+      fs-extra: 10.1.0
+      match-all: 1.2.6
+      murmur-128: 0.2.1
+      qs: 6.12.1
+      super-cold-storage-signer: 0.0.4
+      zksync-web3: 0.4.0(ethers@5.7.2)
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
     dev: false
 
   /@holographxyz/hardhat-deploy-holographed@0.0.6:
@@ -9616,6 +9640,25 @@ packages:
   /strip-json-comments@3.1.1:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
+
+  /super-cold-storage-signer@0.0.4:
+    resolution: {integrity: sha512-mLpxHCuAu244QuE2X3JwfgM6WfspAPpyFP5aSUhE02IfUbuuzVzo80HVMnzNCRnf6UXCJ3hP8El8PFBNujKu/A==}
+    dependencies:
+      '@ethersproject/abstract-provider': 5.7.0
+      '@ethersproject/abstract-signer': 5.7.0
+      '@ethersproject/address': 5.7.0
+      '@ethersproject/bignumber': 5.7.0
+      '@ethersproject/bytes': 5.7.0
+      '@ethersproject/contracts': 5.7.0
+      '@ethersproject/properties': 5.7.0
+      '@ethersproject/providers': 5.7.2
+      '@ethersproject/strings': 5.7.0
+      '@ethersproject/transactions': 5.7.0
+      '@ethersproject/wallet': 5.7.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
 
   /supports-color@2.0.0:
     resolution: {integrity: sha512-KKNVtd6pCYgPIKU4cp2733HWYCpplQhddZLBUryaAHou723x+FRzQ5Df824Fj+IyyuiQTRoub4SnIFfIcrp70g==}

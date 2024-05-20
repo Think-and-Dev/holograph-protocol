@@ -25,7 +25,7 @@ const func: DeployFunction = async function (hre1: HardhatRuntimeEnvironment) {
   const deployer = await getDeployer(hre);
   const deployerAddress = await deployer.signer.getAddress();
   const network = networks[hre.networkName];
-  const environment: Environment = getEnvironment();
+  const environment: Environment = Environment.develop;
   const currentNetworkType: NetworkType = network.type;
 
   // Salt is used for deterministic address generation
