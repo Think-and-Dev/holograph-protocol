@@ -20,6 +20,7 @@ import {MockExternalCall} from "../../../src/mock/MockExternalCall.sol";
 contract HolographTests is Test {
     address admin = vm.addr(1);
     address user = vm.addr(2);
+    address origin = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;  //default address origin in foundry
     uint256 privateKeyDeployer = 0xff22437ccbedfffafa93a9f1da2e8c19c1711052799acf3b58ae5bebb5c6bd7b;
     address deployer = vm.addr(privateKeyDeployer);
 
@@ -101,11 +102,9 @@ contract HolographTests is Test {
     * performs a prank operation on the admin address using the VM,
     * and then sets a new admin address to the contract.
     */
-    // TODO Admin does not correspond to the address that performs the init
     function testSetAdmin() public {
-        admin = holograph.getAdmin();
-        vm.prank(admin);
-        holograph.setAdmin(user);
+        vm.prank(origin);
+        holograph.setAdmin(admin);
     }
 
     /**
@@ -156,7 +155,7 @@ contract HolographTests is Test {
     * and then sets a new random address as the bridge in the contract.
     */
     function testAllowAdminAlter_bridgeSlot() public {
-        vm.prank(holograph.admin());
+        vm.prank(origin);
         holograph.setBridge(randomAddress());
     }
 
@@ -221,7 +220,7 @@ contract HolographTests is Test {
     * and then sets a new random address as the chainId in the contract.
     */
     function testAllowAdminAlter_chainIdSlot() public {
-        vm.prank(holograph.admin());
+        vm.prank(origin);
         holograph.setChainId((2));
     }
 
@@ -285,7 +284,7 @@ contract HolographTests is Test {
     * and then sets a new random address as the factory in the contract.
     */
     function testAllowAdminAlter_factorySlot() public {
-        vm.prank(holograph.admin());
+        vm.prank(origin);
         holograph.setFactory(randomAddress());
     }
 
@@ -349,7 +348,7 @@ contract HolographTests is Test {
     * and then sets a new random address as the holographChainId in the contract.
     */
     function testAllowAdminAlter_holographChainIdSlot() public {
-        vm.prank(holograph.admin());
+        vm.prank(origin);
         holograph.setHolographChainId(2);
     }
 
@@ -413,7 +412,7 @@ contract HolographTests is Test {
     * and then sets a new random address as the interfaces in the contract.
     */
     function testAllowAdminAlter_interfacesSlot() public {
-        vm.prank(holograph.admin());
+        vm.prank(origin);
         holograph.setInterfaces(randomAddress());
     }
 
@@ -477,7 +476,7 @@ contract HolographTests is Test {
     * and then sets a new random address as the operator in the contract.
     */
     function testAllowAdminAlter_operatorSlot() public {
-        vm.prank(holograph.admin());
+        vm.prank(origin);
         holograph.setOperator(randomAddress());
     }
 
@@ -541,7 +540,7 @@ contract HolographTests is Test {
     * and then sets a new random address as the registry in the contract.
     */
     function testAllowAdminAlter_registrySlot() public {
-        vm.prank(holograph.admin());
+        vm.prank(origin);
         holograph.setRegistry(randomAddress());
     }
 
@@ -605,7 +604,7 @@ contract HolographTests is Test {
     * and then sets a new random address as the treasury in the contract.
     */
     function testAllowAdminAlter_treasurySlot() public {
-        vm.prank(holograph.admin());
+        vm.prank(origin);
         holograph.setTreasury(randomAddress());
     }
 
@@ -669,7 +668,7 @@ contract HolographTests is Test {
     * and then sets a new random address as the utilityToken in the contract.
     */
     function testAllowAdminAlter_utilityTokenSlot() public {
-        vm.prank(holograph.admin());
+        vm.prank(origin);
         holograph.setUtilityToken(randomAddress());
     }
 
