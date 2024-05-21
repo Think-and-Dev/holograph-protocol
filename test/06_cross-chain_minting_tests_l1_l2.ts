@@ -739,7 +739,7 @@ describe('Testing cross-chain minting (CHAIN1 & CHAIN2)', async function () {
           'CxipERC721Proxy',
           'CXIP ERC721 Collection (' + chain1.hre.networkName + ')',
           'CXIP',
-          1000,
+          1000, @
           ConfigureEvents([
             HolographERC721Event.bridgeIn,
             HolographERC721Event.bridgeOut,
