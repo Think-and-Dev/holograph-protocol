@@ -28,7 +28,10 @@ contract HolographRegistryTests is Test {
     address origin = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;  //default address origin in foundry       
     address mockAddress = 0xeB721f3E4C45a41fBdF701c8143E52665e67c76b;
     address utilityTokenAddress = 0x4b02422DC46bb21D657A701D02794cD3Caeb17d0;
-    
+    address hTokenAddress = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+    bytes32 contractHash = getContractType('HolographERC721');
+    uint32 validChainId = 5;
+    uint32 invalidChainId = 0;
 
     function randomAddress() public view returns (address) {
         uint256 randomNum = uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty)));
@@ -112,7 +115,6 @@ contract HolographRegistryTests is Test {
  * Refers to the hardhat test with the description 'Should return fail to add contract because it does not have a factory'
  */
     function testSetHolographedHashAddressNoFactoryRevert() public {
-        bytes32 contractHash = getContractType('HolographERC721');
         vm.expectRevert('HOLOGRAPH: factory only function');
         vm.prank(deployer);
         registry.setHolographedHashAddress(contractHash, address(holographERC721));
@@ -326,7 +328,6 @@ contract HolographRegistryTests is Test {
  * Refers to the hardhat test with the description 'should return false if hash is INVALID'
  */
     function testReturnFalseIfHashIsInvalid() public {
-        bytes32 contractHash = getContractType('HolographERC721');
         bool isHolographed = registry.isHolographedHashDeployed(contractHash);
         assertFalse(isHolographed);
     }    
@@ -368,7 +369,6 @@ contract HolographRegistryTests is Test {
  * Refers to the hardhat test with the description 'should return 0x0 for invalid hash'
  */
     function testReturn0x0ForInvalidHash() public {
-        bytes32 contractHash = getContractType('HolographERC721');
         address add = registry.getHolographedHashAddress(contractHash);
         assertEq(add, zeroAddress);
     }    
@@ -397,9 +397,8 @@ contract HolographRegistryTests is Test {
  * Refers to the hardhat test with the description 'should allow admin to set contract type address'
  */
     function testAllowAdminToSetContractTypeAddress() public {
-        bytes32 contractTypeHash = getContractType('HolographERC721');
         vm.prank(deployer);
-        registry.setReservedContractTypeAddress(contractTypeHash, true);
+        registry.setReservedContractTypeAddress(contractHash, true);
     }
 
 /**
@@ -412,11 +411,10 @@ contract HolographRegistryTests is Test {
 
  */
     function testAllowRandUserToAlterContractTypeAddressRevert() public {
-        bytes32 contractTypeHash = getContractType('HolographERC721');
         address randUser = randomAddress();
         vm.expectRevert();
         vm.prank(randUser);
-        registry.setReservedContractTypeAddress(contractTypeHash, true);
+        registry.setReservedContractTypeAddress(contractHash, true);
     }
 
 /*
@@ -432,14 +430,13 @@ contract HolographRegistryTests is Test {
  * Refers to the hardhat test with the description 'should return expected contract type address'
  */
     function testReturnExpectedContractTypeAddress() public {
-        bytes32 contractTypeHash = getContractType('HolographERC721');
         address contractAddress = address(holographERC721);  
         vm.startPrank(deployer);
-        registry.setReservedContractTypeAddress(contractTypeHash, true);
-        registry.setContractTypeAddress(contractTypeHash,contractAddress);
+        registry.setReservedContractTypeAddress(contractHash, true);
+        registry.setContractTypeAddress(contractHash,contractAddress);
         vm.stopPrank();
-        address contractAddressR = registry.getReservedContractTypeAddress(contractTypeHash);
-        assertEq(contractAddressR, address(holographERC721));
+        address contractAddressRetrived = registry.getReservedContractTypeAddress(contractHash);
+        assertEq(contractAddressRetrived, address(holographERC721));
     }
 
 /*
@@ -456,12 +453,11 @@ contract HolographRegistryTests is Test {
  */
     function testAllowAdminToAlterSetContractTypeAddress() public {
         // TODO It is not a unit test
-        bytes32 contractTypeHash = getContractType('HolographERC721');
         address contractAddress = randomAddress();
         vm.startPrank(deployer);
-        registry.setReservedContractTypeAddress(contractTypeHash, true);
-        registry.setContractTypeAddress(contractTypeHash,contractAddress);
-        assertEq(registry.getReservedContractTypeAddress(contractTypeHash), contractAddress);
+        registry.setReservedContractTypeAddress(contractHash, true);
+        registry.setContractTypeAddress(contractHash,contractAddress);
+        assertEq(registry.getReservedContractTypeAddress(contractHash), contractAddress);
         vm.stopPrank();
     }
 
@@ -476,14 +472,13 @@ contract HolographRegistryTests is Test {
  */
     function testAllowRandUserToAlterSetContractTypeAddressRevert() public {
         // TODO It is not a unit test
-        bytes32 contractTypeHash = getContractType('HolographERC721');
         address contractAddress = randomAddress();
         vm.prank(deployer); 
-        registry.setReservedContractTypeAddress(contractTypeHash,true);
+        registry.setReservedContractTypeAddress(contractHash,true);
         vm.prank(randomAddress());      
         vm.expectRevert(); 
-        registry.setContractTypeAddress(contractTypeHash,contractAddress);
-        assertNotEq(registry.getReservedContractTypeAddress(contractTypeHash), contractAddress);
+        registry.setContractTypeAddress(contractHash,contractAddress);
+        assertNotEq(registry.getReservedContractTypeAddress(contractHash), contractAddress);
     }
 
 /*
@@ -499,13 +494,12 @@ contract HolographRegistryTests is Test {
  * Refers to the hardhat test with the description 'Should return valid _contractTypeAddresses'
  */
     function testReturnValid_contractTypeAddresses() public {
-        bytes32 contractTypeHash = getContractType('HolographERC721');
         address contractAddress = randomAddress();
         vm.prank(deployer); 
-        registry.setReservedContractTypeAddress(contractTypeHash,true);
+        registry.setReservedContractTypeAddress(contractHash,true);
         vm.prank(deployer); 
-        registry.setContractTypeAddress(contractTypeHash, contractAddress);
-        assertEq(registry.getContractTypeAddress(contractTypeHash), contractAddress);
+        registry.setContractTypeAddress(contractHash, contractAddress);
+        assertEq(registry.getContractTypeAddress(contractHash), contractAddress);
     }
 
 /**
@@ -651,8 +645,6 @@ contract HolographRegistryTests is Test {
  * and then checks if the registry correctly stores and returns the updated hToken address for the chain ID.
  */
     function testAllowAdminToAlter_hTokens() public {
-        uint32 validChainId = 5;
-        address hTokenAddress = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
         vm.startPrank(holographRegistry.getAdmin());
         holographRegistry.setHToken(validChainId, hTokenAddress);
         assertEq(holographRegistry.getHToken(validChainId), hTokenAddress);
@@ -667,8 +659,6 @@ contract HolographRegistryTests is Test {
  * Refers to the hardhat test with the description 'should fail to allow owner to alter _hTokens'
  */
     function testAllowOwnerToAlter_hTokensRevert() public {
-        uint32 validChainId = 5;
-        address hTokenAddress = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
         vm.expectRevert('HOLOGRAPH: admin only function');
         holographRegistry.setHToken(validChainId, hTokenAddress);
     }
@@ -681,8 +671,6 @@ contract HolographRegistryTests is Test {
  * Refers to the hardhat test with the description 'should fail to allow non-owner to alter _hTokens'
  */
     function testAllowNonOwnerToAlter_hTokensReturn() public {
-        uint32 validChainId = 5;
-        address hTokenAddress = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
         vm.prank(randomAddress());
         vm.expectRevert('HOLOGRAPH: admin only function');
         holographRegistry.setHToken(validChainId, hTokenAddress);
@@ -703,8 +691,6 @@ contract HolographRegistryTests is Test {
 
     function testReturnValid_hTokens() public {
         testAllowAdminToAlter_hTokens();
-        uint32 validChainId = 5;
-        address hTokenAddress = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
         vm.prank(deployer);
         address hTokenAddr = holographRegistry.getHToken(validChainId);
         assertEq(hTokenAddr, hTokenAddress);    
@@ -718,7 +704,6 @@ contract HolographRegistryTests is Test {
  * Refers to the hardhat test with the description 'should return 0x0 for invalid chainId'
  */
     function testReturn0x0ForInvalidChainId() public {
-        uint32 invalidChainId = 0;
         assertEq(holographRegistry.getHToken(invalidChainId), zeroAddress);
     }
 
@@ -730,7 +715,6 @@ contract HolographRegistryTests is Test {
  * Refers to the hardhat test with the description 'Should allow external contract to call fn'
  */
     function testAllowExternalContractToCallFnGetHToken() public {
-        uint32 validChainId = 5;
         bytes memory encodeSignature = abi.encodeWithSignature('getHToken(uint32)', validChainId);
         mockExternalCall.callExternalFn(address(registry), encodeSignature);
     }
