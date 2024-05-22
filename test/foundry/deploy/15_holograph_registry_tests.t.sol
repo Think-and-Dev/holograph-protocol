@@ -11,6 +11,12 @@ import {HolographERC721} from "../../../src/enforcer/HolographERC721.sol";
 import {HolographERC20} from "../../../src/enforcer/HolographERC20.sol";
 import {DeploymentConfig} from "../../../src/struct/DeploymentConfig.sol";
 
+/**
+ * @title Testing the Holograph Registry
+ * @notice Suite of unit tests for the Holograph Registry contract 
+ * @dev Translation of a suite of Hardhat tests found in test/15_holograph_registry_test.ts
+ */
+
 contract HolographRegistryTests is Test {
     uint256 localHostFork;  
     string LOCALHOST_RPC_URL = vm.envString("LOCALHOST_RPC_URL");
@@ -33,16 +39,38 @@ contract HolographRegistryTests is Test {
     uint32 validChainId = 5;
     uint32 invalidChainId = 0;
 
+/**
+ * @notice Generate a random address for testing purposes.
+ * @dev This function generates a random address by hashing the current block timestamp and difficulty
+ * using the keccak256 algorithm, and then converting the resulting hash to an address.
+ * @return address A randomly generated address.
+ */
     function randomAddress() public view returns (address) {
         uint256 randomNum = uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty)));
         return address(uint160(randomNum));
     }
 
+/**
+ * @notice Get the contract type identifier hash for a given contract name.
+ * @dev This function calculates the keccak256 hash of the provided contract name
+ * to generate a unique identifier for the contract type.
+ * @param contractName The name of the contract for which the contract type identifier is needed.
+ * @return bytes32 The keccak256 hash representing the contract type identifier.
+ */
     function getContractType(string memory contractName) public returns (bytes32) {
         bytes32 contractType = keccak256(abi.encodePacked(contractName));
         return contractType;
     }
 
+/**
+ * @notice Set up the testing environment for the Holograph Registry tests.
+ * @dev This function is called before each test is executed to prepare the necessary setup for the tests.
+ * It performs the following actions:
+ * 1. Deploys new instances of HolographRegistry and MockExternalCall contracts.
+ * 2. Creates a fork of the local host RPC URL and selects the forked chain.
+ * 3. Retrieves instances of the Holograph, HolographRegistry, HolographERC721, HolographERC20, and SampleERC721Holographer contracts
+ * using the Constants contract and assigns them to the corresponding variables.
+ */
     function setUp() public {
         vm.startPrank(deployer);
         holographRegistry = new HolographRegistry();
