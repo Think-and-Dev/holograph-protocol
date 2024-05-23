@@ -135,4 +135,12 @@ library Constants {
   function getDropsEventConfig() internal pure returns (uint256) {
     return 0x0000000000000000000000000000000000000000000000000000000000040000;
   }
+
+  function getMockLZEndpoint() internal pure returns (address) {
+    return address(0x5A3b662951c6993fBe10C2De102E22114539b8CC);
+  }
+
+  function getLayerZeroModuleProxy() internal pure returns (address) {
+    return address(0x350856f758d9A1b8c24540d8E10cd6AB45B1466d);
+  }
 }
