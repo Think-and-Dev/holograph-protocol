@@ -62,6 +62,7 @@ contract HolographRegistryTests is Test {
  * 2. Creates a fork of the local host RPC URL and selects the forked chain.
  * 3. Retrieves instances of the Holograph, HolographRegistry, HolographERC721, HolographERC20, and SampleERC721Holographer contracts
  * using the Constants contract and assigns them to the corresponding variables.
+ * 4. Initializes the HolographRegistry contract with the provided initialization code.
  */
     function setUp() public {
         //deploy
