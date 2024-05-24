@@ -39,7 +39,7 @@ contract HolographRegistryTests is Test {
     address constant hTokenAddress = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     uint32 constant validChainId = 5;
     uint32 constant invalidChainId = 0;
-    uint16 constant expectedHolographableContractsCount = 5;
+    uint16 constant expectedHolographableContractsCount = 6;
     bytes32 contractHash = getContractType('HolographERC721');
 
 /**
