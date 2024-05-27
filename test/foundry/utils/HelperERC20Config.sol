@@ -4,18 +4,22 @@ import {Constants} from "../utils/Constants.sol";
 
 import {DeploymentConfig} from "../../../src/struct/DeploymentConfig.sol";
 
-contract HelperERC20Config {
-  constructor() {}
-
+library HelperERC20Config {
+  function getInitCodeHtokenETH() public pure returns (bytes memory) {
+    return
+      abi.encode(
+        bytes32(0x000000000000000000000000000000000000000000000000000068546f6b656e), //htokenHash
+        Constants.getHolographRegistryProxy(), //registry address
+        abi.encode(Constants.getDeployer(), uint16(0))
+      );
+  }
   function getDeployConfig(
     uint32 chainType,
     bytes memory contractByteCode,
     string memory tokenName,
     string memory tokenSymbol,
-    bytes memory initCode,
-    address deployer
-  ) public returns (DeploymentConfig memory deployConfig) {
-    initCode;
+    bytes memory initCode
+  ) public pure returns (DeploymentConfig memory deployConfig) {
     deployConfig.contractType = bytes32(0x000000000000000000000000000000000000486f6c6f67726170684552433230);
     deployConfig.chainType = chainType; //holograph id
     deployConfig.salt = bytes32(0x00000000000000000000000000000000000000000000000000000000000003e8);
@@ -46,19 +50,21 @@ contract HelperERC20Config {
         )
       );
   }
-  /**
+  /*
    * @note This contract is used to get the DeploymentConfig for hToken ETH
    * @dev This contract provides helper functions  to get the DeploymentConfig by chainType (getHolographIdL1 or getHolographIdL2) for hToken ETH
    */
-  function getHtokenEth(uint32 chainType) public returns (DeploymentConfig memory deployConfig) {
+  function getHtokenEth(
+    uint32 chainType,
+    bytes memory contractByteCode
+  ) public pure returns (DeploymentConfig memory deployConfig) {
     return
-      helperERC20Config.getDeployConfig(
+      getDeployConfig(
         chainType,
-        vm.getCode("hTokenProxy.sol:hTokenProxy"),
+        contractByteCode,
         "Holographed ETH",
         "hETH",
-        initCodeHtokenETH,
-        deployer
+        getInitCodeHtokenETH()
       );
   }
 }

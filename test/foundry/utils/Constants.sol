@@ -136,11 +136,14 @@ library Constants {
     return 0x0000000000000000000000000000000000000000000000000000000000040000;
   }
 
-  function getHolographIdL1() internal pure returns (uint32){
+  function getHolographIdL1() internal pure returns (uint32) {
     return 4294967294;
   }
-  function getHolographIdL2() internal pure returns (uint32){
+  function getHolographIdL2() internal pure returns (uint32) {
     return 4294967293;
+  }
+  function getDeployer() internal pure returns (address) {
+    return address(0xdf5295149F367b1FBFD595bdA578BAd22e59f504);
   }
 }
 
