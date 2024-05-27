@@ -380,15 +380,8 @@ contract CrossChainMinting is Test, HolographEvents {
 
     (DeploymentConfig memory erc20Config, bytes32 erc20ConfigHash, bytes32 erc20ConfigHashBytes, Verification memory signatureStruct) = createERC20Config();
     
-    vm.selectFork(chain1);
-    address sampleErc20Address = holographRegistryChain1.getHolographedHashAddress(erc20ConfigHash);
-    console.log("Address holographRegistryChain1:");
-    console.logAddress(address(holographRegistryChain1));
-    console.log("Address 1:");
-    console.logAddress(sampleErc20Address);
-
     vm.selectFork(chain2);
-    sampleErc20Address = holographRegistryChain2.getHolographedHashAddress(erc20ConfigHash);
+    address sampleErc20Address = holographRegistryChain2.getHolographedHashAddress(erc20ConfigHash);
     console.log("Address holographRegistryChain2:");
     console.logAddress(address(holographRegistryChain2));
     console.log("Address 2:");
@@ -396,7 +389,16 @@ contract CrossChainMinting is Test, HolographEvents {
 
     assertEq(sampleErc20Address, address(0), "ERC20 contract not deployed on chain2");
 
-    bytes memory signature = abi.encodePacked(signatureStruct.r, signatureStruct.s, signatureStruct.v);
+    vm.selectFork(chain1);
+    sampleErc20Address = holographRegistryChain1.getHolographedHashAddress(erc20ConfigHash);
+    console.log("Address holographRegistryChain1:");
+    console.logAddress(address(holographRegistryChain1));
+    console.log("Address 1:");
+    console.logAddress(sampleErc20Address);
+
+    vm.selectFork(chain2);
+
+    bytes memory signature = abi.encode(signatureStruct.r, signatureStruct.s, signatureStruct.v);
     bytes memory data = abi.encode(erc20Config, signature, deployer);
 
     console.log("Data:");
