@@ -330,12 +330,23 @@ contract CrossChainMinting is Test, HolographEvents {
   }
 
   function createERC20Config() internal returns (DeploymentConfig memory, bytes32, bytes32, Verification memory) {
+    bytes memory initCode = abi.encode(address(deployer), uint16(0));
+
     DeploymentConfig memory erc20Config = DeploymentConfig({
-      contractType: 0x000000000000000000000000000000000000486f6c6f67726170684552433230,
+      contractType: bytes32(0x000000000000000000000000000000000000486f6c6f67726170684552433230),
       chainType: 4294967294,
-      salt: 0x00000000000000000000000000000000000000000000000000000000000003e8,
+      salt: bytes32(0x00000000000000000000000000000000000000000000000000000000000003e8),
       byteCode: vm.getCode("SampleERC20.sol:SampleERC20"),
-      initCode: "0x0000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000000120000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000018000000000000000000000000000000000000000000000000000000000000001c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000001e53616d706c6520455243323020546f6b656e20286c6f63616c686f73742900000000000000000000000000000000000000000000000000000000000000000004534d504c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001253616d706c6520455243323020546f6b656e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000131000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000df5295149f367b1fbfd595bda578bad22e59f5040000000000000000000000000000000000000000000000000000000000000000"
+      initCode: abi.encode(
+        "Sample ERC20 Token (localhost)", //token name
+        "SMPL", //tokenSymbol
+        uint8(18), //decimals
+        bytes32(0x0000000000000000000000000000000000000000000000000000000000000006), //eventConfig
+        "Sample ERC20 Token", //domainSeparator
+        "1", //domainVersion
+        false, //skipInit,
+        initCode
+      )
     });
 
     bytes32 erc20ConfigHash = keccak256(
@@ -366,50 +377,6 @@ contract CrossChainMinting is Test, HolographEvents {
   // SampleERC20
   function testSampleERC20() public {
     console.log("---------------------- SampleERC20 ----------------------");
-    // uint256[] memory events = new uint256[](2);
-    // events[0] = uint256(HolographERC20Event.bridgeIn);
-    // events[1] = uint256(HolographERC20Event.bridgeOut);
-
-    // bytes memory eventConfig = configureEvents(events);
-
-    // console.log("Solidity Output:");
-    // console.logBytes(eventConfig);
-    // ERC20ConfigParams memory params = ERC20ConfigParams({
-    //   network: "localhost",
-    //   deployer: deployer,
-    //   contractName: "SampleERC20",
-    //   tokenName: "Sample ERC20 Token (localhost)",
-    //   tokenSymbol: "SMPL",
-    //   domainSeparator: "Sample ERC20 Token",
-    //   domainVersion: "1",
-    //   decimals: 18,
-    //   eventConfig: "0x0000000000000000000000000000000000000000000000000000000000000006",
-    //   initCodeParam: abi.encodePacked(
-    //     keccak256(abi.encodePacked("SampleERC20")),
-    //     address(Constants.getHolographRegistry()),
-    //     abi.encodePacked(deployer, uint16(0))
-    //   ),
-    //   salt: "0x0000000000000000000000000000000000000000000000000000000000001000"
-    // });
-
-    // (DeploymentConfig memory erc20Config, bytes32 erc20ConfigHash, bytes32 erc20ConfigHashBytes) = generateErc20Config(
-    //   params
-    // );
-
-    // console.log("ERC20 Configuration:");
-    // console.logBytes32(erc20ConfigHash);
-    // console.logBytes32(erc20ConfigHashBytes);
-
-    // console.log("erc20Config.contractType");
-    // console.logBytes32(erc20Config.contractType);
-    // console.log("erc20Config.chainType");
-    // console.log(erc20Config.chainType);
-    // console.log("erc20Config.salt");
-    // console.logBytes32(erc20Config.salt);
-    // console.log("erc20Config.byteCode");
-    // console.logBytes(erc20Config.byteCode);
-    // console.log("erc20Config.initCode");
-    // console.logBytes(erc20Config.initCode);
 
     (DeploymentConfig memory erc20Config, bytes32 erc20ConfigHash, bytes32 erc20ConfigHashBytes, Verification memory signatureStruct) = createERC20Config();
     
@@ -493,11 +460,11 @@ contract CrossChainMinting is Test, HolographEvents {
 
     address operator = operatorJob.operator;
 
-    // vm.expectEmit(true, true, false, false);
-    // emit BridgeableContractDeployed(
-    //   sampleErc20Address,
-    //   erc20ConfigHash
-    // );
+    vm.expectEmit(true, true, false, false);
+    emit BridgeableContractDeployed(
+      sampleErc20Address,
+      erc20ConfigHash
+    );
 
     vm.prank(deployer);
     (bool success2, bytes memory result2) = address(holographOperatorChain2).call{gas: estimatedGas.estimatedGas}(
