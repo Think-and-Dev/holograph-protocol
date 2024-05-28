@@ -141,7 +141,7 @@ library Constants {
   }
 
   function getMockLZEndpoint() internal pure returns (address) {
-    return address(0x5A3b662951c6993fBe10C2De102E22114539b8CC);
+    return address(0x4d186eac2A5F2ec7a16079B8b111ab2EfB8b4342);
   }
 
   function getLayerZeroModuleProxy() internal pure returns (address) {
