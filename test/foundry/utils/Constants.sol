@@ -136,7 +136,12 @@ library Constants {
     return address(0xB94053201514E26133770eA1351959AffF0DE684);
   }
 
+  function getZeroAddress() internal pure returns (address) {
+    return address(0x0000000000000000000000000000000000000000);
+  }
   function getDropsEventConfig() internal pure returns (uint256) {
     return 0x0000000000000000000000000000000000000000000000000000000000040000;
   }
+
+  
 }
