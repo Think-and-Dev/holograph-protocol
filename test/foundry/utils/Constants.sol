@@ -164,3 +164,16 @@ library Constants {
   address public constant zeroAddress = address(0x0000000000000000000000000000000000000000);
   bytes32 public constant saltHex = bytes32(0x00000000000000000000000000000000000000000000000000000000000003e8);
 }
+
+library ErrorConstants {
+  string constant ONLY_ADMIN_ERROR_MSG = "HOLOGRAPH: admin only function";
+  string constant ALREADY_INITIALIZED_ERROR_MSG = "HOLOGRAPH: already initialized";
+  string constant ALREADY_DEPLOYED_ERROR_MSG = "HOLOGRAPH: already deployed";
+  string constant INVALID_SIGNATURE_ERROR_MSG = "HOLOGRAPH: invalid signature";
+  string constant HOLOGRAPHER_ALREADY_INITIALIZED_ERROR_MSG = "HOLOGRAPHER: already initialized";
+  string constant ROYALTIES_ALREADY_INITIALIZED_ERROR_MSG = "ROYALTIES: already initialized";
+  string constant FACTORY_ONLY_ERROR_MSG = "HOLOGRAPH: factory only function";
+  string constant EMPTY_CONTRACT_ERROR_MSG = "HOLOGRAPH: empty contract";
+  string constant CONTRACT_ALREADY_SET_ERROR_MSG = "HOLOGRAPH: contract already set";
+  string constant ROYALTIES_ONLY_OWNER_ERROR_MSG = "ROYALTIES: caller not an owner";
+}
