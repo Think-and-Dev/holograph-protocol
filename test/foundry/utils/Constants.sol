@@ -41,7 +41,7 @@ library Constants {
   }
 
   function getHolographOperator() internal pure returns (address) {
-    return address(0x0d173B3F4Da8e50333734F36E40c5f475874A7b3);
+    return address(0x443d6F2051716473e0849fb475e19f09ed488404);
   }
 
   function getHolographOperatorProxy() internal pure returns (address) {
@@ -104,16 +104,20 @@ library Constants {
     return address(0xE7AD7a544fa0262256F035Da6F77e396A271eA4C);
   }
 
-  function getERC20Mock() internal pure returns (address) {
-    return address(0x6eF2a267742D2EdA91cE4f3D875a91c599e5e079);
-  }
-
   function getHToken() internal pure returns (address) {
-    return address(0x0533A3bfB526Af481FEA67BDC6dF1E09e91084ec);
+    return address(0xEe7804e943659DB09338718F0B4123117A085109);
   }
 
+  // NOTE: This has to be updated to the correct address every time a new contract is added to be
+  //       deployed within the hardhat deploy pipeline
+  function getERC20Mock() internal pure returns (address) {
+    return address(0x71B7f5A882F25c7292d0Ae5fa6d78129f431b957);
+  }
+
+  // NOTE: This has to be updated to the correct address every time a new contract is added to be
+  //       deployed within the hardhat deploy pipeline
   function getMockERC721Receiver() internal pure returns (address) {
-    return address(0x01b03bC53D35925930Accb84345eA839b6c77dCF);
+    return address(0x3a95a5263bb12083088c0A11296B18655121C9Ec);
   }
 
   function getSampleERC20() internal pure returns (address) {
@@ -132,6 +136,9 @@ library Constants {
     return address(0xB94053201514E26133770eA1351959AffF0DE684);
   }
 
+  function getZeroAddress() internal pure returns (address) {
+    return address(0x0000000000000000000000000000000000000000);
+  }
   function getDropsEventConfig() internal pure returns (uint256) {
     return 0x0000000000000000000000000000000000000000000000000000000000040000;
   }
