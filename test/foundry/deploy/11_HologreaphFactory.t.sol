@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 import {Test, Vm, console} from "forge-std/Test.sol";
 import {Constants, ErrorConstants} from "../utils/Constants.sol";
-import {HelperERC20Config} from "../utils/HelperERC20Config.sol";
+import {HelperDeploymentConfig} from "../utils/HelperDeploymentConfig.sol";
 import {HolographERC20} from "../../../src/enforcer/HolographERC20.sol";
 import {Holograph} from "../../../src/Holograph.sol";
 import {ERC20} from "../../../src/interface/ERC20.sol";
@@ -41,13 +41,22 @@ contract HologreaphFactory is Test {
   }
 
   function getConfigHtokenETH() public view returns (DeploymentConfig memory, bytes32) {
-    DeploymentConfig memory deployConfig = HelperERC20Config.getHtokenEth(
+    DeploymentConfig memory deployConfig = HelperDeploymentConfig.getHtokenEth(
       Constants.getHolographIdL1(),
       vm.getCode("hTokenProxy.sol:hTokenProxy")
     );
 
-    bytes32 hashHtokenEth = HelperERC20Config.getDeployConfigHash(deployConfig, deployer);
+    bytes32 hashHtokenEth = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
     return (deployConfig, hashHtokenEth);
+  }
+  function getConfigERC721() public view returns (DeploymentConfig memory, bytes32) {
+    DeploymentConfig memory deployConfig = HelperDeploymentConfig.getERC721(
+      Constants.getHolographIdL1(),
+      vm.getCode("SampleERC721.sol:SampleERC721")
+    );
+
+    bytes32 hasSampleERC721 = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
+    return (deployConfig, hasSampleERC721);
   }
   /*
    * INIT Section
@@ -71,12 +80,12 @@ contract HologreaphFactory is Test {
    * @dev  Refers to the hardhat test with the description 'should fail with invalid signature if config is incorrect'
    */
   function testDeployRevertInvalidSignature() public {
-    DeploymentConfig memory deployConfig = HelperERC20Config.getHtokenEth(
+    DeploymentConfig memory deployConfig = HelperDeploymentConfig.getHtokenEth(
       Constants.getHolographIdL1(),
       vm.getCode("hTokenProxy.sol:hTokenProxy")
     );
 
-    bytes32 hashHtokenEth = HelperERC20Config.getDeployConfigHash(deployConfig, deployer);
+    bytes32 hashHtokenEth = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
 
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, hashHtokenEth);
     Verification memory signature;
@@ -95,12 +104,12 @@ contract HologreaphFactory is Test {
    */
   function testDeployRevertContractAlreadyDeployed() public {
     //TODO
-    DeploymentConfig memory deployConfig = HelperERC20Config.getHtokenEth(
+    DeploymentConfig memory deployConfig = HelperDeploymentConfig.getHtokenEth(
       Constants.getHolographIdL1(),
       vm.getCode("hTokenProxy.sol:hTokenProxy")
     );
 
-    bytes32 hashHtokenEth = HelperERC20Config.getDeployConfigHash(deployConfig, deployer);
+    bytes32 hashHtokenEth = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
 
     console.logBytes32(hashHtokenEth);
 
@@ -186,15 +195,45 @@ contract HologreaphFactory is Test {
    * @notice
    * @dev  Refers to the hardhat test with the description 'should return the expected selector from the input payload'
    */
-  // function testExpectedSelectorFromPayload() public {
-  //   (DeploymentConfig memory deployConfig, bytes32 hashHtokenEth) = getConfigHtokenETH();
-  //   (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, hashHtokenEth);
-  //   Verification memory signature = Verification({v: uint8(bytes1(invalideSignature)), r: r, s: s});
+  function testExpectedSelectorFromPayload() public {
+    vm.skip(true);
+    (DeploymentConfig memory deployConfig, bytes32 hasSampleERC721) = getConfigERC721();
 
-  //   vm.expectRevert(bytes(ErrorConstants.INVALID_SIGNATURE_ERROR_MSG));
-  //   vm.prank(deployer);
-  //   holographFactory.deployHolographableContract(deployConfig, signature, newOwner);
-  // }
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, hasSampleERC721);
+    Verification memory signature = Verification({v: uint8(bytes1(invalideSignature)), r: r, s: s});
+
+    bytes memory payload = abi.encode(
+      deployConfig,
+      signature,
+      address(deployer)
+    );
+
+    vm.prank(deployer);
+    holographFactory.bridgeIn(uint32(block.chainid), payload);
+  }
+
+  /**
+   * @notice
+   * @dev  Refers to the hardhat test with the description 'should revert if payload data is invalid'
+   */
+  function testRevertDataPayloadInvalid() public {
+    bytes memory payload = "0x0000000000000000000000000000000000000000000000000000000000000000";
+
+    vm.expectRevert();
+    vm.prank(deployer);
+    holographFactory.bridgeIn(uint32(block.chainid), payload);
+  }
+
+  /*
+   * BridgeOut Section
+   */
+  /**
+   * @notice
+   * @dev  Refers to the hardhat test with the description 'should return selector and payload'
+   */
+  function testContemplateSelectorFromPayload() public {
+    vm.skip(true);
+  }
 
   /*
    * setHolograph Section
