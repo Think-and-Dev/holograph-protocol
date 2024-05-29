@@ -93,26 +93,52 @@ contract HolographTreasuryTests is Test {
   /*                              AFTER INITIALIZED                             */
   /* -------------------------------------------------------------------------- */
 
+  /**
+   * @notice Tests that the `_bridge` function is private
+   * @dev This test verifies that the `_bridge` function of the `HolographTreasury` contract reverts
+   * when called from outside the contract. It encodes the function call using `abi.encodeWithSignature`
+   *  and expects the call to revert.
+   * Refers to the hardhat test with the description `_bridge()`
+   */
   function testIfIsPrivateBridge() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_bridge()");
-    //vm.expectRevert();
-    //address(holographTreasury).call(encodedFunctionData);
-    (bool success, ) = address(holographTreasury).call(encodedFunctionData);
-    require(!success);
+    vm.expectRevert();
+    address(holographTreasury).call(encodedFunctionData);
   }
 
+  /**
+   * @notice Tests that the `_holograph` function is private
+   * @dev This test verifies that the `_holograph` function of the `HolographTreasury` contract reverts
+   * when called from outside the contract. It encodes the function call using `abi.encodeWithSignature`
+   *  and expects the call to revert.
+   * Refers to the hardhat test with the description `_holograph()`
+   */
   function testIfIsPrivateHolograph() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_holograph()");
     vm.expectRevert();
     address(holographTreasury).call(encodedFunctionData);
   }
 
+  /**
+   * @notice Tests that the `_operator` function is private
+   * @dev This test verifies that the `_operator` function of the `HolographTreasury` contract reverts
+   * when called from outside the contract. It encodes the function call using `abi.encodeWithSignature`
+   *  and expects the call to revert.
+   * Refers to the hardhat test with the description `_operator()`
+   */
   function testIfIsPrivateOperator() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_operator()");
     vm.expectRevert();
     address(holographTreasury).call(encodedFunctionData);
   }
 
+  /**
+   * @notice Tests that the `_registry` function is private
+   * @dev This test verifies that the `_registry` function of the `HolographTreasury` contract reverts
+   * when called from outside the contract. It encodes the function call using `abi.encodeWithSignature`
+   *  and expects the call to revert.
+   * Refers to the hardhat test with the description `_registry()`
+   */
   function testIfIsPrivateRegistry() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_registry()");
     vm.expectRevert();
