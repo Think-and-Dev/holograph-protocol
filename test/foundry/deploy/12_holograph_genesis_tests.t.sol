@@ -20,8 +20,8 @@ contract HolographGenesisTests is Test {
   address zeroAddress = address(0);
   address newDeployer = vm.addr(1);
   address mockOwner = vm.addr(2);
-  address deployerGenesisLocal = address(0xdf5295149F367b1FBFD595bdA578BAd22e59f504);
-  address deployerGenesis = address(0xBB566182f35B9E5Ae04dB02a5450CC156d2f89c1);
+  address deployerGenesisLocal = address(0xdf5295149F367b1FBFD595bdA578BAd22e59f504); //deployer approved by contract HolographGenesisLocal
+  address deployerGenesis = address(0xBB566182f35B9E5Ae04dB02a5450CC156d2f89c1); //deployer approved by contract HolographGenesis
   string public salt;
   string public secret;
 
@@ -238,8 +238,8 @@ contract HolographGenesisTests is Test {
 
   /**
    * @notice Tests that the `isApprovedDeployer()` function correctly returns true for an approved deployer
-   * @dev This test verifies that the `isApprovedDeployer()` function of the HolographGenesis contract returns
-   * `true` when called with the address of the `deployerGenesisLocal` account, which is an approved deployer.
+   * @dev This test verifies that the `isApprovedDeployer()` function of the HolographGenesis contract returns`true`
+   * when called with the address of the HolographGenesis contract deployer account, which is an approved deployer.
    * Refers to the hardhat test with the description 'Should return true to approved deployer wallet'
    */
   function testReturnTrueToApprovedDeployerWallet() public view {
@@ -260,7 +260,7 @@ contract HolographGenesisTests is Test {
    * @notice Tests that an external contract can call the `isApprovedDeployer()` function of the HolographGenesis contract
    * @dev This test verifies that the `mock` contract can successfully call the `isApprovedDeployer()` function of the
    * HolographGenesis contract. It first sets the storage of the `mock` contract to the address of the HolographGenesis contract,
-   * and then asserts that the `isApprovedDeployer()` function correctly returns `true` for the `deployerGenesisLocal` address.
+   * and then asserts that the `isApprovedDeployer()` function correctly returns `true` for the HolographGenesis deployer address.
    * Refers to the hardhat test with the description 'Should allow external contract to call fn'
    */
   function testallowExternalContractToCallFnIsApprovedDeployer() public {
