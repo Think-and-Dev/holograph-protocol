@@ -202,11 +202,7 @@ contract HologreaphFactory is Test {
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, hasSampleERC721);
     Verification memory signature = Verification({v: uint8(bytes1(invalideSignature)), r: r, s: s});
 
-    bytes memory payload = abi.encode(
-      deployConfig,
-      signature,
-      address(deployer)
-    );
+    bytes memory payload = abi.encode(deployConfig, signature, address(deployer));
 
     vm.prank(deployer);
     holographFactory.bridgeIn(uint32(block.chainid), payload);
