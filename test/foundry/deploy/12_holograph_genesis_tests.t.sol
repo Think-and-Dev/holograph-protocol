@@ -225,7 +225,7 @@ contract HolographGenesisTests is Test {
    * Refers to the hardhat test with the description 'should allow inherited contract to call fn'
    */
   function testAllowInheritedContractToCallFnApproveDeployerMock() public {
-    // TODO Test fails [FAIL. Reason: revert: HOLOGRAPH: deployer not approved]
+    // TODO The mock contract has pending store and load signatures. It skips test
     vm.skip(true);
     vm.prank(deployerGenesis);
     holographGenesisChild.approveDeployerMock(newDeployer, true);
