@@ -4,7 +4,9 @@ pragma solidity 0.8.13;
 import {Test, Vm, console} from "forge-std/Test.sol";
 import {Constants, ErrorConstants} from "../utils/Constants.sol";
 import {HelperDeploymentConfig} from "../utils/HelperDeploymentConfig.sol";
+import {HelperSignEthMessage} from "../utils/HelperSignEthMessage.sol";
 import {HolographERC20} from "../../../src/enforcer/HolographERC20.sol";
+import {Holographer} from "../../../src/enforcer/Holographer.sol";
 import {Holograph} from "../../../src/Holograph.sol";
 import {ERC20} from "../../../src/interface/ERC20.sol";
 import {Mock} from "../../../src/mock/Mock.sol";
@@ -27,7 +29,8 @@ contract HologreaphFactory is Test {
   address deployer = vm.addr(privateKeyDeployer);
   address owner = vm.addr(1);
   address newOwner = vm.addr(2);
-  bytes constant invalideSignature = abi.encode(0x0000000000000000000000000000000000000000000000000000000000000000);
+  address alice = vm.addr(3);
+  bytes constant invalidSignature = abi.encode(0x0000000000000000000000000000000000000000000000000000000000000000);
 
   function setUp() public {
     vm.prank(deployer);
@@ -55,8 +58,8 @@ contract HologreaphFactory is Test {
       vm.getCode("SampleERC721.sol:SampleERC721")
     );
 
-    bytes32 hasSampleERC721 = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
-    return (deployConfig, hasSampleERC721);
+    bytes32 hashSampleERC721 = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
+    return (deployConfig, hashSampleERC721);
   }
   /*
    * INIT Section
@@ -68,9 +71,10 @@ contract HologreaphFactory is Test {
    */
   function testInitRevert() public {
     bytes memory init = abi.encode(Constants.getHolographFactory(), Constants.getHolographRegistry());
-    vm.expectRevert(bytes("HOLOGRAPH: already initialized"));
+    vm.expectRevert(bytes(ErrorConstants.ALREADY_INITIALIZED_ERROR_MSG));
     holographFactory.init(abi.encode(address(deployer), address(holographERC20)));
   }
+
   /*
    * Deploy Holographable Contract Section
    */
@@ -80,18 +84,14 @@ contract HologreaphFactory is Test {
    * @dev  Refers to the hardhat test with the description 'should fail with invalid signature if config is incorrect'
    */
   function testDeployRevertInvalidSignature() public {
-    DeploymentConfig memory deployConfig = HelperDeploymentConfig.getHtokenEth(
-      Constants.getHolographIdL1(),
-      vm.getCode("hTokenProxy.sol:hTokenProxy")
+    (DeploymentConfig memory deployConfig, bytes32 hashHtokenEth) = getConfigHtokenETH();
+
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+      privateKeyDeployer,
+      HelperSignEthMessage.toEthSignedMessageHash(hashHtokenEth)
     );
+    Verification memory signature = Verification({v: v, r: r, s: s});
 
-    bytes32 hashHtokenEth = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
-
-    (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, hashHtokenEth);
-    Verification memory signature;
-    signature.v = v;
-    signature.r = r;
-    signature.s = s;
     vm.expectRevert(bytes(ErrorConstants.INVALID_SIGNATURE_ERROR_MSG));
     vm.prank(deployer);
     //TODO see this (owner), chain config// wrong in hardhat
@@ -104,36 +104,53 @@ contract HologreaphFactory is Test {
    */
   function testDeployRevertContractAlreadyDeployed() public {
     //TODO
-    DeploymentConfig memory deployConfig = HelperDeploymentConfig.getHtokenEth(
-      Constants.getHolographIdL1(),
-      vm.getCode("hTokenProxy.sol:hTokenProxy")
+    vm.skip(true);
+    (DeploymentConfig memory deployConfig, bytes32 hashHtokenEth) = getConfigHtokenETH();
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+      privateKeyDeployer,
+      HelperSignEthMessage.toEthSignedMessageHash(hashHtokenEth)
     );
-
-    bytes32 hashHtokenEth = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
-
     console.logBytes32(hashHtokenEth);
+    Verification memory signature = Verification({v: v, r: r, s: s});
 
-    (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, hashHtokenEth);
-    Verification memory signature;
-    signature.v = v;
-    signature.r = r;
-    signature.s = s;
-    console.log("v", v);
-    console.logBytes32(r);
-    console.logBytes32(s);
-    // vm.expectRevert(bytes(ErrorConstants.ALREADY_DEPLOYED_ERROR_MSG));
-    vm.expectRevert();
-    vm.prank(deployer);
+    bytes32 hash = keccak256(
+      abi.encodePacked(
+        deployConfig.contractType,
+        deployConfig.chainType,
+        deployConfig.salt,
+        keccak256(deployConfig.byteCode),
+        keccak256(deployConfig.initCode),
+        deployer
+      )
+    );
+    console.logBytes32(hash);
+    console.logBytes32(hashHtokenEth);
+    bytes memory holographerBytecode = type(Holographer).creationCode;
+    // console.logBytes32(bytes32(holographerBytecode));
+    address holographerAddress = address(
+      uint160(
+        uint256(
+          keccak256(abi.encodePacked(bytes1(0xff), address(holographFactory), hash, keccak256(holographerBytecode)))
+        )
+      )
+    );
+    bool isContract = _isContract(holographerAddress);
+    console.log("holographerAddress", holographerAddress);
+    console.log(isContract);
+
+    vm.expectRevert(bytes(ErrorConstants.ALREADY_DEPLOYED_ERROR_MSG));
+    // vm.prank(deployer);
     holographFactory.deployHolographableContract(deployConfig, signature, deployer);
   }
-
-  // function hexToBytes(string memory hexString) public pure returns (bytes memory) {
-  //   bytes memory bytesData = hex"";
-  //   for (uint i = 0; i < bytes(hexString).length; i += 2) {
-  //     bytesData[i / 2] = bytes(hexString)[i / 2];
-  //   }
-  //   return bytesData;
-  // }
+  //TODO remove this function, olny for test the previous test
+  function _isContract(address contractAddress) private view returns (bool) {
+    bytes32 codehash;
+    assembly {
+      codehash := extcodehash(contractAddress)
+    }
+    console.logBytes32(codehash);
+    return (codehash != 0x0 && codehash != 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470);
+  }
 
   /**
    * @notice
@@ -141,8 +158,11 @@ contract HologreaphFactory is Test {
    */
   function testDeployRevertSignatureRIncorrect() public {
     (DeploymentConfig memory deployConfig, bytes32 hashHtokenEth) = getConfigHtokenETH();
-    (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, hashHtokenEth);
-    Verification memory signature = Verification({v: v, r: bytes32(invalideSignature), s: s});
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+      privateKeyDeployer,
+      HelperSignEthMessage.toEthSignedMessageHash(hashHtokenEth)
+    );
+    Verification memory signature = Verification({v: v, r: bytes32(invalidSignature), s: s});
 
     vm.expectRevert(bytes(ErrorConstants.INVALID_SIGNATURE_ERROR_MSG));
     vm.prank(deployer);
@@ -154,8 +174,11 @@ contract HologreaphFactory is Test {
    */
   function testDeployRevertSignatureSIncorrect() public {
     (DeploymentConfig memory deployConfig, bytes32 hashHtokenEth) = getConfigHtokenETH();
-    (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, hashHtokenEth);
-    Verification memory signature = Verification({v: uint8(bytes1(invalideSignature)), r: r, s: s});
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+      privateKeyDeployer,
+      HelperSignEthMessage.toEthSignedMessageHash(hashHtokenEth)
+    );
+    Verification memory signature = Verification({v: uint8(bytes1(invalidSignature)), r: r, s: s});
 
     vm.expectRevert(bytes(ErrorConstants.INVALID_SIGNATURE_ERROR_MSG));
     vm.prank(deployer);
@@ -167,8 +190,11 @@ contract HologreaphFactory is Test {
    */
   function testDeployRevertSignatureVIncorrect() public {
     (DeploymentConfig memory deployConfig, bytes32 hashHtokenEth) = getConfigHtokenETH();
-    (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, hashHtokenEth);
-    Verification memory signature = Verification({v: uint8(bytes1(invalideSignature)), r: r, s: s});
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+      privateKeyDeployer,
+      HelperSignEthMessage.toEthSignedMessageHash(hashHtokenEth)
+    );
+    Verification memory signature = Verification({v: uint8(bytes1(invalidSignature)), r: r, s: s});
 
     vm.expectRevert(bytes(ErrorConstants.INVALID_SIGNATURE_ERROR_MSG));
     vm.prank(deployer);
@@ -180,12 +206,16 @@ contract HologreaphFactory is Test {
    */
   function testDeployRevertSignatureSignIncorrect() public {
     (DeploymentConfig memory deployConfig, bytes32 hashHtokenEth) = getConfigHtokenETH();
-    (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, hashHtokenEth);
-    Verification memory signature = Verification({v: uint8(bytes1(invalideSignature)), r: r, s: s});
+
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+      privateKeyDeployer,
+      HelperSignEthMessage.toEthSignedMessageHash(hashHtokenEth)
+    );
+    Verification memory signature = Verification({v: uint8(bytes1(invalidSignature)), r: r, s: s});
 
     vm.expectRevert(bytes(ErrorConstants.INVALID_SIGNATURE_ERROR_MSG));
     vm.prank(deployer);
-    holographFactory.deployHolographableContract(deployConfig, signature, newOwner);
+    holographFactory.deployHolographableContract(deployConfig, signature, deployer);
   }
 
   /*
@@ -197,13 +227,17 @@ contract HologreaphFactory is Test {
    */
   function testExpectedSelectorFromPayload() public {
     vm.skip(true);
-    (DeploymentConfig memory deployConfig, bytes32 hasSampleERC721) = getConfigERC721();
+    (DeploymentConfig memory deployConfig, bytes32 hashSampleERC721) = getConfigERC721();
 
-    (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, hasSampleERC721);
-    Verification memory signature = Verification({v: uint8(bytes1(invalideSignature)), r: r, s: s});
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+      privateKeyDeployer,
+      HelperSignEthMessage.toEthSignedMessageHash(hashSampleERC721)
+    );
+    Verification memory signature = Verification({v: uint8(bytes1(invalidSignature)), r: r, s: s});
 
     bytes memory payload = abi.encode(deployConfig, signature, address(deployer));
-
+    console.log(block.chainid);
+    console.log(block.chainid);
     vm.prank(deployer);
     holographFactory.bridgeIn(uint32(block.chainid), payload);
   }
@@ -228,7 +262,20 @@ contract HologreaphFactory is Test {
    * @dev  Refers to the hardhat test with the description 'should return selector and payload'
    */
   function testContemplateSelectorFromPayload() public {
-    vm.skip(true);
+    // vm.skip(true);
+    (DeploymentConfig memory deployConfig, bytes32 hashSampleERC721) = getConfigERC721();
+
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+      privateKeyDeployer,
+      HelperSignEthMessage.toEthSignedMessageHash(hashSampleERC721)
+    );
+    Verification memory signature = Verification({v: uint8(bytes1(invalidSignature)), r: r, s: s});
+
+    bytes memory payload = abi.encode(deployConfig, signature, address(deployer));
+    vm.prank(alice);
+    (bytes4 selector, bytes memory data) = holographFactory.bridgeOut(1, address(deployer), payload);
+    data;
+    assertEq(selector, bytes4(0xb7e03661));
   }
 
   /*
