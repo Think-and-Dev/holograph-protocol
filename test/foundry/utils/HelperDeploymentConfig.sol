@@ -4,7 +4,7 @@ import {Constants} from "../utils/Constants.sol";
 
 import {DeploymentConfig} from "../../../src/struct/DeploymentConfig.sol";
 
-library HelperERC20Config {
+library HelperDeploymentConfig {
   function getInitCodeHtokenETH() public pure returns (bytes memory) {
     return
       abi.encode(
@@ -13,14 +13,20 @@ library HelperERC20Config {
         abi.encode(Constants.getDeployer(), uint16(0))
       );
   }
-  function getDeployConfig(
+
+  function getInitCodeSampleErc721() public pure returns (bytes memory) {
+    return abi.encode(Constants.getDeployer());
+  }
+
+  function getDeployConfigERC20(
+    bytes32 contractType,
     uint32 chainType,
     bytes memory contractByteCode,
     string memory tokenName,
     string memory tokenSymbol,
     bytes memory initCode
   ) public pure returns (DeploymentConfig memory deployConfig) {
-    deployConfig.contractType = bytes32(0x000000000000000000000000000000000000486f6c6f67726170684552433230);
+    deployConfig.contractType = contractType; //hToken
     deployConfig.chainType = chainType; //holograph id
     deployConfig.salt = bytes32(0x00000000000000000000000000000000000000000000000000000000000003e8);
     deployConfig.byteCode = contractByteCode;
@@ -31,6 +37,30 @@ library HelperERC20Config {
       uint256(0x0000000000000000000000000000000000000000000000000000000000000000), //eventConfig
       tokenName, //domainSeparator
       "1", //domainVersion
+      false, //skipInit,
+      initCode
+    );
+    return deployConfig;
+  }
+
+  function getDeployConfigERC721(
+    bytes32 contractType,
+    uint32 chainType,
+    bytes memory contractByteCode,
+    string memory tokenName,
+    string memory tokenSymbol,
+    uint16 royaltyBps,
+    bytes memory initCode
+  ) public pure returns (DeploymentConfig memory deployConfig) {
+    deployConfig.contractType = contractType;
+    deployConfig.chainType = chainType; //holograph id
+    deployConfig.salt = Constants.saltHex;
+    deployConfig.byteCode = contractByteCode;
+    deployConfig.initCode = abi.encode(
+      tokenName, //token name
+      tokenSymbol, //tokenSymbol
+      royaltyBps, //royaltyBps
+      uint256(0x0000000000000000000000000000000000000000000000000000000000000000), //eventConfig
       false, //skipInit,
       initCode
     );
@@ -59,12 +89,32 @@ library HelperERC20Config {
     bytes memory contractByteCode
   ) public pure returns (DeploymentConfig memory deployConfig) {
     return
-      getDeployConfig(
+      getDeployConfigERC20(
+        bytes32(0x000000000000000000000000000000000000486f6c6f67726170684552433230), //hToken hash
         chainType,
         contractByteCode,
         "Holographed ETH",
         "hETH",
         getInitCodeHtokenETH()
+      );
+  }
+  /*
+   * @note This contract is used to get the DeploymentConfig for hToken ETH
+   * @dev This contract provides helper functions  to get the DeploymentConfig by chainType (getHolographIdL1 or getHolographIdL2) for hToken ETH
+   */
+  function getERC721(
+    uint32 chainType,
+    bytes memory contractByteCode
+  ) public pure returns (DeploymentConfig memory deployConfig) {
+    return
+      getDeployConfigERC721(
+        bytes32(0x0000000000000000000000000000000000486f6c6f6772617068455243373231), //HolographERC721 hash,
+        chainType,
+        contractByteCode,
+        "Sample ERC721 Contract (localhost)", //todo see localhost network, refact to param
+        "SMPLR",
+        1000, //royalty
+        getInitCodeSampleErc721()
       );
   }
 }

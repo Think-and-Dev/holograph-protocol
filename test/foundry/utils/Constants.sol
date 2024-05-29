@@ -149,6 +149,7 @@ library Constants {
     return uint256(0xff22437ccbedfffafa93a9f1da2e8c19c1711052799acf3b58ae5bebb5c6bd7b);
   }
   address public constant zeroAddress = address(0x0000000000000000000000000000000000000000);
+  bytes32 public constant saltHex = bytes32(0x00000000000000000000000000000000000000000000000000000000000003e8);
 }
 
 library ErrorConstants {
