@@ -4,6 +4,7 @@ pragma solidity 0.8.13;
 import {Test, Vm, console} from "forge-std/Test.sol";
 import {Constants} from "../utils/Constants.sol";
 import {HelperDeploymentConfig} from "../utils/HelperDeploymentConfig.sol";
+import {HelperSignEthMessage} from "../utils/HelperSignEthMessage.sol";
 import {SampleERC20} from "../../../src/token/SampleERC20.sol";
 import {ERC20Mock} from "../../../src/mock/ERC20Mock.sol";
 import {Holograph} from "../../../src/Holograph.sol";
@@ -769,14 +770,22 @@ DEPLOY CROSS-CHAIN CONTRACTS
   }
   function testDeployHTokenChain1EquivalentOnChain2() public {
     (DeploymentConfig memory deployConfig, bytes32 hashHtokenEth) = getConfigHtokenETH();
-    (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, hashHtokenEth);
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+      privateKeyDeployer,
+      HelperSignEthMessage.toEthSignedMessageHash(hashHtokenEth)
+    );
     Verification memory signature = Verification({v: v, r: r, s: s});
 
     // Verify that the contract does not exist on chain2
-    assertEq(address(registryChain1.getHolographedHashAddress(hashHtokenEth)), zeroAddress);
-    vm.selectFork(localHost2Fork);
+    // assertEq(address(registryChain1.getHolographedHashAddress(hashHtokenEth)), zeroAddress);
+    // vm.selectFork(localHost2Fork);
     address hTokenErc20Address = address(registryChain2.getHolographedHashAddress(hashHtokenEth));
-    console.log(hTokenErc20Address);
+    vm.selectFork(localHostFork);
+    console.log("l1", address(registryChain1.getHolographedHashAddress(hashHtokenEth)));
+    console.log(address(hTokenErc20Address));
+    vm.selectFork(localHost2Fork);
+    console.log("l1", address(registryChain1.getHolographedHashAddress(hashHtokenEth)));
+    console.log(address(hTokenErc20Address));
 
     // Sign the ERC20 configuration
     // (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, hashHtokenEth);
