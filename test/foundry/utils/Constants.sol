@@ -142,9 +142,15 @@ library Constants {
   function getDropsEventConfig() internal pure returns (uint256) {
     return 0x0000000000000000000000000000000000000000000000000000000000040000;
   }
+  function getHolographDropERC721V2() internal pure returns (address) {
+    return address(0x30F9D1c28584e0874dEE1b2f0101D77077D316e4);
+  }
 
-    function getHolographDropERC721() internal pure returns (address) {
+  function getHolographDropERC721() internal pure returns (address) {
     return address(0xc4aE0619B36BC57227DC258472E57A7265C5f2aA);
+  }
+  function getHolographIdL1() internal pure returns (uint32) {
+    return 4294967294;
   }
   function getHolographIdL2() internal pure returns (uint32) {
     return 4294967293;
@@ -157,9 +163,4 @@ library Constants {
   }
   address public constant zeroAddress = address(0x0000000000000000000000000000000000000000);
   bytes32 public constant saltHex = bytes32(0x00000000000000000000000000000000000000000000000000000000000003e8);
-}
-
-    function getHolographDropERC721V2() internal pure returns (address) {
-    return address(0x30F9D1c28584e0874dEE1b2f0101D77077D316e4);
-  }
 }
