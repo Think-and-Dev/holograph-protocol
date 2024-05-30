@@ -18,12 +18,18 @@ library HelperDeploymentConfig {
     return abi.encode(Constants.getDeployer());
   }
 
+  function getInitCodeSampleErc20() public pure returns (bytes memory) {
+    return abi.encode(Constants.getDeployer(), uint16(0));
+  }
+
   function getDeployConfigERC20(
     bytes32 contractType,
     uint32 chainType,
     bytes memory contractByteCode,
     string memory tokenName,
     string memory tokenSymbol,
+    bytes32 eventConfig,
+    string memory domainSeparator,
     bytes memory initCode
   ) public pure returns (DeploymentConfig memory deployConfig) {
     deployConfig.contractType = contractType; //hToken
@@ -34,8 +40,8 @@ library HelperDeploymentConfig {
       tokenName, //token name
       tokenSymbol, //tokenSymbol
       uint8(18), //decimals
-      uint256(0x0000000000000000000000000000000000000000000000000000000000000000), //eventConfig
-      tokenName, //domainSeparator
+      eventConfig, //eventConfig
+      domainSeparator, //domainSeparator
       "1", //domainVersion
       false, //skipInit,
       initCode
@@ -95,6 +101,8 @@ library HelperDeploymentConfig {
         contractByteCode,
         "Holographed ETH",
         "hETH",
+        0x0000000000000000000000000000000000000000000000000000000000000000,
+        "Holographed ETH",
         getInitCodeHtokenETH()
       );
   }
@@ -115,6 +123,23 @@ library HelperDeploymentConfig {
         "SMPLR",
         1000, //royalty
         getInitCodeSampleErc721()
+      );
+  }
+
+  function getERC20(
+    uint32 chainType,
+    bytes memory contractByteCode
+  ) public pure returns (DeploymentConfig memory deployConfig) {
+    return
+      getDeployConfigERC20(
+        bytes32(0x000000000000000000000000000000000000486f6c6f67726170684552433230), //hToken hash
+        chainType,
+        contractByteCode,
+        "Sample ERC20 Token (localhost)",
+        "SMPL",
+        0x0000000000000000000000000000000000000000000000000000000000000006,
+        "Sample ERC20 Token",
+        getInitCodeSampleErc20()
       );
   }
 }
