@@ -3,6 +3,8 @@ pragma solidity 0.8.13;
 import {Constants} from "../utils/Constants.sol";
 
 import {DeploymentConfig} from "../../../src/struct/DeploymentConfig.sol";
+import {Test, Vm, console} from "forge-std/Test.sol";
+
 
 library HelperDeploymentConfig {
   function getInitCodeHtokenETH() public pure returns (bytes memory) {
@@ -20,6 +22,10 @@ library HelperDeploymentConfig {
 
   function getInitCodeSampleErc20() public pure returns (bytes memory) {
     return abi.encode(Constants.getDeployer(), uint16(0));
+  }
+
+  function getInitCodeCxipERC721() public view returns (bytes memory) {
+    return abi.encode(bytes32(abi.encodePacked('CxipERC721')), Constants.getHolographRegistryProxy(), getInitCodeSampleErc721());
   }
 
   function getDeployConfigERC20(
@@ -145,6 +151,27 @@ library HelperDeploymentConfig {
         0x0000000000000000000000000000000000000000000000000000000000000006,
         "Sample ERC20 Token",
         getInitCodeSampleErc20()
+      );
+  }
+
+  function getCxipERC721(
+    uint32 chainType,
+    bytes memory contractByteCode,
+    bytes32 eventConfig,
+    bool isL1
+  ) public view returns (DeploymentConfig memory deployConfig) {
+    console.log("getInitCodeCxipERC721()");
+    console.logBytes(getInitCodeCxipERC721());
+    return
+      getDeployConfigERC721(
+        bytes32(0x0000000000000000000000000000000000486f6c6f6772617068455243373231), //HolographERC721 hash,
+        chainType,
+        contractByteCode,
+        isL1 ? "CXIP ERC721 Collection (localhost)" : "CXIP ERC721 Collection (localhost2)",
+        "CXIP",
+        eventConfig, //eventConfig
+        1000, //royalty
+        getInitCodeCxipERC721()
       );
   }
 }
