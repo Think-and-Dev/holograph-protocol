@@ -55,6 +55,7 @@ library HelperDeploymentConfig {
     bytes memory contractByteCode,
     string memory tokenName,
     string memory tokenSymbol,
+    bytes32 eventConfig,
     uint16 royaltyBps,
     bytes memory initCode
   ) public pure returns (DeploymentConfig memory deployConfig) {
@@ -66,7 +67,7 @@ library HelperDeploymentConfig {
       tokenName, //token name
       tokenSymbol, //tokenSymbol
       royaltyBps, //royaltyBps
-      uint256(0x0000000000000000000000000000000000000000000000000000000000000000), //eventConfig
+      eventConfig, //eventConfig
       false, //skipInit,
       initCode
     );
@@ -112,15 +113,18 @@ library HelperDeploymentConfig {
    */
   function getERC721(
     uint32 chainType,
-    bytes memory contractByteCode
+    bytes memory contractByteCode,
+    bytes32 eventConfig,
+    bool isL1
   ) public pure returns (DeploymentConfig memory deployConfig) {
     return
       getDeployConfigERC721(
         bytes32(0x0000000000000000000000000000000000486f6c6f6772617068455243373231), //HolographERC721 hash,
         chainType,
         contractByteCode,
-        "Sample ERC721 Contract (localhost)", //todo see localhost network, refact to param
+        isL1 ? "Sample ERC721 Contract (localhost)" : "Sample ERC721 Contract (localhost2)",
         "SMPLR",
+        eventConfig, //eventConfig
         1000, //royalty
         getInitCodeSampleErc721()
       );
