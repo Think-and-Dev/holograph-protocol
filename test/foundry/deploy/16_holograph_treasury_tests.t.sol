@@ -181,7 +181,7 @@ contract HolographTreasuryTests is Test {
    * calling the `setBridge` function.
    * Refers to the hardhat test with the description 'should allow admin to alter _bridgeSlot'
    */
-  function testAtllowAdminToAlterBridgeSlot() public {
+  function testAllowAdminToAlterBridgeSlot() public {
     vm.prank(origin);
     holographTreasury.setBridge(newBridgeAdd);
     assertEq(holographTreasury.getBridge(), newBridgeAdd);
@@ -236,7 +236,7 @@ contract HolographTreasuryTests is Test {
    * calling the `setHolograph` function.
    * Refers to the hardhat test with the description 'should allow admin to alter _holographSlot'
    */
-  function testAtllowAdminToAlterHolographSlot() public {
+  function testAllowAdminToAlterHolographSlot() public {
     vm.prank(origin);
     holographTreasury.setHolograph(newHolographAdd);
     assertEq(holographTreasury.getHolograph(), newHolographAdd);
@@ -282,7 +282,7 @@ contract HolographTreasuryTests is Test {
   }
 
   /* -------------------------------------------------------------------------- */
-  /*                               setOperator()                               */
+  /*                               setOperator()                                */
   /* -------------------------------------------------------------------------- */
 
   /**
@@ -291,7 +291,7 @@ contract HolographTreasuryTests is Test {
    * calling the `getOperator` function.
    * Refers to the hardhat test with the description 'should allow admin to alter _operatorSlot'
    */
-  function testAtllowAdminToAlterOperatorSlot() public {
+  function testAllowAdminToAlterOperatorSlot() public {
     vm.prank(origin);
     holographTreasury.setOperator(newOperatorAdd);
     assertEq(holographTreasury.getOperator(), newOperatorAdd);
@@ -338,7 +338,7 @@ contract HolographTreasuryTests is Test {
   }
 
   /* -------------------------------------------------------------------------- */
-  /*                               setRegistry()                               */
+  /*                               setRegistry()                                */
   /* -------------------------------------------------------------------------- */
 
   /**
