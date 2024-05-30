@@ -68,7 +68,7 @@ contract HolographGenesisTests is Test {
    * contract with a specific chain ID, salt, and secret.
    * Refers to the hardhat test with the description 'should succeed in deploying a contract'
    */
-  function testSuccessfulyDeploy() public {
+  function testSuccessfulyDeployed() public {
     uint256 chainId = block.chainid;
     bytes memory mockBytecode = vm.getCode("Mock.sol:Mock");
     bytes memory initCode = abi.encode(0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcd);
@@ -89,7 +89,7 @@ contract HolographGenesisTests is Test {
    * "HOLOGRAPH: incorrect chain id".
    * Refers to the hardhat test with the description 'should fail if chainId is not this blockchains chainId'
    */
-  function testDeployWrongChianIdRevert() public {
+  function testDeployWrongChainIdRevert() public {
     uint256 chainId = block.chainid;
     bytes memory mockBytecode = vm.getCode("Mock.sol:Mock");
     bytes memory initCode = abi.encode(0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcd);
@@ -134,7 +134,7 @@ contract HolographGenesisTests is Test {
    * called with an empty bytecode. It expects the "HOLOGRAPH: deployment failed" revert message.
    * Refers to the hardhat test with the description 'should fail if the deployment failed'
    */
-  function testDeployementFailRevert() public {
+  function testDeploymentFailRevert() public {
     uint256 chainId = block.chainid;
     bytes memory initCode = abi.encode(0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcd);
     vm.expectRevert("HOLOGRAPH: deployment failed");
