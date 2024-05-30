@@ -128,14 +128,15 @@ library HelperDeploymentConfig {
 
   function getERC20(
     uint32 chainType,
-    bytes memory contractByteCode
+    bytes memory contractByteCode,
+    bool isL1
   ) public pure returns (DeploymentConfig memory deployConfig) {
     return
       getDeployConfigERC20(
         bytes32(0x000000000000000000000000000000000000486f6c6f67726170684552433230), //hToken hash
         chainType,
         contractByteCode,
-        "Sample ERC20 Token (localhost)",
+        isL1 ? "Sample ERC20 Token (localhost)" : "Sample ERC20 Token (localhost2)",
         "SMPL",
         0x0000000000000000000000000000000000000000000000000000000000000006,
         "Sample ERC20 Token",
