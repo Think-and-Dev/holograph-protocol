@@ -474,4 +474,58 @@ contract CrossChainMinting is Test {
       "ERC721 contract not deployed on chain2"
     );
   }
+
+  // deploy chain2 equivalent on chain1
+  function testSampleERC721Chain1() public {
+    (DeploymentConfig memory erc721Config, bytes32 erc721ConfigHash) = getConfigSampleERC721(false);
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, erc721ConfigHash);
+    Verification memory signature = Verification({r: r, s: s, v: v});
+
+    vm.selectFork(chain1);
+    address sampleErc721Address = holographRegistryChain1.getHolographedHashAddress(erc721ConfigHash);
+
+    assertEq(sampleErc721Address, address(0), "ERC721 contract not deployed on chain1");
+
+    vm.selectFork(chain2);
+    sampleErc721Address = holographRegistryChain2.getHolographedHashAddress(erc721ConfigHash);
+
+    vm.selectFork(chain1);
+    bytes memory data = abi.encode(erc721Config, signature, deployer);
+
+    address originalMessagingModule = holographOperatorChain1.getMessagingModule();
+
+    vm.prank(deployer);
+    holographOperatorChain1.setMessagingModule(Constants.getMockLZEndpoint());
+
+    bytes memory payload = getRequestPayload(Constants.getHolographFactoryProxy(), data, false);
+
+    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, false);
+
+    payload = estimatedGas.payload;
+
+    (bool success, ) = address(mockLZEndpointChain1).call{gas: TESTGASLIMIT}(
+      abi.encodeWithSelector(
+        mockLZEndpointChain1.crossChainMessage.selector,
+        address(holographOperatorChain1),
+        getLzMsgGas(payload),
+        payload
+      )
+    );
+
+    vm.prank(deployer);
+    holographOperatorChain1.setMessagingModule(originalMessagingModule);
+
+    vm.expectEmit(true, true, false, false);
+    emit BridgeableContractDeployed(sampleErc721Address, erc721ConfigHash);
+
+    (bool success2, ) = address(holographOperatorChain1).call{gas: estimatedGas.estimatedGas}(
+      abi.encodeWithSelector(holographOperatorChain1.executeJob.selector, payload)
+    );
+
+    assertEq(
+      sampleErc721Address,
+      holographRegistryChain1.getHolographedHashAddress(erc721ConfigHash),
+      "ERC721 contract not deployed on chain1"
+    );
+  }
 }
