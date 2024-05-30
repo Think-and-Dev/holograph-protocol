@@ -177,7 +177,7 @@ contract HolographFactoryTest is Test {
       privateKeyDeployer,
       HelperSignEthMessage.toEthSignedMessageHash(hashHtokenEth)
     );
-    Verification memory signature = Verification({v: uint8(bytes1(invalidSignature)), r: r, s: s});
+    Verification memory signature = Verification({v: v, r: r, s: bytes32(invalidSignature)});
 
     vm.expectRevert(bytes(ErrorConstants.INVALID_SIGNATURE_ERROR_MSG));
     vm.prank(deployer);
@@ -210,7 +210,7 @@ contract HolographFactoryTest is Test {
       privateKeyDeployer,
       HelperSignEthMessage.toEthSignedMessageHash(hashHtokenEth)
     );
-    Verification memory signature = Verification({v: uint8(bytes1(invalidSignature)), r: r, s: s});
+    Verification memory signature = Verification({v: v, r: r, s: s});
 
     vm.expectRevert(bytes(ErrorConstants.INVALID_SIGNATURE_ERROR_MSG));
     vm.prank(deployer);
@@ -235,7 +235,6 @@ contract HolographFactoryTest is Test {
     Verification memory signature = Verification({v: uint8(bytes1(invalidSignature)), r: r, s: s});
 
     bytes memory payload = abi.encode(deployConfig, signature, address(deployer));
-    console.log(block.chainid);
     console.log(block.chainid);
     vm.prank(deployer);
     holographFactory.bridgeIn(uint32(block.chainid), payload);
@@ -267,7 +266,7 @@ contract HolographFactoryTest is Test {
       privateKeyDeployer,
       HelperSignEthMessage.toEthSignedMessageHash(hashSampleERC721)
     );
-    Verification memory signature = Verification({v: uint8(bytes1(invalidSignature)), r: r, s: s});
+    Verification memory signature = Verification({v: v, r: r, s: s});
 
     bytes memory payload = abi.encode(deployConfig, signature, address(deployer));
     vm.prank(alice);
