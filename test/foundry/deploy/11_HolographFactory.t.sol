@@ -43,6 +43,10 @@ contract HolographFactoryTest is Test {
     holograph = Holograph(payable(Constants.getHolograph()));
   }
 
+  /**
+   * @notice Get the config to deploy the hToken ETH contract
+   * @dev Get the deployment configuration and the hash of hTokenETH in chain 1 (localhost)
+   */
   function getConfigHtokenETH() public view returns (DeploymentConfig memory, bytes32) {
     DeploymentConfig memory deployConfig = HelperDeploymentConfig.getHtokenEth(
       Constants.getHolographIdL1(),
@@ -52,6 +56,11 @@ contract HolographFactoryTest is Test {
     bytes32 hashHtokenEth = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
     return (deployConfig, hashHtokenEth);
   }
+
+  /**
+   * @notice Get the config to deploy the SampleERC721 contract
+   * @dev Get the deployment configuration and the hash of SampleERC721 in chain 1 (localhost)
+   */
   function getConfigERC721() public view returns (DeploymentConfig memory, bytes32) {
     DeploymentConfig memory deployConfig = HelperDeploymentConfig.getERC721(
       Constants.getHolographIdL1(),
