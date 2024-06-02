@@ -24,8 +24,9 @@ library HelperDeploymentConfig {
     return abi.encode(Constants.getDeployer(), uint16(0));
   }
 
-  function getInitCodeCxipERC721() public view returns (bytes memory) {
-    return abi.encode(bytes32(abi.encodePacked('CxipERC721')), Constants.getHolographRegistryProxy(), getInitCodeSampleErc721());
+  function getInitCodeCxipERC721() public pure returns (bytes memory) {
+    bytes32 CxipERC721Hex = 0x0000000000000000000000000000000000000000000043786970455243373231;
+    return abi.encode(CxipERC721Hex, Constants.getHolographRegistryProxy(), getInitCodeSampleErc721());
   }
 
   function getDeployConfigERC20(
@@ -159,9 +160,7 @@ library HelperDeploymentConfig {
     bytes memory contractByteCode,
     bytes32 eventConfig,
     bool isL1
-  ) public view returns (DeploymentConfig memory deployConfig) {
-    console.log("getInitCodeCxipERC721()");
-    console.logBytes(getInitCodeCxipERC721());
+  ) public pure returns (DeploymentConfig memory deployConfig) {
     return
       getDeployConfigERC721(
         bytes32(0x0000000000000000000000000000000000486f6c6f6772617068455243373231), //HolographERC721 hash,
