@@ -59,6 +59,10 @@ contract CrossChainMinting is Test {
   HolographBridge holographBridgeChain2;
   LayerZeroModule lzModuleChain1;
   LayerZeroModule lzModuleChain2;
+  Holographer sampleErc721HolographerChain1;
+  Holographer sampleErc721HolographerChain2;
+  HolographERC721 sampleErc721EnforcerChain1;
+  HolographERC721 sampleErc721EnforcerChain2;
 
   HolographRegistry holographRegistryChain1;
   HolographRegistry holographRegistryChain2;
@@ -225,6 +229,10 @@ contract CrossChainMinting is Test {
     holographFactoryChain1 = HolographFactory(payable(Constants.getHolographFactoryProxy()));
     holographBridgeChain1 = HolographBridge(payable(Constants.getHolographBridgeProxy()));
     lzModuleChain1 = LayerZeroModule(payable(Constants.getLayerZeroModuleProxy()));
+    (, bytes32 erc721ConfigHash1) = getConfigSampleERC721(true);
+    address sampleErc721HolographerChain1Address = holographRegistryChain1.getHolographedHashAddress(erc721ConfigHash1);
+    sampleErc721HolographerChain1 = Holographer(payable(sampleErc721HolographerChain1Address));
+    sampleErc721EnforcerChain1 = HolographERC721(payable(sampleErc721HolographerChain1.getHolographEnforcer()));
 
     GasParameters memory gasParams = lzModuleChain1.getGasParameters(holographIdL1);
     msgBaseGas = gasParams.msgBaseGas;
@@ -240,6 +248,10 @@ contract CrossChainMinting is Test {
     holographFactoryChain2 = HolographFactory(payable(Constants.getHolographFactoryProxy()));
     holographBridgeChain2 = HolographBridge(payable(Constants.getHolographBridgeProxy()));
     lzModuleChain2 = LayerZeroModule(payable(Constants.getLayerZeroModuleProxy()));
+    (, bytes32 erc721ConfigHash2) = getConfigSampleERC721(false);
+    address sampleErc721HolographerChain2Address = holographRegistryChain2.getHolographedHashAddress(erc721ConfigHash2);
+    sampleErc721HolographerChain2 = Holographer(payable(sampleErc721HolographerChain2Address));
+    sampleErc721EnforcerChain2 = HolographERC721(payable(sampleErc721HolographerChain2.getHolographEnforcer()));
   }
 
   // Enable operators for chain1 and chain2
@@ -441,21 +453,16 @@ contract CrossChainMinting is Test {
   // deploy chain1 equivalent on chain2
   function testSampleERC721Chain2() public {
     (DeploymentConfig memory erc721Config, bytes32 erc721ConfigHash) = getConfigSampleERC721(true);
-    console.log("erc721ConfigHash");
-    console.logBytes32(erc721ConfigHash);
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, erc721ConfigHash);
     Verification memory signature = Verification({r: r, s: s, v: v});
 
     vm.selectFork(chain2);
     address sampleErc721Address = holographRegistryChain2.getHolographedHashAddress(erc721ConfigHash);
-    console.log("sampleErc721Address 1");
 
     assertEq(sampleErc721Address, address(0), "ERC721 contract not deployed on chain2");
 
     vm.selectFork(chain1);
     sampleErc721Address = holographRegistryChain1.getHolographedHashAddress(erc721ConfigHash);
-    console.log("sampleErc721Address 2");
-    console.logAddress(sampleErc721Address);
 
     vm.selectFork(chain2);
     bytes memory data = abi.encode(erc721Config, signature, deployer);
@@ -559,9 +566,6 @@ contract CrossChainMinting is Test {
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, erc721ConfigHash);
     Verification memory signature = Verification({r: r, s: s, v: v});
 
-    console.log("erc721ConfigHash");
-    console.logBytes32(erc721ConfigHash);
-
     vm.selectFork(chain2);
     address sampleErc721Address = holographRegistryChain2.getHolographedHashAddress(erc721ConfigHash);
 
@@ -569,9 +573,6 @@ contract CrossChainMinting is Test {
 
     vm.selectFork(chain1);
     sampleErc721Address = holographRegistryChain1.getHolographedHashAddress(erc721ConfigHash);
-
-    console.log("sampleErc721Address 2");
-    console.logAddress(sampleErc721Address);
 
     vm.selectFork(chain2);
     bytes memory data = abi.encode(erc721Config, signature, deployer);
@@ -776,4 +777,47 @@ contract CrossChainMinting is Test {
       "ERC20 contract not deployed on chain1"
     );
   }
+
+  // SampleERC721
+
+  // check current state
+
+  // chain1 should have a total supply of 0 on chain1
+  function testChain1ShouldHaveTotalSupplyOf0OnChain1() public {
+    vm.selectFork(chain1);
+    HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain1)));
+    assertEq(sampleErc721Enforcer.totalSupply(), 0, "Chain1 should have a total supply of 0 on chain1");
+  }
+
+  // chain1 should have a total supply of 0 on chain2
+  function testChain1ShouldHaveTotalSupplyOf0OnChain2() public {
+    vm.selectFork(chain2);
+    address sampleErc721HolographerChain1Address = address(sampleErc721HolographerChain1);
+    uint256 size;
+    assembly {
+        size := extcodesize(sampleErc721HolographerChain1Address)
+    }
+    assertEq(size, 0, "Chain1 contract should not be deployed on chain2");
+  }
+
+  // chain2 should have a total supply of 0 on chain1
+  function testChain2ShouldHaveTotalSupplyOf0OnChain1() public {
+    vm.selectFork(chain1);
+    address sampleErc721HolographerChain2Address = address(sampleErc721HolographerChain2);
+    uint256 size;
+    assembly {
+        size := extcodesize(sampleErc721HolographerChain2Address)
+    }
+    assertEq(size, 0, "Chain2 contract should not be deployed on chain1");
+  }
+
+  // chain2 should have a total supply of 0 on chain2
+  function testChain2ShouldHaveTotalSupplyOf0OnChain2() public {
+    vm.selectFork(chain2);
+    HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain2)));
+    assertEq(sampleErc721Enforcer.totalSupply(), 0, "Chain2 should have a total supply of 0 on chain2");
+  }
+
+  
+
 }
