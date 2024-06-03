@@ -139,6 +139,7 @@ library Constants {
   function getZeroAddress() internal pure returns (address) {
     return address(0x0000000000000000000000000000000000000000);
   }
+
   function getDropsEventConfig() internal pure returns (uint256) {
     return 0x0000000000000000000000000000000000000000000000000000000000040000;
   }
@@ -146,16 +147,21 @@ library Constants {
   function getHolographIdL1() internal pure returns (uint32) {
     return 4294967294;
   }
+
   function getHolographIdL2() internal pure returns (uint32) {
     return 4294967293;
   }
+
   function getDeployer() internal pure returns (address) {
     return address(0xdf5295149F367b1FBFD595bdA578BAd22e59f504);
   }
+
   function getPKDeployer() internal pure returns (uint256) {
     return uint256(0xff22437ccbedfffafa93a9f1da2e8c19c1711052799acf3b58ae5bebb5c6bd7b);
   }
+
   address public constant zeroAddress = address(0x0000000000000000000000000000000000000000);
+  address public constant originAddress = address(0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38);
   bytes32 public constant saltHex = bytes32(0x00000000000000000000000000000000000000000000000000000000000003e8);
 }
 
