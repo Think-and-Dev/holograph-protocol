@@ -143,5 +143,31 @@ library Constants {
     return 0x0000000000000000000000000000000000000000000000000000000000040000;
   }
 
-  
+  function getHolographIdL1() internal pure returns (uint32) {
+    return 4294967294;
+  }
+  function getHolographIdL2() internal pure returns (uint32) {
+    return 4294967293;
+  }
+  function getDeployer() internal pure returns (address) {
+    return address(0xdf5295149F367b1FBFD595bdA578BAd22e59f504);
+  }
+  function getPKDeployer() internal pure returns (uint256) {
+    return uint256(0xff22437ccbedfffafa93a9f1da2e8c19c1711052799acf3b58ae5bebb5c6bd7b);
+  }
+  address public constant zeroAddress = address(0x0000000000000000000000000000000000000000);
+  bytes32 public constant saltHex = bytes32(0x00000000000000000000000000000000000000000000000000000000000003e8);
+}
+
+library ErrorConstants {
+  string constant ONLY_ADMIN_ERROR_MSG = "HOLOGRAPH: admin only function";
+  string constant ALREADY_INITIALIZED_ERROR_MSG = "HOLOGRAPH: already initialized";
+  string constant ALREADY_DEPLOYED_ERROR_MSG = "HOLOGRAPH: already deployed";
+  string constant INVALID_SIGNATURE_ERROR_MSG = "HOLOGRAPH: invalid signature";
+  string constant HOLOGRAPHER_ALREADY_INITIALIZED_ERROR_MSG = "HOLOGRAPHER: already initialized";
+  string constant ROYALTIES_ALREADY_INITIALIZED_ERROR_MSG = "ROYALTIES: already initialized";
+  string constant FACTORY_ONLY_ERROR_MSG = "HOLOGRAPH: factory only function";
+  string constant EMPTY_CONTRACT_ERROR_MSG = "HOLOGRAPH: empty contract";
+  string constant CONTRACT_ALREADY_SET_ERROR_MSG = "HOLOGRAPH: contract already set";
+  string constant ROYALTIES_ONLY_OWNER_ERROR_MSG = "ROYALTIES: caller not an owner";
 }
