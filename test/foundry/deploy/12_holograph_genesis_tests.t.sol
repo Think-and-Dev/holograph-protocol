@@ -108,12 +108,12 @@ contract HolographGenesisTests is Test {
    * @notice Tests that the HolographGenesis contract reverts when deployed multiple times
    * @dev This test verifies that the HolographGenesis contract reverts when the `deploy()` function is
    * called multiple times with the same parameters. It first successfully deploys the contract using the
-   * `testSuccessfulyDeploy()` function, and then expects the "HOLOGRAPH: already deployed" revert when
+   * `testSuccessfulyDeployed()` function, and then expects the "HOLOGRAPH: already deployed" revert when
    * attempting to deploy the contract again with the same parameters.
    * Refers to the hardhat test with the description 'should fail if contract was already deployed'
    */
   function testContractAlreadyDeployedRevert() public {
-    testSuccessfulyDeploy();
+    testSuccessfulyDeployed();
     uint256 chainId = block.chainid;
     bytes memory mockBytecode = vm.getCode("Mock.sol:Mock");
     bytes memory initCode = abi.encode(0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcd);
