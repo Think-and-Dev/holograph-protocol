@@ -18,12 +18,18 @@ library HelperDeploymentConfig {
     return abi.encode(Constants.getDeployer());
   }
 
+  function getInitCodeSampleErc20() public pure returns (bytes memory) {
+    return abi.encode(Constants.getDeployer(), uint16(0));
+  }
+
   function getDeployConfigERC20(
     bytes32 contractType,
     uint32 chainType,
     bytes memory contractByteCode,
     string memory tokenName,
     string memory tokenSymbol,
+    bytes32 eventConfig,
+    string memory domainSeparator,
     bytes memory initCode
   ) public pure returns (DeploymentConfig memory deployConfig) {
     deployConfig.contractType = contractType; //hToken
@@ -34,21 +40,22 @@ library HelperDeploymentConfig {
       tokenName, //token name
       tokenSymbol, //tokenSymbol
       uint8(18), //decimals
-      uint256(0x0000000000000000000000000000000000000000000000000000000000000000), //eventConfig
-      tokenName, //domainSeparator
+      eventConfig,
+      // uint256(0x0000000000000000000000000000000000000000000000000000000000000000), //eventConfig
+      domainSeparator, //domainSeparator
       "1", //domainVersion
       false, //skipInit,
       initCode
     );
     return deployConfig;
   }
-
   function getDeployConfigERC721(
     bytes32 contractType,
     uint32 chainType,
     bytes memory contractByteCode,
     string memory tokenName,
     string memory tokenSymbol,
+    bytes32 eventConfig,
     uint16 royaltyBps,
     bytes memory initCode
   ) public pure returns (DeploymentConfig memory deployConfig) {
@@ -60,7 +67,8 @@ library HelperDeploymentConfig {
       tokenName, //token name
       tokenSymbol, //tokenSymbol
       royaltyBps, //royaltyBps
-      uint256(0x0000000000000000000000000000000000000000000000000000000000000000), //eventConfig
+      // uint256(0x0000000000000000000000000000000000000000000000000000000000000000), //eventConfig
+      eventConfig,
       false, //skipInit,
       initCode
     );
@@ -86,7 +94,9 @@ library HelperDeploymentConfig {
    */
   function getHtokenEth(
     uint32 chainType,
-    bytes memory contractByteCode
+    bytes memory contractByteCode,
+    bytes32 eventConfig,
+    bool isL1
   ) public pure returns (DeploymentConfig memory deployConfig) {
     return
       getDeployConfigERC20(
@@ -95,6 +105,8 @@ library HelperDeploymentConfig {
         contractByteCode,
         "Holographed ETH",
         "hETH",
+        bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
+        "Holographed ETH",
         getInitCodeHtokenETH()
       );
   }
@@ -102,17 +114,73 @@ library HelperDeploymentConfig {
    * @note This contract is used to get the DeploymentConfig for hToken ETH
    * @dev This contract provides helper functions  to get the DeploymentConfig by chainType (getHolographIdL1 or getHolographIdL2) for hToken ETH
    */
+  // function getERC721(
+  //   uint32 chainType,
+  //   bytes memory contractByteCode
+  // ) public pure returns (DeploymentConfig memory deployConfig) {
+  //   return
+  //     getDeployConfigERC721(
+  //       bytes32(0x0000000000000000000000000000000000486f6c6f6772617068455243373231), //HolographERC721 hash,
+  //       chainType,
+  //       contractByteCode,
+  //       "Sample ERC721 Contract (localhost)", //todo see localhost network, refact to param
+  //       "SMPLR",
+  //       1000, //royalty
+  //       getInitCodeSampleErc721()
+  //     );
+  // }
+
+  function getERC20(
+    uint32 chainType,
+    bytes memory contractByteCode,
+    bool isL1
+  ) public pure returns (DeploymentConfig memory deployConfig) {
+    return
+      getDeployConfigERC20(
+        bytes32(0x000000000000000000000000000000000000486f6c6f67726170684552433230), //hToken hash
+        chainType,
+        contractByteCode,
+        isL1 ? "Sample ERC20 Token (localhost)" : "Sample ERC20 Token (localhost2)",
+        "SMPL",
+        0x0000000000000000000000000000000000000000000000000000000000000006,
+        "Sample ERC20 Token",
+        getInitCodeSampleErc20()
+      );
+  }
+
+  // function getCxipERC721(
+  //   uint32 chainType,
+  //   bytes memory contractByteCode,
+  //   bytes32 eventConfig,
+  //   bool isL1
+  // ) public pure returns (DeploymentConfig memory deployConfig) {
+  //   return
+  //     getDeployConfigERC721(
+  //       bytes32(0x0000000000000000000000000000000000486f6c6f6772617068455243373231), //HolographERC721 hash,
+  //       chainType,
+  //       contractByteCode,
+  //       isL1 ? "CXIP ERC721 Collection (localhost)" : "CXIP ERC721 Collection (localhost2)",
+  //       "CXIP",
+  //       eventConfig, //eventConfig
+  //       1000, //royalty
+  //       getInitCodeCxipERC721()
+  //     );
+  // }
+
   function getERC721(
     uint32 chainType,
-    bytes memory contractByteCode
+    bytes memory contractByteCode,
+    bytes32 eventConfig,
+    bool isL1
   ) public pure returns (DeploymentConfig memory deployConfig) {
     return
       getDeployConfigERC721(
         bytes32(0x0000000000000000000000000000000000486f6c6f6772617068455243373231), //HolographERC721 hash,
         chainType,
         contractByteCode,
-        "Sample ERC721 Contract (localhost)", //todo see localhost network, refact to param
+        isL1 ? "Sample ERC721 Contract (localhost)" : "Sample ERC721 Contract (localhost2)",
         "SMPLR",
+        eventConfig, //eventConfig
         1000, //royalty
         getInitCodeSampleErc721()
       );
