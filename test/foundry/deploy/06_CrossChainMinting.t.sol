@@ -23,11 +23,15 @@ import {SampleERC20} from "../../../src/token/SampleERC20.sol";
 
 contract CrossChainMinting is Test {
   event BridgeableContractDeployed(address indexed contractAddress, bytes32 indexed hash);
+  event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
 
   uint256 public chain1;
   uint256 public chain2;
   string public LOCALHOST_RPC_URL = vm.envString("LOCALHOST_RPC_URL");
   string public LOCALHOST2_RPC_URL = vm.envString("LOCALHOST2_RPC_URL");
+
+  address public alice;
+  address public bob;
 
   uint256 privateKeyDeployer = Constants.getPKDeployer();
   address deployer = vm.addr(privateKeyDeployer);
@@ -220,6 +224,9 @@ contract CrossChainMinting is Test {
   function setUp() public {
     chain1 = vm.createFork(LOCALHOST_RPC_URL);
     chain2 = vm.createFork(LOCALHOST2_RPC_URL);
+
+    alice = vm.addr(1);
+    bob = vm.addr(2);
 
     vm.selectFork(chain1);
     holographChain1 = Holograph(payable(Constants.getHolograph()));
@@ -502,6 +509,11 @@ contract CrossChainMinting is Test {
       holographRegistryChain1.getHolographedHashAddress(erc721ConfigHash),
       "ERC721 contract not deployed on chain2"
     );
+
+    // SampleERC721 - check current state - chain1 should have a total supply of 0 on chain2
+    vm.selectFork(chain2);
+    HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain1)));
+    assertEq(sampleErc721Enforcer.totalSupply(), 0, "Chain1 should have a total supply of 0 on chain2");
   }
 
   // deploy chain2 equivalent on chain1
@@ -556,6 +568,11 @@ contract CrossChainMinting is Test {
       holographRegistryChain1.getHolographedHashAddress(erc721ConfigHash),
       "ERC721 contract not deployed on chain1"
     );
+
+    // SampleERC721 - check current state - chain2 should have a total supply of 0 on chain1
+    vm.selectFork(chain1);
+    HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain2)));
+    assertEq(sampleErc721Enforcer.totalSupply(), 0, "Chain2 should have a total supply of 0 on chain1");
   }
 
   // CxipERC721
@@ -790,26 +807,10 @@ contract CrossChainMinting is Test {
   }
 
   // chain1 should have a total supply of 0 on chain2
-  function testChain1ShouldHaveTotalSupplyOf0OnChain2() public {
-    vm.selectFork(chain2);
-    address sampleErc721HolographerChain1Address = address(sampleErc721HolographerChain1);
-    uint256 size;
-    assembly {
-        size := extcodesize(sampleErc721HolographerChain1Address)
-    }
-    assertEq(size, 0, "Chain1 contract should not be deployed on chain2");
-  }
+  // see testSampleERC721Chain2 test
 
   // chain2 should have a total supply of 0 on chain1
-  function testChain2ShouldHaveTotalSupplyOf0OnChain1() public {
-    vm.selectFork(chain1);
-    address sampleErc721HolographerChain2Address = address(sampleErc721HolographerChain2);
-    uint256 size;
-    assembly {
-        size := extcodesize(sampleErc721HolographerChain2Address)
-    }
-    assertEq(size, 0, "Chain2 contract should not be deployed on chain1");
-  }
+  // see testSampleERC721Chain1 test
 
   // chain2 should have a total supply of 0 on chain2
   function testChain2ShouldHaveTotalSupplyOf0OnChain2() public {
@@ -817,7 +818,5 @@ contract CrossChainMinting is Test {
     HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain2)));
     assertEq(sampleErc721Enforcer.totalSupply(), 0, "Chain2 should have a total supply of 0 on chain2");
   }
-
-  
 
 }
