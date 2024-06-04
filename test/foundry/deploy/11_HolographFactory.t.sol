@@ -39,10 +39,14 @@ contract HolographFactoryTest is Test {
     localHostFork = vm.createFork(LOCALHOST_RPC_URL);
     vm.selectFork(localHostFork);
     holographRegistry = HolographRegistry(payable(Constants.getHolographRegistryProxy()));
-    holographFactory = HolographFactory(payable(Constants.getHolographFactory()));
+    holographFactory = HolographFactory(payable(Constants.getHolographFactoryProxy()));
     holograph = Holograph(payable(Constants.getHolograph()));
   }
 
+  /**
+   * @notice Get the config to deploy the hToken ETH contract
+   * @dev Get the deployment configuration and the hash of hTokenETH in chain 1 (localhost)
+   */
   function getConfigHtokenETH() public view returns (DeploymentConfig memory, bytes32) {
     DeploymentConfig memory deployConfig = HelperDeploymentConfig.getHtokenEth(
       Constants.getHolographIdL1(),
@@ -52,6 +56,11 @@ contract HolographFactoryTest is Test {
     bytes32 hashHtokenEth = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
     return (deployConfig, hashHtokenEth);
   }
+
+  /**
+   * @notice Get the config to deploy the SampleERC721 contract
+   * @dev Get the deployment configuration and the hash of SampleERC721 in chain 1 (localhost)
+   */
   function getConfigERC721() public view returns (DeploymentConfig memory, bytes32) {
     DeploymentConfig memory deployConfig = HelperDeploymentConfig.getERC721(
       Constants.getHolographIdL1(),
@@ -102,53 +111,15 @@ contract HolographFactoryTest is Test {
    * @dev  Refers to the hardhat test with the description 'should fail contract was already deployed'
    */
   function testDeployRevertContractAlreadyDeployed() public {
-    //TODO the internal function _isContract is not working.
-    vm.skip(true);
     (DeploymentConfig memory deployConfig, bytes32 hashHtokenEth) = getConfigHtokenETH();
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(
       privateKeyDeployer,
       HelperSignEthMessage.toEthSignedMessageHash(hashHtokenEth)
     );
-    console.logBytes32(hashHtokenEth);
     Verification memory signature = Verification({v: v, r: r, s: s});
-
-    bytes32 hash = keccak256(
-      abi.encodePacked(
-        deployConfig.contractType,
-        deployConfig.chainType,
-        deployConfig.salt,
-        keccak256(deployConfig.byteCode),
-        keccak256(deployConfig.initCode),
-        deployer
-      )
-    );
-    console.logBytes32(hash);
-    console.logBytes32(hashHtokenEth);
-    bytes memory holographerBytecode = type(Holographer).creationCode;
-    // console.logBytes32(bytes32(holographerBytecode));
-    address holographerAddress = address(
-      uint160(
-        uint256(
-          keccak256(abi.encodePacked(bytes1(0xff), address(holographFactory), hash, keccak256(holographerBytecode)))
-        )
-      )
-    );
-    bool isContract = _isContract(holographerAddress);
-    console.log("holographerAddress", holographerAddress);
-    console.log(isContract);
-
     vm.expectRevert(bytes(ErrorConstants.ALREADY_DEPLOYED_ERROR_MSG));
-    // vm.prank(deployer);
+    vm.prank(deployer);
     holographFactory.deployHolographableContract(deployConfig, signature, deployer);
-  }
-  //TODO remove this function, its olny for test the previous test
-  function _isContract(address contractAddress) private view returns (bool) {
-    bytes32 codehash;
-    assembly {
-      codehash := extcodehash(contractAddress)
-    }
-    console.logBytes32(codehash);
-    return (codehash != 0x0 && codehash != 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470);
   }
 
   /**
@@ -177,7 +148,7 @@ contract HolographFactoryTest is Test {
       privateKeyDeployer,
       HelperSignEthMessage.toEthSignedMessageHash(hashHtokenEth)
     );
-    Verification memory signature = Verification({v: uint8(bytes1(invalidSignature)), r: r, s: s});
+    Verification memory signature = Verification({v: v, r: r, s: bytes32(invalidSignature)});
 
     vm.expectRevert(bytes(ErrorConstants.INVALID_SIGNATURE_ERROR_MSG));
     vm.prank(deployer);
@@ -210,7 +181,7 @@ contract HolographFactoryTest is Test {
       privateKeyDeployer,
       HelperSignEthMessage.toEthSignedMessageHash(hashHtokenEth)
     );
-    Verification memory signature = Verification({v: uint8(bytes1(invalidSignature)), r: r, s: s});
+    Verification memory signature = Verification({v: v, r: r, s: s});
 
     vm.expectRevert(bytes(ErrorConstants.INVALID_SIGNATURE_ERROR_MSG));
     vm.prank(deployer);
@@ -225,20 +196,19 @@ contract HolographFactoryTest is Test {
    * @dev  Refers to the hardhat test with the description 'should return the expected selector from the input payload'
    */
   function testExpectedSelectorFromPayload() public {
-    vm.skip(true);
     (DeploymentConfig memory deployConfig, bytes32 hashSampleERC721) = getConfigERC721();
 
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(
       privateKeyDeployer,
       HelperSignEthMessage.toEthSignedMessageHash(hashSampleERC721)
     );
-    Verification memory signature = Verification({v: uint8(bytes1(invalidSignature)), r: r, s: s});
+    Verification memory signature = Verification({v: v, r: r, s: s});
 
     bytes memory payload = abi.encode(deployConfig, signature, address(deployer));
-    console.log(block.chainid);
-    console.log(block.chainid);
+
     vm.prank(deployer);
-    holographFactory.bridgeIn(uint32(block.chainid), payload);
+    bytes4 selector = holographFactory.bridgeIn(uint32(block.chainid), payload);
+    assertEq(selector, bytes4(0x08a1eb20));
   }
 
   /**
@@ -267,7 +237,7 @@ contract HolographFactoryTest is Test {
       privateKeyDeployer,
       HelperSignEthMessage.toEthSignedMessageHash(hashSampleERC721)
     );
-    Verification memory signature = Verification({v: uint8(bytes1(invalidSignature)), r: r, s: s});
+    Verification memory signature = Verification({v: v, r: r, s: s});
 
     bytes memory payload = abi.encode(deployConfig, signature, address(deployer));
     vm.prank(alice);
@@ -339,7 +309,7 @@ contract HolographFactoryTest is Test {
   function testRevertRecive() public {
     vm.prank(deployer);
     vm.expectRevert();
-    payable(address(holographFactory)).transfer(1 ether);
+    payable(address(Constants.getHolographFactory())).transfer(1 ether);
   }
   /**
    * @notice Test the fallback function in the contract must revert
@@ -348,6 +318,6 @@ contract HolographFactoryTest is Test {
   function testRevertFallback() public {
     vm.prank(deployer);
     vm.expectRevert();
-    payable(address(holographFactory)).transfer(0);
+    payable(address(Constants.getHolographFactory())).transfer(0);
   }
 }
