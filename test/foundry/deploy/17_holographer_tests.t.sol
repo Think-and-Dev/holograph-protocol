@@ -26,32 +26,29 @@ contract HolographerTests is Test {
   Holographer holographer;
   address zeroAddress = Constants.getZeroAddress();
   uint256 privateKeyDeployer = Constants.getPKDeployer();
-  address deployer = vm.addr(privateKeyDeployer);
+  address deployer = vm.addr(Constants.getPKDeployer());
   uint256 localHostFork;
   string LOCALHOST_RPC_URL = vm.envString("LOCALHOST_RPC_URL");
-
-  function generateInitCode() public pure returns (bytes memory) {
-    return abi.encode(Constants.getDeployer());
-  }
+  bytes32 holographERC721Hash = bytes32(0x0000000000000000000000000000000000486f6c6f6772617068455243373231);
 
   /**
    * @notice Deploys the Holographer contract
    * @dev This function deploys the Holographer contract using the provided configuration and signature.
-   * It first generates the deployment configuration using the HelperDeploymentConfig, then signs the
-   * configuration with the deployer's private key.
-   * The signed configuration is then used to deploy the Holographer contract using the factory contract.
+   * It generates the deployment configuration using the HelperDeploymentConfig, signs the configuration
+   * with the deployer's private key, and then deploys the Holographer contract using the factory contract.
    * The function also records the logs of the deployment and verifies that the BridgeableContractDeployed
    * event was emitted with the correct address and hash.
+   * @return The address of the deployed Holographer contract.
    */
-  function deployHolographer() public {
+  function deployHolographer() public returns (address) {
     DeploymentConfig memory deployConfig = HelperDeploymentConfig.getDeployConfigERC721(
-      bytes32(0x0000000000000000000000000000000000486f6c6f6772617068455243373231),
+      holographERC721Hash,
       Constants.getHolographIdL1(),
       vm.getCode("SampleERC721.sol:SampleERC721"),
       "Sample ERC721 Contract: unit test",
       "SMPLR",
       1000,
-      generateInitCode()
+      HelperDeploymentConfig.getInitCodeSampleErc721()
     );
 
     bytes32 hashERC721 = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
@@ -68,9 +65,8 @@ contract HolographerTests is Test {
     Vm.Log[] memory logs = vm.getRecordedLogs();
 
     address holographerAddress = address(uint160(uint256(logs[1].topics[1])));
-    console.log(holographerAddress);
     assertEq(logs[1].topics[0], keccak256("BridgeableContractDeployed(address,bytes32)"));
-    holographer = Holographer(payable(holographerAddress));
+    return holographerAddress;
   }
 
   /**
@@ -87,7 +83,8 @@ contract HolographerTests is Test {
     factory = HolographFactory(payable(Constants.getHolographFactoryProxy()));
     holograph = Holograph(payable(Constants.getHolograph()));
     mockExternalCall = new MockExternalCall();
-    deployHolographer();
+    address holographerAddress = deployHolographer();
+    holographer = Holographer(payable(holographerAddress));
   }
 
   /* -------------------------------------------------------------------------- */
