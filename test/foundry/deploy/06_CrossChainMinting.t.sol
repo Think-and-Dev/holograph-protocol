@@ -120,7 +120,8 @@ contract CrossChainMinting is Test {
     address _target,
     bytes memory _data,
     bytes memory _payload,
-    bool isL1
+    bool isL1,
+    uint256 _gasLimitAddition
   ) public returns (EstimatedGas memory) {
     if (isL1) {
       vm.selectFork(chain2);
@@ -129,7 +130,7 @@ contract CrossChainMinting is Test {
       );
       uint256 jobEstimatorGas = abi.decode(result, (uint256));
 
-      uint256 estimatedGas = TESTGASLIMIT - jobEstimatorGas + 150000;
+      uint256 estimatedGas = TESTGASLIMIT - jobEstimatorGas + _gasLimitAddition;
 
       vm.selectFork(chain1);
       vm.prank(deployer);
@@ -157,7 +158,7 @@ contract CrossChainMinting is Test {
 
       uint256 jobEstimatorGas2 = abi.decode(result2, (uint256));
 
-      estimatedGas = TESTGASLIMIT - jobEstimatorGas2;
+      estimatedGas = TESTGASLIMIT - jobEstimatorGas2 + _gasLimitAddition;
 
       estimatedGas = getHlgMsgGas(estimatedGas, payload);
 
@@ -177,7 +178,7 @@ contract CrossChainMinting is Test {
       );
       uint256 jobEstimatorGas = abi.decode(result, (uint256));
 
-      uint256 estimatedGas = TESTGASLIMIT - jobEstimatorGas + 150000;
+      uint256 estimatedGas = TESTGASLIMIT - jobEstimatorGas + _gasLimitAddition;
 
       vm.selectFork(chain2);
       vm.prank(deployer);
@@ -205,7 +206,7 @@ contract CrossChainMinting is Test {
 
       uint256 jobEstimatorGas2 = abi.decode(result2, (uint256));
 
-      estimatedGas = TESTGASLIMIT - jobEstimatorGas2;
+      estimatedGas = TESTGASLIMIT - jobEstimatorGas2 + _gasLimitAddition;
 
       estimatedGas = getHlgMsgGas(estimatedGas, payload);
 
@@ -371,7 +372,7 @@ contract CrossChainMinting is Test {
 
     bytes memory payload = getRequestPayload(Constants.getHolographFactoryProxy(), data, true);
 
-    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, true);
+    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, true, 150000);
 
     payload = estimatedGas.payload;
 
@@ -425,7 +426,7 @@ contract CrossChainMinting is Test {
 
     bytes memory payload = getRequestPayload(Constants.getHolographFactoryProxy(), data, false);
 
-    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, false);
+    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, false, 150000);
 
     payload = estimatedGas.payload;
 
@@ -481,7 +482,7 @@ contract CrossChainMinting is Test {
 
     bytes memory payload = getRequestPayload(Constants.getHolographFactoryProxy(), data, true);
 
-    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, true);
+    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, true, 150000);
 
     payload = estimatedGas.payload;
 
@@ -541,7 +542,7 @@ contract CrossChainMinting is Test {
 
     bytes memory payload = getRequestPayload(Constants.getHolographFactoryProxy(), data, false);
 
-    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, false);
+    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, false, 150000);
 
     payload = estimatedGas.payload;
 
@@ -603,7 +604,7 @@ contract CrossChainMinting is Test {
 
     bytes memory payload = getRequestPayload(Constants.getHolographFactoryProxy(), data, true);
 
-    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, true);
+    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, true, 150000);
 
     payload = estimatedGas.payload;
 
@@ -657,7 +658,7 @@ contract CrossChainMinting is Test {
 
     bytes memory payload = getRequestPayload(Constants.getHolographFactoryProxy(), data, false);
 
-    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, false);
+    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, false, 150000);
 
     payload = estimatedGas.payload;
 
@@ -713,7 +714,7 @@ contract CrossChainMinting is Test {
 
     bytes memory payload = getRequestPayload(Constants.getHolographFactoryProxy(), data, true);
 
-    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, true);
+    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, true, 150000);
 
     payload = estimatedGas.payload;
 
@@ -767,7 +768,7 @@ contract CrossChainMinting is Test {
 
     bytes memory payload = getRequestPayload(Constants.getHolographFactoryProxy(), data, false);
 
-    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, false);
+    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, false, 150000);
 
     payload = estimatedGas.payload;
 
@@ -889,7 +890,7 @@ contract CrossChainMinting is Test {
 
     vm.prank(deployer);
     sampleERC721Chain1.mint(deployer, 3, "https://holograph.xyz/sample3.json");
-    
+
     vm.selectFork(chain2);
     // vm.expectEmit(true, true, true, false);
     // emit Transfer(address(0), deployer, 3);
@@ -897,5 +898,66 @@ contract CrossChainMinting is Test {
 
     vm.prank(deployer);
     sampleERC721Chain2.mint(deployer, 3, "https://holograph.xyz/sample3.json");
+  }
+
+  // validate bridge functionality
+
+  // token #1 beaming from chain1 to chain2 should succeed | original test uses #3
+  function testToken3BeamingFromChain1ToChain2ShouldSucceed() public {
+    testChain1ShouldMintToken1As1OnChain1();
+    sampleERC721HelperChain2();
+
+    bytes memory data = abi.encode(deployer, deployer, 1);
+
+    address sampleErc721HolographerChain1Address = address(sampleErc721HolographerChain1);
+
+    vm.selectFork(chain2);
+    address originalMessagingModule = holographOperatorChain2.getMessagingModule();
+
+    bytes memory payload = getRequestPayload(sampleErc721HolographerChain1Address, data, true);
+
+    EstimatedGas memory estimatedGas = getEstimatedGas(sampleErc721HolographerChain1Address, data, payload, true, 270000);
+
+    payload = estimatedGas.payload;
+
+    vm.selectFork(chain1);
+    vm.prank(deployer);
+    (bool success, ) = address(holographBridgeChain1).call{value: estimatedGas.fee}(
+      abi.encodeWithSelector(
+        holographBridgeChain1.bridgeOutRequest.selector,
+        holographIdL2,
+        sampleErc721HolographerChain1Address,
+        estimatedGas.estimatedGas,
+        GWEI,
+        data
+      )
+    );
+
+    vm.selectFork(chain2);
+    vm.prank(deployer);
+    holographOperatorChain2.setMessagingModule(Constants.getMockLZEndpoint());
+
+    (bool success2, ) = address(mockLZEndpointChain2).call{gas: TESTGASLIMIT}(
+      abi.encodeWithSelector(
+        mockLZEndpointChain2.crossChainMessage.selector,
+        address(holographOperatorChain2),
+        getLzMsgGas(payload),
+        payload
+      )
+    );
+
+    vm.prank(deployer);
+    holographOperatorChain2.setMessagingModule(originalMessagingModule);
+
+    vm.expectEmit(true, true, true, false);
+    emit Transfer(address(0), deployer, 1);
+
+    // vm.prank(deployer);
+    (bool success3, ) = address(holographOperatorChain2).call{gas: estimatedGas.estimatedGas}(
+      abi.encodeWithSelector(holographOperatorChain2.executeJob.selector, payload)
+    );
+
+    HolographERC721 sampleErc721Enforcer = HolographERC721(payable(sampleErc721HolographerChain1Address));
+    assertEq(sampleErc721Enforcer.ownerOf(1), deployer, "Token #1 should be owned by deployer on chain2");
   }
 }
