@@ -372,7 +372,13 @@ contract CrossChainMinting is Test {
 
     bytes memory payload = getRequestPayload(Constants.getHolographFactoryProxy(), data, true);
 
-    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, true, 150000);
+    EstimatedGas memory estimatedGas = getEstimatedGas(
+      Constants.getHolographFactoryProxy(),
+      data,
+      payload,
+      true,
+      150000
+    );
 
     payload = estimatedGas.payload;
 
@@ -426,7 +432,13 @@ contract CrossChainMinting is Test {
 
     bytes memory payload = getRequestPayload(Constants.getHolographFactoryProxy(), data, false);
 
-    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, false, 150000);
+    EstimatedGas memory estimatedGas = getEstimatedGas(
+      Constants.getHolographFactoryProxy(),
+      data,
+      payload,
+      false,
+      150000
+    );
 
     payload = estimatedGas.payload;
 
@@ -482,7 +494,13 @@ contract CrossChainMinting is Test {
 
     bytes memory payload = getRequestPayload(Constants.getHolographFactoryProxy(), data, true);
 
-    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, true, 150000);
+    EstimatedGas memory estimatedGas = getEstimatedGas(
+      Constants.getHolographFactoryProxy(),
+      data,
+      payload,
+      true,
+      150000
+    );
 
     payload = estimatedGas.payload;
 
@@ -542,7 +560,13 @@ contract CrossChainMinting is Test {
 
     bytes memory payload = getRequestPayload(Constants.getHolographFactoryProxy(), data, false);
 
-    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, false, 150000);
+    EstimatedGas memory estimatedGas = getEstimatedGas(
+      Constants.getHolographFactoryProxy(),
+      data,
+      payload,
+      false,
+      150000
+    );
 
     payload = estimatedGas.payload;
 
@@ -604,7 +628,13 @@ contract CrossChainMinting is Test {
 
     bytes memory payload = getRequestPayload(Constants.getHolographFactoryProxy(), data, true);
 
-    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, true, 150000);
+    EstimatedGas memory estimatedGas = getEstimatedGas(
+      Constants.getHolographFactoryProxy(),
+      data,
+      payload,
+      true,
+      150000
+    );
 
     payload = estimatedGas.payload;
 
@@ -658,7 +688,13 @@ contract CrossChainMinting is Test {
 
     bytes memory payload = getRequestPayload(Constants.getHolographFactoryProxy(), data, false);
 
-    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, false, 150000);
+    EstimatedGas memory estimatedGas = getEstimatedGas(
+      Constants.getHolographFactoryProxy(),
+      data,
+      payload,
+      false,
+      150000
+    );
 
     payload = estimatedGas.payload;
 
@@ -714,7 +750,13 @@ contract CrossChainMinting is Test {
 
     bytes memory payload = getRequestPayload(Constants.getHolographFactoryProxy(), data, true);
 
-    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, true, 150000);
+    EstimatedGas memory estimatedGas = getEstimatedGas(
+      Constants.getHolographFactoryProxy(),
+      data,
+      payload,
+      true,
+      150000
+    );
 
     payload = estimatedGas.payload;
 
@@ -768,7 +810,13 @@ contract CrossChainMinting is Test {
 
     bytes memory payload = getRequestPayload(Constants.getHolographFactoryProxy(), data, false);
 
-    EstimatedGas memory estimatedGas = getEstimatedGas(Constants.getHolographFactoryProxy(), data, payload, false, 150000);
+    EstimatedGas memory estimatedGas = getEstimatedGas(
+      Constants.getHolographFactoryProxy(),
+      data,
+      payload,
+      false,
+      150000
+    );
 
     payload = estimatedGas.payload;
 
@@ -902,9 +950,14 @@ contract CrossChainMinting is Test {
 
   // validate bridge functionality
 
-  function bridgeTokenHelper() internal {
+  // token #1 beaming from chain1 to chain2 should succeed | original test uses #3
+  function testTokenBeamingFromChain1ToChain2ShouldSucceed() public {
     testChain1ShouldMintToken1As1OnChain1();
     sampleERC721HelperChain2();
+
+    vm.selectFork(chain1);
+    SampleERC721 sampleErc721 = SampleERC721(payable(address(sampleErc721HolographerChain1)));
+    string memory tokenURIBefore = sampleErc721.tokenURI(1);
 
     bytes memory data = abi.encode(deployer, deployer, 1);
 
@@ -915,7 +968,13 @@ contract CrossChainMinting is Test {
 
     bytes memory payload = getRequestPayload(sampleErc721HolographerChain1Address, data, true);
 
-    EstimatedGas memory estimatedGas = getEstimatedGas(sampleErc721HolographerChain1Address, data, payload, true, 270000);
+    EstimatedGas memory estimatedGas = getEstimatedGas(
+      sampleErc721HolographerChain1Address,
+      data,
+      payload,
+      true,
+      270000
+    );
 
     payload = estimatedGas.payload;
 
@@ -955,19 +1014,22 @@ contract CrossChainMinting is Test {
     (bool success3, ) = address(holographOperatorChain2).call{gas: estimatedGas.estimatedGas}(
       abi.encodeWithSelector(holographOperatorChain2.executeJob.selector, payload)
     );
-  }
-
-  // token #1 beaming from chain1 to chain2 should succeed | original test uses #3
-  function testToken3BeamingFromChain1ToChain2ShouldSucceed() public {
-    bridgeTokenHelper();
 
     HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain1)));
     assertEq(sampleErc721Enforcer.ownerOf(1), deployer, "Token #1 should be owned by deployer on chain2");
+
+    // token #2 beaming from chain1 to chain2 should keep TokenURI
+    string memory tokenURIAfter = sampleErc721Enforcer.tokenURI(1);
+    assertEq(tokenURIBefore, tokenURIAfter, "TokenURI should be the same on chain2");
   }
 
   // token #1 beaming from chain2 to chain1 should succeed | original test uses #3
-  function testToken3BeamingFromChain2ToChain1ShouldSucceed() public {
-    bridgeTokenHelper();
+  function testTokenBeamingFromChain2ToChain1ShouldSucceed() public {
+    testTokenBeamingFromChain1ToChain2ShouldSucceed();
+
+    vm.selectFork(chain2);
+    SampleERC721 sampleErc721 = SampleERC721(payable(address(sampleErc721HolographerChain1)));
+    string memory tokenURIBefore = sampleErc721.tokenURI(1);
 
     bytes memory data = abi.encode(deployer, deployer, 1);
 
@@ -978,7 +1040,13 @@ contract CrossChainMinting is Test {
 
     bytes memory payload = getRequestPayload(sampleErc721HolographerChain1Address, data, false);
 
-    EstimatedGas memory estimatedGas = getEstimatedGas(sampleErc721HolographerChain1Address, data, payload, false, 270000);
+    EstimatedGas memory estimatedGas = getEstimatedGas(
+      sampleErc721HolographerChain1Address,
+      data,
+      payload,
+      false,
+      270000
+    );
 
     payload = estimatedGas.payload;
 
@@ -1021,5 +1089,17 @@ contract CrossChainMinting is Test {
 
     HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain1)));
     assertEq(sampleErc721Enforcer.ownerOf(1), deployer, "Token #1 should be owned by deployer on chain1");
+
+    // token #2 beaming from chain2 to chain1 should keep TokenURI
+    string memory tokenURIAfter = sampleErc721Enforcer.tokenURI(1);
+    assertEq(tokenURIBefore, tokenURIAfter, "TokenURI should be the same on chain1");
   }
+
+  // TODO: token #3 beaming from chain1 to chain2 should fail and recover
+
+  // token #2 beaming from chain1 to chain2 should keep TokenURI
+  // this is the same logic as the previous test, but with a different tokenId. So we added the TokenURI check in testTokenBeamingFromChain1ToChain2ShouldSucceed
+
+  // token #2 beaming from chain2 to chain1 should keep TokenURI
+  // this is the same logic as the previous test, but with a different tokenId. So we added the TokenURI check in testTokenBeamingFromChain2ToChain1ShouldSucceed
 }
