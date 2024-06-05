@@ -74,7 +74,8 @@ contract ERC721HTests is Test {
 
   /**
    * @notice Tests that an external contract can call the owner function
-   * @dev This test verifies that an external contract can successfully call the owner function of the ERC721 contract.
+   * @dev This test verifies that an external contract can successfully call the owner function of the
+   * ERC721 contract. If unsuccessful the test would revert.
    * Refers to the hardhat test with the description 'should allow external contract to call fn'
    */
   function testAllowExternalContractToCallFnOwner() public {
@@ -89,7 +90,8 @@ contract ERC721HTests is Test {
 
   /**
    * @notice Tests that an external contract can call the isOwner function
-   * @dev This test verifies that an external contract can successfully call the isOwner function of the ERC721 contract.
+   * @dev This test verifies that an external contract can successfully call the isOwner function of the
+   * ERC721 contract. If unsuccessful the test would revert.
    * Refers to the hardhat test with the description 'should allow external contract to call fn',
    */
   function testAllowExternalContractToCallFnIsOwner() public {
@@ -100,7 +102,8 @@ contract ERC721HTests is Test {
 
   /**
    * @notice Tests that an external contract can call the isOwner function with parameters
-   * @dev This test verifies that an external contract can successfully call the isOwner function of the ERC721 contract with parameters.
+   * @dev This test verifies that an external contract can successfully call the isOwner function of the
+   * ERC721 contract with parameters. If unsuccessful the test would revert.
    * Refers to the hardhat test with the description 'should allow external contract to call fn with params'
    */
   function testAllowExternalContractToCallFnWithParams() public {
@@ -136,7 +139,8 @@ contract ERC721HTests is Test {
 
   /**
    * @notice Tests that an external contract can call the supportsInterface function
-   * @dev This test verifies that an external contract can successfully call the supportsInterface function of the ERC721 contract.
+   * @dev This test verifies that an external contract can successfully call the supportsInterface function of
+   * the ERC721 contract. If unsuccessful the test would revert.
    * Refers to the hardhat test with the description 'should allow external contract to call fn'
    */
   function testAllowExternalContractToCallFnSupportInterfaces() public {
