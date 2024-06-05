@@ -902,8 +902,7 @@ contract CrossChainMinting is Test {
 
   // validate bridge functionality
 
-  // token #1 beaming from chain1 to chain2 should succeed | original test uses #3
-  function testToken3BeamingFromChain1ToChain2ShouldSucceed() public {
+  function bridgeTokenHelper() internal {
     testChain1ShouldMintToken1As1OnChain1();
     sampleERC721HelperChain2();
 
@@ -956,8 +955,71 @@ contract CrossChainMinting is Test {
     (bool success3, ) = address(holographOperatorChain2).call{gas: estimatedGas.estimatedGas}(
       abi.encodeWithSelector(holographOperatorChain2.executeJob.selector, payload)
     );
+  }
 
-    HolographERC721 sampleErc721Enforcer = HolographERC721(payable(sampleErc721HolographerChain1Address));
+  // token #1 beaming from chain1 to chain2 should succeed | original test uses #3
+  function testToken3BeamingFromChain1ToChain2ShouldSucceed() public {
+    bridgeTokenHelper();
+
+    HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain1)));
     assertEq(sampleErc721Enforcer.ownerOf(1), deployer, "Token #1 should be owned by deployer on chain2");
+  }
+
+  // token #1 beaming from chain2 to chain1 should succeed | original test uses #3
+  function testToken3BeamingFromChain2ToChain1ShouldSucceed() public {
+    bridgeTokenHelper();
+
+    bytes memory data = abi.encode(deployer, deployer, 1);
+
+    address sampleErc721HolographerChain1Address = address(sampleErc721HolographerChain1);
+
+    vm.selectFork(chain1);
+    address originalMessagingModule = holographOperatorChain1.getMessagingModule();
+
+    bytes memory payload = getRequestPayload(sampleErc721HolographerChain1Address, data, false);
+
+    EstimatedGas memory estimatedGas = getEstimatedGas(sampleErc721HolographerChain1Address, data, payload, false, 270000);
+
+    payload = estimatedGas.payload;
+
+    vm.selectFork(chain2);
+    vm.prank(deployer);
+    (bool success, ) = address(holographBridgeChain2).call{value: estimatedGas.fee}(
+      abi.encodeWithSelector(
+        holographBridgeChain2.bridgeOutRequest.selector,
+        holographIdL1,
+        sampleErc721HolographerChain1Address,
+        estimatedGas.estimatedGas,
+        GWEI,
+        data
+      )
+    );
+
+    vm.selectFork(chain1);
+    vm.prank(deployer);
+    holographOperatorChain1.setMessagingModule(Constants.getMockLZEndpoint());
+
+    (bool success2, ) = address(mockLZEndpointChain1).call{gas: TESTGASLIMIT}(
+      abi.encodeWithSelector(
+        mockLZEndpointChain1.crossChainMessage.selector,
+        address(holographOperatorChain1),
+        getLzMsgGas(payload),
+        payload
+      )
+    );
+
+    vm.prank(deployer);
+    holographOperatorChain1.setMessagingModule(originalMessagingModule);
+
+    vm.expectEmit(true, true, true, false);
+    emit Transfer(address(0), deployer, 1);
+
+    // vm.prank(deployer);
+    (bool success3, ) = address(holographOperatorChain1).call{gas: estimatedGas.estimatedGas}(
+      abi.encodeWithSelector(holographOperatorChain1.executeJob.selector, payload)
+    );
+
+    HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain1)));
+    assertEq(sampleErc721Enforcer.ownerOf(1), deployer, "Token #1 should be owned by deployer on chain1");
   }
 }
