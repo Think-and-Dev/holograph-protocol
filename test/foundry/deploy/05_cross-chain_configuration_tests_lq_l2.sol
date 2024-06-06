@@ -4,7 +4,6 @@ pragma solidity 0.8.13;
 import {Test, Vm, console} from "forge-std/Test.sol";
 import {Constants} from "../utils/Constants.sol";
 import {HelperDeploymentConfig} from "../utils/HelperDeploymentConfig.sol";
-import {DummyMetadataRenderer} from "../utils/DummyMetadataRenderer.sol";
 import {HelperSignEthMessage} from "../utils/HelperSignEthMessage.sol";
 import {SampleERC20} from "../../../src/token/SampleERC20.sol";
 import {ERC20Mock} from "../../../src/mock/ERC20Mock.sol";
@@ -35,7 +34,6 @@ import {DeploymentConfig} from "../../../src/struct/DeploymentConfig.sol";
 import {HolographDropERC721} from "../../../src/drops/token/HolographDropERC721.sol";
 import {HolographDropERC721V2} from "../../../src/drops/token/HolographDropERC721V2.sol";
 import {Verification} from "../../../src/struct/Verification.sol";
-// import {DropsInitializerV2} from "../../../src/drops/struct/DropsInitializerV2.sol";
 
 contract CrossChainConfiguration is Test {
   event BridgeableContractDeployed(address indexed contractAddress, bytes32 indexed hash);
@@ -83,8 +81,6 @@ contract CrossChainConfiguration is Test {
   HolographGenesis holographGenesisChain1;
   HolographGenesis holographGenesisChain2;
   HolographRegistry holographRegistry;
-  HolographRegistry holographRegistryChain1;
-  HolographRegistry holographRegistryChain2;
   HolographRegistry registryChain1;
   HolographRegistry registryChain2;
   HolographRegistryProxy holographRegistryProxy;
@@ -139,13 +135,7 @@ contract CrossChainConfiguration is Test {
   HolographERC721 cxipErc721EnforcerChain1;
   HolographERC721 cxipErc721EnforcerChain2;
   HolographDropERC721 holographDropERC721;
-  HolographDropERC721 holographDropERC721Chain1;
-  HolographDropERC721 holographDropERC721Chain2;
   HolographDropERC721V2 holographDropERC721V2;
-  HolographDropERC721V2 holographDropERC721V2Chain1;
-  HolographDropERC721V2 holographDropERC721V2Chain2;
-
-  address public constant zeroAddress = address(0x0000000000000000000000000000000000000000);
 
   function deployTestHToken(bool isChain1) private returns (DeploymentConfig memory, bytes32, Verification memory) {
     string memory tokenName = string.concat("Holographed TestToken chain ", ((isChain1) ? "one" : "two"));
@@ -251,18 +241,7 @@ contract CrossChainConfiguration is Test {
     bridgeChain1 = HolographBridge(payable(holograph.getBridge()));
     vm.selectFork(chain2);
     bridgeChain2 = HolographBridge(payable(holograph.getBridge()));
-
-    // holographFactory = HolographFactory(payable(Constants.getHolographFactoryProxy()));
   }
-
-  // function testprueba() public {
-  //     vm.selectFork(chain1);
-  //     address alice = vm.addr(1);
-  //     vm.prank(deployer);
-  //     sampleERC20Chain1.mint(alice, 1);
-  //     //vm.selectFork(chain2);
-  //     assertEq(holographERC20.balanceOf(alice), 1);
-  // }
 
   /*
 VALIDATE CROSS-CHAIN DATA
@@ -437,9 +416,9 @@ VALIDATE CROSS-CHAIN DATA
    */
   function testHolographRegistryAddress() public {
     vm.selectFork(chain1);
-    holographRegistryChain1 = holographRegistry;
+    HolographRegistry holographRegistryChain1 = holographRegistry;
     vm.selectFork(chain2);
-    holographRegistryChain2 = holographRegistry;
+    HolographRegistry holographRegistryChain2 = holographRegistry;
     assertEq(address(holographRegistryChain1), address(holographRegistryChain2));
   }
 
@@ -677,9 +656,9 @@ VALIDATE CROSS-CHAIN DATA
    */
   function testHolographDropERC721Address() public {
     vm.selectFork(chain1);
-    holographDropERC721Chain1 = holographDropERC721;
+    HolographDropERC721 holographDropERC721Chain1 = holographDropERC721;
     vm.selectFork(chain2);
-    holographDropERC721Chain2 = holographDropERC721;
+    HolographDropERC721 holographDropERC721Chain2 = holographDropERC721;
     assertEq(address(holographDropERC721Chain1), address(holographDropERC721Chain2));
   }
 
@@ -689,9 +668,9 @@ VALIDATE CROSS-CHAIN DATA
    */
   function testHolographDropERC721V2Address() public {
     vm.selectFork(chain1);
-    holographDropERC721V2Chain1 = holographDropERC721V2;
+    HolographDropERC721V2 holographDropERC721V2Chain1 = holographDropERC721V2;
     vm.selectFork(chain2);
-    holographDropERC721V2Chain2 = holographDropERC721V2;
+    HolographDropERC721V2 holographDropERC721V2Chain2 = holographDropERC721V2;
     assertEq(address(holographDropERC721V2Chain1), address(holographDropERC721V2Chain2));
   }
   /*
@@ -728,7 +707,7 @@ DEPLOY CROSS-CHAIN CONTRACTS
 
     // Verify that the contract does not exist on chain2
     vm.selectFork(chain2);
-    assertEq(address(registryChain2.getHolographedHashAddress(hashHtokenTest)), zeroAddress);
+    assertEq(address(registryChain2.getHolographedHashAddress(hashHtokenTest)), Constants.zeroAddress);
     vm.selectFork(chain1);
     address hTokenTestAddress = registryChain1.getHolographedHashAddress(hashHtokenTest);
 
@@ -748,7 +727,7 @@ DEPLOY CROSS-CHAIN CONTRACTS
 
     // Verify that the contract does not exist on chain1
     vm.selectFork(chain1);
-    assertEq(address(registryChain1.getHolographedHashAddress(hashHtokenTest)), zeroAddress);
+    assertEq(address(registryChain1.getHolographedHashAddress(hashHtokenTest)), Constants.zeroAddress);
     vm.selectFork(chain2);
     address hTokenTestAddress = registryChain2.getHolographedHashAddress(hashHtokenTest);
 
@@ -781,7 +760,7 @@ DEPLOY CROSS-CHAIN CONTRACTS
 
     // Verify that the contract does not exist on chain2
     vm.selectFork(chain2);
-    assertEq(address(registryChain2.getHolographedHashAddress(hashTokenTest)), zeroAddress);
+    assertEq(address(registryChain2.getHolographedHashAddress(hashTokenTest)), Constants.zeroAddress);
     vm.selectFork(chain1);
     address hTokenTestAddress = registryChain1.getHolographedHashAddress(hashTokenTest);
 
@@ -810,7 +789,7 @@ DEPLOY CROSS-CHAIN CONTRACTS
 
     // Verify that the contract does not exist on chain1
     vm.selectFork(chain1);
-    assertEq(address(registryChain1.getHolographedHashAddress(hashTokenTest)), zeroAddress);
+    assertEq(address(registryChain1.getHolographedHashAddress(hashTokenTest)), Constants.zeroAddress);
     vm.selectFork(chain2);
     address hTokenTestAddress = registryChain2.getHolographedHashAddress(hashTokenTest);
 
@@ -844,7 +823,7 @@ DEPLOY CROSS-CHAIN CONTRACTS
 
     // Verify that the contract does not exist on chain1
     vm.selectFork(chain2);
-    assertEq(address(registryChain2.getHolographedHashAddress(hashTokenTest)), zeroAddress);
+    assertEq(address(registryChain2.getHolographedHashAddress(hashTokenTest)), Constants.zeroAddress);
     vm.selectFork(chain1);
     address hTokenTestAddress = registryChain1.getHolographedHashAddress(hashTokenTest);
 
@@ -874,7 +853,7 @@ DEPLOY CROSS-CHAIN CONTRACTS
 
     // Verify that the contract does not exist on chain2
     vm.selectFork(chain1);
-    assertEq(address(registryChain1.getHolographedHashAddress(hashTokenTest)), zeroAddress);
+    assertEq(address(registryChain1.getHolographedHashAddress(hashTokenTest)), Constants.zeroAddress);
     vm.selectFork(chain2);
     address hTokenTestAddress = registryChain2.getHolographedHashAddress(hashTokenTest);
 
@@ -908,7 +887,7 @@ DEPLOY CROSS-CHAIN CONTRACTS
 
     // Verify that the contract does not exist on chain1
     vm.selectFork(chain2);
-    assertEq(address(registryChain2.getHolographedHashAddress(hashTokenTest)), zeroAddress);
+    assertEq(address(registryChain2.getHolographedHashAddress(hashTokenTest)), Constants.zeroAddress);
     vm.selectFork(chain1);
     address hTokenTestAddress = registryChain1.getHolographedHashAddress(hashTokenTest);
 
@@ -938,7 +917,7 @@ DEPLOY CROSS-CHAIN CONTRACTS
 
     // Verify that the contract does not exist on chain2
     vm.selectFork(chain1);
-    assertEq(address(registryChain1.getHolographedHashAddress(hashTokenTest)), zeroAddress);
+    assertEq(address(registryChain1.getHolographedHashAddress(hashTokenTest)), Constants.zeroAddress);
     vm.selectFork(chain2);
     address hTokenTestAddress = registryChain1.getHolographedHashAddress(hashTokenTest);
 
@@ -964,7 +943,7 @@ DEPLOY CROSS-CHAIN CONTRACTS
 
     // Verify that the contract does not exist on chain1
     vm.selectFork(chain2);
-    assertEq(address(registryChain2.getHolographedHashAddress(hashDropERC721Test)), zeroAddress);
+    assertEq(address(registryChain2.getHolographedHashAddress(hashDropERC721Test)), Constants.zeroAddress);
     vm.selectFork(chain1);
     address hTokenTestAddress = registryChain1.getHolographedHashAddress(hashDropERC721Test);
 
@@ -986,7 +965,7 @@ DEPLOY CROSS-CHAIN CONTRACTS
 
     // Verify that the contract does not exist on chain1
     vm.selectFork(chain1);
-    assertEq(address(registryChain1.getHolographedHashAddress(hashDropERC721Test)), zeroAddress);
+    assertEq(address(registryChain1.getHolographedHashAddress(hashDropERC721Test)), Constants.zeroAddress);
     vm.selectFork(chain2);
     address hTokenTestAddress = registryChain2.getHolographedHashAddress(hashDropERC721Test);
 
@@ -1010,7 +989,7 @@ operatorChain1 is not equal to the zero address
 */
   function testMessagingModuleNotZeroChain1() public {
     vm.selectFork(chain1);
-    assertNotEq(operatorChain1.getMessagingModule(), zeroAddress);
+    assertNotEq(operatorChain1.getMessagingModule(), Constants.zeroAddress);
   }
 
   /**
@@ -1020,7 +999,7 @@ operatorChain2 is not equal to the zero address
 */
   function testMessagingModuleNotZeroChain2() public {
     vm.selectFork(chain2);
-    assertNotEq(operatorChain2.getMessagingModule(), zeroAddress);
+    assertNotEq(operatorChain2.getMessagingModule(), Constants.zeroAddress);
   }
 
   /**
