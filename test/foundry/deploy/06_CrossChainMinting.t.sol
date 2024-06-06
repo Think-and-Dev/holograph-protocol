@@ -24,6 +24,7 @@ import {SampleERC20} from "../../../src/token/SampleERC20.sol";
 contract CrossChainMinting is Test {
   event BridgeableContractDeployed(address indexed contractAddress, bytes32 indexed hash);
   event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
+  event FailedOperatorJob(bytes32 jobHash);
 
   uint256 public chain1;
   uint256 public chain2;
@@ -1128,6 +1129,8 @@ contract CrossChainMinting is Test {
     uint256 badLowGas = originalGas / 10;
 
     vm.selectFork(chain1);
+
+    vm.recordLogs();
     vm.prank(deployer);
     (bool success, ) = address(holographBridgeChain1).call{value: estimatedGas.fee}(
       abi.encodeWithSelector(
@@ -1139,6 +1142,21 @@ contract CrossChainMinting is Test {
         data
       )
     );
+
+    Vm.Log[] memory logs = vm.getRecordedLogs();
+    for (uint256 i = 0; i < logs.length; i++) {
+      if (logs[i].emitter == address(mockLZEndpointChain1)) {
+        if (logs[i].topics[0] == keccak256("LzEvent(uint16,bytes,bytes)")) {
+          (,, bytes memory decodedPayload) = abi.decode(
+            logs[i].data,
+            (uint16, bytes, bytes)
+          );
+
+          payload = decodedPayload;
+          break;
+        }
+      }
+    }
 
     vm.selectFork(chain2);
     vm.prank(deployer);
@@ -1156,10 +1174,23 @@ contract CrossChainMinting is Test {
     vm.prank(deployer);
     holographOperatorChain2.setMessagingModule(originalMessagingModule);
 
-    // vm.prank(deployer);
+    vm.expectEmit(true, false, false, false);
+    emit FailedOperatorJob(keccak256(payload));
+
+    vm.prank(deployer);
     (bool success3, ) = address(holographOperatorChain2).call{gas: estimatedGas.estimatedGas}(
       abi.encodeWithSelector(holographOperatorChain2.executeJob.selector, payload)
     );
+
+    vm.expectEmit(true, true, true, false);
+    emit Transfer(address(0), deployer, 1);
+
+    (bool success4, ) = address(holographOperatorChain2).call{gas: estimatedGas.estimatedGas}(
+      abi.encodeWithSelector(holographOperatorChain2.recoverJob.selector, payload)
+    );
+
+    HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain1)));
+    assertEq(sampleErc721Enforcer.ownerOf(1), deployer, "Token #1 should be owned by deployer on chain2");
   }
 
   // token #2 beaming from chain1 to chain2 should keep TokenURI
