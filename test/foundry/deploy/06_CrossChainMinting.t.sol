@@ -892,8 +892,11 @@ contract CrossChainMinting is Test {
     vm.expectEmit(true, true, true, false);
     emit Transfer(address(0), deployer, 1);
 
+    uint256 gasBefore = gasleft();
     vm.prank(deployer);
     sampleERC721.mint(deployer, 1, "https://holograph.xyz/sample1.json");
+    uint256 gasUsed = gasBefore - gasleft();
+    assertTrue(gasUsed > 0, "Gas used should be greater than 0");
   }
 
   // chain1 should mint token #1 not as #1 on chain2
@@ -906,8 +909,11 @@ contract CrossChainMinting is Test {
     // emit Transfer(address(0), deployer, 1);
     // This test is failing because tokenId on the event is another value (115792089156436355422119065624686862592211092644729130771835866564602298892289)
 
+    uint256 gasBefore = gasleft();
     vm.prank(deployer);
     sampleERC721.mint(deployer, 1, "https://holograph.xyz/sample1.json");
+    uint256 gasUsed = gasBefore - gasleft();
+    assertTrue(gasUsed > 0, "Gas used should be greater than 0");
   }
 
   // mint tokens #2 and #3 on chain1 and chain2
@@ -1096,10 +1102,115 @@ contract CrossChainMinting is Test {
   }
 
   // TODO: token #3 beaming from chain1 to chain2 should fail and recover
+  function testTokenBeamingFromChain1ToChain2ShouldFailAndRecover() public {
+    testTokenBeamingFromChain2ToChain1ShouldSucceed();
+
+    bytes memory data = abi.encode(deployer, deployer, 1);
+
+    address sampleErc721HolographerChain1Address = address(sampleErc721HolographerChain1);
+
+    vm.selectFork(chain2);
+    address originalMessagingModule = holographOperatorChain2.getMessagingModule();
+
+    bytes memory payload = getRequestPayload(sampleErc721HolographerChain1Address, data, true);
+
+    EstimatedGas memory estimatedGas = getEstimatedGas(
+      sampleErc721HolographerChain1Address,
+      data,
+      payload,
+      true,
+      270000
+    );
+
+    payload = estimatedGas.payload;
+
+    uint256 originalGas = estimatedGas.estimatedGas;
+    uint256 badLowGas = originalGas / 10;
+
+    vm.selectFork(chain1);
+    vm.prank(deployer);
+    (bool success, ) = address(holographBridgeChain1).call{value: estimatedGas.fee}(
+      abi.encodeWithSelector(
+        holographBridgeChain1.bridgeOutRequest.selector,
+        holographIdL2,
+        sampleErc721HolographerChain1Address,
+        badLowGas,
+        GWEI,
+        data
+      )
+    );
+
+    vm.selectFork(chain2);
+    vm.prank(deployer);
+    holographOperatorChain2.setMessagingModule(Constants.getMockLZEndpoint());
+
+    (bool success2, ) = address(mockLZEndpointChain2).call{gas: TESTGASLIMIT}(
+      abi.encodeWithSelector(
+        mockLZEndpointChain2.crossChainMessage.selector,
+        address(holographOperatorChain2),
+        getLzMsgGas(payload),
+        payload
+      )
+    );
+
+    vm.prank(deployer);
+    holographOperatorChain2.setMessagingModule(originalMessagingModule);
+
+    // vm.prank(deployer);
+    (bool success3, ) = address(holographOperatorChain2).call{gas: estimatedGas.estimatedGas}(
+      abi.encodeWithSelector(holographOperatorChain2.executeJob.selector, payload)
+    );
+  }
 
   // token #2 beaming from chain1 to chain2 should keep TokenURI
   // this is the same logic as the previous test, but with a different tokenId. So we added the TokenURI check in testTokenBeamingFromChain1ToChain2ShouldSucceed
 
   // token #2 beaming from chain2 to chain1 should keep TokenURI
   // this is the same logic as the previous test, but with a different tokenId. So we added the TokenURI check in testTokenBeamingFromChain2ToChain1ShouldSucceed
+
+  // Get gas calculations
+
+  // SampleERC721 #1 mint on chain1
+  // gas is validated on the test testChain1ShouldMintToken1As1OnChain1
+
+  // SampleERC721 #1 mint on chain2
+  // gas is validated on the test testChain1ShouldMintToken1NotAs1OnChain2
+
+  // SampleERC721 #1 transfer on chain1
+  function testSampleERC721TransferGasCalculationChain1() public {
+    testChain1ShouldMintToken1As1OnChain1();
+
+    vm.selectFork(chain1);
+    HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain1)));
+
+    vm.expectEmit(true, true, true, false);
+    emit Transfer(deployer, alice, 1);
+
+    uint256 gasBefore = gasleft();
+    vm.prank(deployer);
+    sampleErc721Enforcer.transferFrom(deployer, alice, 1);
+    uint256 gasUsed = gasBefore - gasleft();
+    assertTrue(gasUsed > 0, "Gas used should be greater than 0");
+  }
+
+  // SampleERC721 #1 transfer on chain2
+  // is the same logic as the previous test
+
+  // Get hToken balances
+
+  // chain1 hToken should have more than 0
+  function testChain1HTokenShouldHaveMoreThan0() public {
+    testTokenBeamingFromChain1ToChain2ShouldSucceed();
+    vm.selectFork(chain1);
+    address hTokenAddress = holographRegistryChain1.getHToken(holographIdL1);
+    assertNotEq(hTokenAddress.balance, 0, "chain1 hToken should have more than 0");
+  }
+
+  // chain2 hToken should have more than 0
+  function testChain2HTokenShouldHaveMoreThan0() public {
+    testTokenBeamingFromChain2ToChain1ShouldSucceed();
+    vm.selectFork(chain2);
+    address hTokenAddress = holographRegistryChain2.getHToken(holographIdL2);
+    assertNotEq(hTokenAddress.balance, 0, "chain2 hToken should have more than 0");
+  }
 }
