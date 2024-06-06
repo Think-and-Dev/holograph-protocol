@@ -4,6 +4,7 @@ pragma solidity 0.8.13;
 import {Test, Vm, console} from "forge-std/Test.sol";
 import {Constants} from "../utils/Constants.sol";
 import {HelperDeploymentConfig} from "../utils/HelperDeploymentConfig.sol";
+import {DummyMetadataRenderer} from "../utils/DummyMetadataRenderer.sol";
 import {HelperSignEthMessage} from "../utils/HelperSignEthMessage.sol";
 import {SampleERC20} from "../../../src/token/SampleERC20.sol";
 import {ERC20Mock} from "../../../src/mock/ERC20Mock.sol";
@@ -34,6 +35,7 @@ import {DeploymentConfig} from "../../../src/struct/DeploymentConfig.sol";
 import {HolographDropERC721} from "../../../src/drops/token/HolographDropERC721.sol";
 import {HolographDropERC721V2} from "../../../src/drops/token/HolographDropERC721V2.sol";
 import {Verification} from "../../../src/struct/Verification.sol";
+// import {DropsInitializerV2} from "../../../src/drops/struct/DropsInitializerV2.sol";
 
 contract CrossChainConfiguration is Test {
   event BridgeableContractDeployed(address indexed contractAddress, bytes32 indexed hash);
@@ -144,6 +146,56 @@ contract CrossChainConfiguration is Test {
   HolographDropERC721V2 holographDropERC721V2Chain2;
 
   address public constant zeroAddress = address(0x0000000000000000000000000000000000000000);
+
+  function deployTestHToken(bool isChain1) private returns (DeploymentConfig memory, bytes32, Verification memory) {
+    string memory tokenName = string.concat("Holographed TestToken chain ", ((isChain1) ? "one" : "two"));
+    DeploymentConfig memory deployConfig = HelperDeploymentConfig.getDeployConfigERC20(
+      bytes32(0x000000000000000000000000000000000000486f6c6f67726170684552433230), //hToken hash
+      (isChain1) ? Constants.getHolographIdL1() : Constants.getHolographIdL2(),
+      vm.getCode("hTokenProxy.sol:hTokenProxy"),
+      tokenName,
+      "hTTC1",
+      bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
+      tokenName,
+      HelperDeploymentConfig.getInitCodeHtokenETH()
+    );
+    bytes32 hashHtokenTest = HelperDeploymentConfig.getDeployConfigHash(deployConfig, Constants.getDeployer());
+
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+      Constants.getPKDeployer(),
+      HelperSignEthMessage.toEthSignedMessageHash(hashHtokenTest)
+    );
+    Verification memory signature = Verification({v: v, r: r, s: s});
+    if ((isChain1)) vm.selectFork(chain1);
+    else vm.selectFork(chain2);
+    holographFactory.deployHolographableContract(deployConfig, signature, Constants.getDeployer());
+
+    return (deployConfig, hashHtokenTest, signature);
+  }
+
+  function deployDropERC721(bool isChain1) private returns (DeploymentConfig memory, bytes32, Verification memory) {
+    DeploymentConfig memory deployConfig = HelperDeploymentConfig.getERC721WithConfigDropERC721V2(
+      Constants.getHolographIdL1(),
+      vm.getCode("SampleERC721.sol:SampleERC721"),
+      bytes32(HelperDeploymentConfig.dropEventConfig),
+      true
+    );
+    bytes32 hashDropERC721Test = HelperDeploymentConfig.getDeployConfigHash(deployConfig, Constants.getDeployer());
+
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+      Constants.getPKDeployer(),
+      HelperSignEthMessage.toEthSignedMessageHash(hashDropERC721Test)
+    );
+    Verification memory signature = Verification({v: v, r: r, s: s});
+
+    if ((isChain1)) vm.selectFork(chain1);
+    else vm.selectFork(chain2);
+
+    vm.prank(deployer);
+    holographFactory.deployHolographableContract(deployConfig, signature, deployer);
+
+    return (deployConfig, hashDropERC721Test, signature);
+  }
 
   function setUp() public {
     cxipERC721ProxyChain1 = CxipERC721Proxy(payable(Constants.getCxipERC721Proxy()));
@@ -646,90 +698,14 @@ VALIDATE CROSS-CHAIN DATA
 DEPLOY CROSS-CHAIN CONTRACTS
 */
 
-  /**
-   * @notice Verifies that the deployment of a holographic ERC20 contract on chain1 is equivalent to
-   * the deployment on chain2.
-   * @dev Validates that the contract configuration is consistent between the two chains and that the deployment
-   * process results in identical contract addresses.
-   */
-
-  // function generateString(string memory tokenName, uint256 holographId) public pure returns (string memory) {
-  //     string memory result = string(abi.encodePacked(tokenName, " (Holographed #", uintToString(holographId), ")"));
-  //     return result;
-  // }
-
-  // function deployTestHTokenChain1() public returns (DeploymentConfig memory, bytes32, Verification memory) {
-  //   holographFactory = HolographFactory(payable(Constants.getHolographFactoryProxy()));
-
-  //   DeploymentConfig memory deployConfig = HelperDeploymentConfig.getDeployConfigERC20(
-  //     bytes32(0x000000000000000000000000000000000000486f6c6f67726170684552433230), //hToken hash
-  //     Constants.getHolographIdL1(),
-  //     vm.getCode("hTokenProxy.sol:hTokenProxy"),
-  //     "Holographed TestToken chain one",
-  //     "hTTC1",
-  //     HelperDeploymentConfig.getInitCodeHtokenETH()
-  //   );
-  //   bytes32 hashHtokenTest = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
-
-  //   (uint8 v, bytes32 r, bytes32 s) = vm.sign(
-  //     privateKeyDeployer,
-  //     HelperSignEthMessage.toEthSignedMessageHash(hashHtokenTest)
-  //   );
-  //   Verification memory signature = Verification({v: v, r: r, s: s});
-  //   // vm.expectRevert(bytes(ErrorConstants.ALREADY_DEPLOYED_ERROR_MSG));
-  //   vm.selectFork(chain1);
-  //   vm.prank(deployer);
-  //   // vm.expectEmit(true, true, false, true);
-  //   // emit BridgeableContractDeployed(Constants.zeroAddress, hashHtokenTest);
-  //   holographFactory.deployHolographableContract(deployConfig, signature, deployer);
-
-  //   return (deployConfig, hashHtokenTest, signature);
-  // }
-  function deployTestHToken(bool isChain1) private returns (DeploymentConfig memory, bytes32, Verification memory) {
-    // holographFactory = HolographFactory(payable(Constants.getHolographFactoryProxy()));
-    string memory tokenName = string.concat("Holographed TestToken chain ", ((isChain1) ? "one" : "two"));
-    DeploymentConfig memory deployConfig = HelperDeploymentConfig.getDeployConfigERC20(
-      bytes32(0x000000000000000000000000000000000000486f6c6f67726170684552433230), //hToken hash
-      (isChain1) ? Constants.getHolographIdL1() : Constants.getHolographIdL2(),
-      vm.getCode("hTokenProxy.sol:hTokenProxy"),
-      tokenName,
-      "hTTC1",
-      bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-      tokenName,
-      HelperDeploymentConfig.getInitCodeHtokenETH()
-    );
-    bytes32 hashHtokenTest = HelperDeploymentConfig.getDeployConfigHash(deployConfig, Constants.getDeployer());
-
-    (uint8 v, bytes32 r, bytes32 s) = vm.sign(
-      Constants.getPKDeployer(),
-      HelperSignEthMessage.toEthSignedMessageHash(hashHtokenTest)
-    );
-    Verification memory signature = Verification({v: v, r: r, s: s});
-    if ((isChain1)) vm.selectFork(chain1);
-    else vm.selectFork(chain2);
-    holographFactory.deployHolographableContract(deployConfig, signature, Constants.getDeployer());
-
-    return (deployConfig, hashHtokenTest, signature);
-  }
-
-  function deployTestHTokenChain1() public returns (DeploymentConfig memory, bytes32, Verification memory) {
-    return deployTestHToken(true);
-  }
-
-  function deployTestHTokenChain2() public returns (DeploymentConfig memory, bytes32, Verification memory) {
-    return deployTestHToken(false);
-  }
-
   function deployTestSampleERC20(
     bool isChain1
   ) private returns (DeploymentConfig memory, bytes32, Verification memory) {
-    // holographFactory = HolographFactory(payable(Constants.getHolographFactoryProxy()));
     DeploymentConfig memory deployConfig = HelperDeploymentConfig.getERC20(
       isChain1 ? Constants.getHolographIdL1() : Constants.getHolographIdL2(),
       vm.getCode("SampleERC20.sol:SampleERC20"),
       isChain1
     );
-    // DeploymentConfig memory deployConfig = HelperDeploymentConfig.getERC20()
 
     bytes32 hashTokenTest = HelperDeploymentConfig.getDeployConfigHash(deployConfig, Constants.getDeployer());
 
@@ -746,11 +722,9 @@ DEPLOY CROSS-CHAIN CONTRACTS
   }
 
   function testDeployHTokenChain1EquivalentOnChain2() public {
-    (
-      DeploymentConfig memory deployConfig,
-      bytes32 hashHtokenTest,
-      Verification memory signature
-    ) = deployTestHTokenChain1();
+    (DeploymentConfig memory deployConfig, bytes32 hashHtokenTest, Verification memory signature) = deployTestHToken(
+      true
+    );
 
     // Verify that the contract does not exist on chain2
     vm.selectFork(chain2);
@@ -768,11 +742,9 @@ DEPLOY CROSS-CHAIN CONTRACTS
   }
 
   function testDeployHTokenChain2EquivalentOnChain1() public {
-    (
-      DeploymentConfig memory deployConfig,
-      bytes32 hashHtokenTest,
-      Verification memory signature
-    ) = deployTestHTokenChain2();
+    (DeploymentConfig memory deployConfig, bytes32 hashHtokenTest, Verification memory signature) = deployTestHToken(
+      false
+    );
 
     // Verify that the contract does not exist on chain1
     vm.selectFork(chain1);
@@ -978,54 +950,53 @@ DEPLOY CROSS-CHAIN CONTRACTS
     // Deploy the holographable contract on chain1
     holographFactory.deployHolographableContract(deployConfig, signature, deployer);
   }
+
   /*
-   * SECTION DropERC721
+   * SECTION DropERC721V2
    */
 
-  function testDeployHolographDropERC721Chain1EquivalentOnChain2() public {
-
-    DeploymentConfig memory deployConfig = HelperDeploymentConfig.getCxipERC721(
-      Constants.getHolographIdL1(),
-      vm.getCode("HolographDropERC721Proxy.sol:HolographDropERC721Proxy"),
-      bytes32(0x0000000000000000000000000000000000000000000000000000000000000086),
-      true
-    );
-
-    bytes32 hashTokenTest = HelperDeploymentConfig.getDeployConfigHash(deployConfig, Constants.getDeployer());
-    (uint8 v, bytes32 r, bytes32 s) = vm.sign(
-      Constants.getPKDeployer(),
-      HelperSignEthMessage.toEthSignedMessageHash(hashTokenTest)
-    );
-    Verification memory signature = Verification({v: v, r: r, s: s});
+  function testDeployHolographDropERC721V2Chain1EquivalentOnChain2() public {
+    (
+      DeploymentConfig memory deployConfig,
+      bytes32 hashDropERC721Test,
+      Verification memory signature
+    ) = deployDropERC721(true);
 
     // Verify that the contract does not exist on chain1
     vm.selectFork(chain2);
-    assertEq(address(registryChain2.getHolographedHashAddress(hashTokenTest)), zeroAddress);
+    assertEq(address(registryChain2.getHolographedHashAddress(hashDropERC721Test)), zeroAddress);
     vm.selectFork(chain1);
-    address hTokenTestAddress = registryChain1.getHolographedHashAddress(hashTokenTest);
+    address hTokenTestAddress = registryChain1.getHolographedHashAddress(hashDropERC721Test);
 
     vm.selectFork(chain2);
     // Verify that the new contract has the same address thath chain2 and the hash signed
     vm.expectEmit(true, true, false, true);
-    emit BridgeableContractDeployed(hTokenTestAddress, hashTokenTest);
+    emit BridgeableContractDeployed(hTokenTestAddress, hashDropERC721Test);
     vm.prank(deployer);
     // Deploy the holographable contract on chain1
     holographFactory.deployHolographableContract(deployConfig, signature, deployer);
   }
 
-  function testDeployHolographDropERC721Chain2EquivalentOnChain1() public {
-    vm.skip(true);
-  }
-  /*
-   * SECTION DropERC721V2
-   */
-
-  function testDeployHolographpChain1EquivalentOnChain2() public {
-    vm.skip(true);
-  }
-
   function testDeployHolographDropERC721V2Chain2EquivalentOnChain1() public {
-    vm.skip(true);
+    (
+      DeploymentConfig memory deployConfig,
+      bytes32 hashDropERC721Test,
+      Verification memory signature
+    ) = deployDropERC721(false);
+
+    // Verify that the contract does not exist on chain1
+    vm.selectFork(chain1);
+    assertEq(address(registryChain1.getHolographedHashAddress(hashDropERC721Test)), zeroAddress);
+    vm.selectFork(chain2);
+    address hTokenTestAddress = registryChain2.getHolographedHashAddress(hashDropERC721Test);
+
+    vm.selectFork(chain1);
+    // Verify that the new contract has the same address thath chain1 and the hash signed
+    vm.expectEmit(true, true, false, true);
+    emit BridgeableContractDeployed(hTokenTestAddress, hashDropERC721Test);
+    vm.prank(deployer);
+    // Deploy the holographable contract on chain2
+    holographFactory.deployHolographableContract(deployConfig, signature, deployer);
   }
 
   /*
