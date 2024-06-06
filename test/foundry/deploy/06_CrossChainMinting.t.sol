@@ -32,7 +32,7 @@ contract CrossChainMinting is Test {
   string public LOCALHOST2_RPC_URL = vm.envString("LOCALHOST2_RPC_URL");
 
   address public alice;
-  address public bob;
+  address public operator;
 
   uint256 privateKeyDeployer = Constants.getPKDeployer();
   address deployer = vm.addr(privateKeyDeployer);
@@ -68,6 +68,8 @@ contract CrossChainMinting is Test {
   Holographer sampleErc721HolographerChain2;
   HolographERC721 sampleErc721EnforcerChain1;
   HolographERC721 sampleErc721EnforcerChain2;
+  HolographERC20 HLGCHAIN1;
+  HolographERC20 HLGCHAIN2;
 
   HolographRegistry holographRegistryChain1;
   HolographRegistry holographRegistryChain2;
@@ -228,7 +230,7 @@ contract CrossChainMinting is Test {
     chain2 = vm.createFork(LOCALHOST2_RPC_URL);
 
     alice = vm.addr(1);
-    bob = vm.addr(2);
+    operator = vm.addr(2);
 
     vm.selectFork(chain1);
     holographChain1 = Holograph(payable(Constants.getHolograph()));
@@ -242,6 +244,7 @@ contract CrossChainMinting is Test {
     address sampleErc721HolographerChain1Address = holographRegistryChain1.getHolographedHashAddress(erc721ConfigHash1);
     sampleErc721HolographerChain1 = Holographer(payable(sampleErc721HolographerChain1Address));
     sampleErc721EnforcerChain1 = HolographERC721(payable(sampleErc721HolographerChain1.getHolographEnforcer()));
+    HLGCHAIN1 = HolographERC20(payable(Constants.getHolographUtilityToken()));
 
     GasParameters memory gasParams = lzModuleChain1.getGasParameters(holographIdL1);
     msgBaseGas = gasParams.msgBaseGas;
@@ -261,17 +264,36 @@ contract CrossChainMinting is Test {
     address sampleErc721HolographerChain2Address = holographRegistryChain2.getHolographedHashAddress(erc721ConfigHash2);
     sampleErc721HolographerChain2 = Holographer(payable(sampleErc721HolographerChain2Address));
     sampleErc721EnforcerChain2 = HolographERC721(payable(sampleErc721HolographerChain2.getHolographEnforcer()));
+    HLGCHAIN2 = HolographERC20(payable(Constants.getHolographUtilityToken()));
+
+    addOperator(operator);
   }
 
   // Enable operators for chain1 and chain2
 
+  function addOperator(address _operator) public {
+    vm.selectFork(chain1);
+    (uint256 bondAmount, ) = holographOperatorChain1.getPodBondAmounts(1);
+
+    vm.selectFork(chain1);
+    vm.prank(deployer);
+    HLGCHAIN1.transfer(_operator, bondAmount);
+    vm.startPrank(_operator);
+    HLGCHAIN1.approve(address(holographOperatorChain1), bondAmount);
+    holographOperatorChain1.bondUtilityToken(_operator, bondAmount, 1);
+    vm.stopPrank();
+
+    vm.selectFork(chain2);
+    vm.prank(deployer);
+    HLGCHAIN2.transfer(_operator, bondAmount);
+    vm.startPrank(_operator);
+    HLGCHAIN2.approve(address(holographOperatorChain2), bondAmount);
+    holographOperatorChain2.bondUtilityToken(_operator, bondAmount, 1);
+    vm.stopPrank();
+  }
+
   // should add 10 operator wallets for each chain
   function testAddOperators() public {
-    vm.selectFork(chain1);
-    HolographERC20 HLGCHAIN1 = HolographERC20(payable(Constants.getHolographUtilityToken()));
-    vm.selectFork(chain2);
-    HolographERC20 HLGCHAIN2 = HolographERC20(payable(Constants.getHolographUtilityToken()));
-
     address[] memory wallets = new address[](10); // Array to hold operator addresses
 
     // generate 10 operator wallets
@@ -279,27 +301,8 @@ contract CrossChainMinting is Test {
       wallets[i] = address(uint160(uint(keccak256(abi.encodePacked(block.timestamp, i)))));
     }
 
-    vm.selectFork(chain1);
-    (uint256 bondAmount, ) = holographOperatorChain1.getPodBondAmounts(1);
-
     for (uint i = 0; i < wallets.length; i++) {
-      address wallet = wallets[i];
-
-      vm.selectFork(chain1);
-      vm.prank(deployer);
-      HLGCHAIN1.transfer(wallet, bondAmount);
-      vm.startPrank(wallet);
-      HLGCHAIN1.approve(address(holographOperatorChain1), bondAmount);
-      holographOperatorChain1.bondUtilityToken(wallet, bondAmount, 1);
-      vm.stopPrank();
-
-      vm.selectFork(chain2);
-      vm.prank(deployer);
-      HLGCHAIN2.transfer(wallet, bondAmount);
-      vm.startPrank(wallet);
-      HLGCHAIN2.approve(address(holographOperatorChain2), bondAmount);
-      holographOperatorChain2.bondUtilityToken(wallet, bondAmount, 1);
-      vm.stopPrank();
+      addOperator(wallets[i]);
     }
   }
 
@@ -398,6 +401,7 @@ contract CrossChainMinting is Test {
     vm.expectEmit(true, true, false, false);
     emit BridgeableContractDeployed(sampleErc20Address, erc20ConfigHash);
 
+    vm.prank(operator);
     (bool success2, ) = address(holographOperatorChain2).call{gas: estimatedGas.estimatedGas}(
       abi.encodeWithSelector(holographOperatorChain2.executeJob.selector, payload)
     );
@@ -458,6 +462,7 @@ contract CrossChainMinting is Test {
     vm.expectEmit(true, true, false, false);
     emit BridgeableContractDeployed(sampleErc20Address, erc20ConfigHash);
 
+    vm.prank(operator);
     (bool success2, ) = address(holographOperatorChain1).call{gas: estimatedGas.estimatedGas}(
       abi.encodeWithSelector(holographOperatorChain1.executeJob.selector, payload)
     );
@@ -520,6 +525,7 @@ contract CrossChainMinting is Test {
     vm.expectEmit(true, true, false, false);
     emit BridgeableContractDeployed(sampleErc721Address, erc721ConfigHash);
 
+    vm.prank(operator);
     (bool success2, ) = address(holographOperatorChain2).call{gas: estimatedGas.estimatedGas}(
       abi.encodeWithSelector(holographOperatorChain2.executeJob.selector, payload)
     );
@@ -586,6 +592,7 @@ contract CrossChainMinting is Test {
     vm.expectEmit(true, true, false, false);
     emit BridgeableContractDeployed(sampleErc721Address, erc721ConfigHash);
 
+    vm.prank(operator);
     (bool success2, ) = address(holographOperatorChain1).call{gas: estimatedGas.estimatedGas}(
       abi.encodeWithSelector(holographOperatorChain1.executeJob.selector, payload)
     );
@@ -654,6 +661,7 @@ contract CrossChainMinting is Test {
     vm.expectEmit(true, true, false, false);
     emit BridgeableContractDeployed(sampleErc721Address, erc721ConfigHash);
 
+    vm.prank(operator);
     (bool success2, ) = address(holographOperatorChain2).call{gas: estimatedGas.estimatedGas}(
       abi.encodeWithSelector(holographOperatorChain2.executeJob.selector, payload)
     );
@@ -714,6 +722,7 @@ contract CrossChainMinting is Test {
     vm.expectEmit(true, true, false, false);
     emit BridgeableContractDeployed(sampleErc721Address, erc721ConfigHash);
 
+    vm.prank(operator);
     (bool success2, ) = address(holographOperatorChain1).call{gas: estimatedGas.estimatedGas}(
       abi.encodeWithSelector(holographOperatorChain1.executeJob.selector, payload)
     );
@@ -776,6 +785,7 @@ contract CrossChainMinting is Test {
     vm.expectEmit(true, true, false, false);
     emit BridgeableContractDeployed(sampleErc20Address, erc20ConfigHash);
 
+    vm.prank(operator);
     (bool success2, ) = address(holographOperatorChain2).call{gas: estimatedGas.estimatedGas}(
       abi.encodeWithSelector(holographOperatorChain2.executeJob.selector, payload)
     );
@@ -836,6 +846,7 @@ contract CrossChainMinting is Test {
     vm.expectEmit(true, true, false, false);
     emit BridgeableContractDeployed(sampleErc20Address, erc20ConfigHash);
 
+    vm.prank(operator);
     (bool success2, ) = address(holographOperatorChain1).call{gas: estimatedGas.estimatedGas}(
       abi.encodeWithSelector(holographOperatorChain1.executeJob.selector, payload)
     );
@@ -1017,7 +1028,7 @@ contract CrossChainMinting is Test {
     vm.expectEmit(true, true, true, false);
     emit Transfer(address(0), deployer, 1);
 
-    // vm.prank(deployer);
+    vm.prank(operator);
     (bool success3, ) = address(holographOperatorChain2).call{gas: estimatedGas.estimatedGas}(
       abi.encodeWithSelector(holographOperatorChain2.executeJob.selector, payload)
     );
@@ -1089,7 +1100,7 @@ contract CrossChainMinting is Test {
     vm.expectEmit(true, true, true, false);
     emit Transfer(address(0), deployer, 1);
 
-    // vm.prank(deployer);
+    vm.prank(operator);
     (bool success3, ) = address(holographOperatorChain1).call{gas: estimatedGas.estimatedGas}(
       abi.encodeWithSelector(holographOperatorChain1.executeJob.selector, payload)
     );
@@ -1147,10 +1158,7 @@ contract CrossChainMinting is Test {
     for (uint256 i = 0; i < logs.length; i++) {
       if (logs[i].emitter == address(mockLZEndpointChain1)) {
         if (logs[i].topics[0] == keccak256("LzEvent(uint16,bytes,bytes)")) {
-          (,, bytes memory decodedPayload) = abi.decode(
-            logs[i].data,
-            (uint16, bytes, bytes)
-          );
+          (, , bytes memory decodedPayload) = abi.decode(logs[i].data, (uint16, bytes, bytes));
 
           payload = decodedPayload;
           break;
@@ -1177,7 +1185,7 @@ contract CrossChainMinting is Test {
     vm.expectEmit(true, false, false, false);
     emit FailedOperatorJob(keccak256(payload));
 
-    vm.prank(deployer);
+    vm.prank(operator);
     (bool success3, ) = address(holographOperatorChain2).call{gas: estimatedGas.estimatedGas}(
       abi.encodeWithSelector(holographOperatorChain2.executeJob.selector, payload)
     );
