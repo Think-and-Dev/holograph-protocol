@@ -45,6 +45,14 @@ contract CrossChainMinting is Test {
   uint256 constant TESTGASLIMIT = 10000000; // Gas limit
   uint256 constant GASPRICE = 1000000000; // 1 Gwei as gas price
 
+  uint224 constant firstTokenIdChain1 = 1;
+  uint224 constant secondTokenIdChain1 = 2;
+  uint224 constant thirdTokenIdChain1 = 3;
+
+  uint256 constant firstTokenIdChain2 =  115792089156436355422119065624686862592211092644729130771835866564602298892289;
+  uint256 constant secondTokenIdChain2 = 115792089156436355422119065624686862592211092644729130771835866564602298892290;
+  uint256 constant thirdTokenIdChain2 = 115792089156436355422119065624686862592211092644729130771835866564602298892291;
+
   uint256 msgBaseGas;
   uint256 msgGasPerByte;
   uint256 jobBaseGas;
@@ -128,7 +136,7 @@ contract CrossChainMinting is Test {
   ) public returns (EstimatedGas memory) {
     if (isL1) {
       vm.selectFork(chain2);
-      (bool success, bytes memory result) = address(holographOperatorChain2).call{gas: TESTGASLIMIT}(
+      (, bytes memory result) = address(holographOperatorChain2).call{gas: TESTGASLIMIT}(
         abi.encodeWithSelector(holographOperatorChain2.jobEstimator.selector, _payload)
       );
       uint256 jobEstimatorGas = abi.decode(result, (uint256));
@@ -155,7 +163,7 @@ contract CrossChainMinting is Test {
       uint256 total = fee1 + fee2;
 
       vm.selectFork(chain2);
-      (bool success2, bytes memory result2) = address(holographOperatorChain2).call{gas: TESTGASLIMIT, value: total}(
+      (, bytes memory result2) = address(holographOperatorChain2).call{gas: TESTGASLIMIT, value: total}(
         abi.encodeWithSelector(holographOperatorChain2.jobEstimator.selector, payload)
       );
 
@@ -176,7 +184,7 @@ contract CrossChainMinting is Test {
         });
     } else {
       vm.selectFork(chain1);
-      (bool success, bytes memory result) = address(holographOperatorChain1).call{gas: TESTGASLIMIT}(
+      (, bytes memory result) = address(holographOperatorChain1).call{gas: TESTGASLIMIT}(
         abi.encodeWithSelector(holographOperatorChain1.jobEstimator.selector, _payload)
       );
       uint256 jobEstimatorGas = abi.decode(result, (uint256));
@@ -203,7 +211,7 @@ contract CrossChainMinting is Test {
       uint256 total = fee1 + fee2;
 
       vm.selectFork(chain1);
-      (bool success2, bytes memory result2) = address(holographOperatorChain1).call{gas: TESTGASLIMIT, value: total}(
+      (, bytes memory result2) = address(holographOperatorChain1).call{gas: TESTGASLIMIT, value: total}(
         abi.encodeWithSelector(holographOperatorChain1.jobEstimator.selector, payload)
       );
 
@@ -293,7 +301,7 @@ contract CrossChainMinting is Test {
   }
 
   // should add 10 operator wallets for each chain
-  function testAddOperators() public {
+  function testShouldAdd10OperatorsForEachChain() public {
     address[] memory wallets = new address[](10); // Array to hold operator addresses
 
     // generate 10 operator wallets
@@ -619,12 +627,12 @@ contract CrossChainMinting is Test {
     Verification memory signature = Verification({r: r, s: s, v: v});
 
     vm.selectFork(chain2);
-    address sampleErc721Address = holographRegistryChain2.getHolographedHashAddress(erc721ConfigHash);
+    address cxipErc721Address = holographRegistryChain2.getHolographedHashAddress(erc721ConfigHash);
 
-    assertEq(sampleErc721Address, address(0), "ERC721 contract not deployed on chain2");
+    assertEq(cxipErc721Address, address(0), "ERC721 contract not deployed on chain2");
 
     vm.selectFork(chain1);
-    sampleErc721Address = holographRegistryChain1.getHolographedHashAddress(erc721ConfigHash);
+    cxipErc721Address = holographRegistryChain1.getHolographedHashAddress(erc721ConfigHash);
 
     vm.selectFork(chain2);
     bytes memory data = abi.encode(erc721Config, signature, deployer);
@@ -659,7 +667,7 @@ contract CrossChainMinting is Test {
     holographOperatorChain2.setMessagingModule(originalMessagingModule);
 
     vm.expectEmit(true, true, false, false);
-    emit BridgeableContractDeployed(sampleErc721Address, erc721ConfigHash);
+    emit BridgeableContractDeployed(cxipErc721Address, erc721ConfigHash);
 
     vm.prank(operator);
     (bool success2, ) = address(holographOperatorChain2).call{gas: estimatedGas.estimatedGas}(
@@ -667,7 +675,7 @@ contract CrossChainMinting is Test {
     );
 
     assertEq(
-      sampleErc721Address,
+      cxipErc721Address,
       holographRegistryChain2.getHolographedHashAddress(erc721ConfigHash),
       "ERC721 contract not deployed on chain2"
     );
@@ -680,12 +688,12 @@ contract CrossChainMinting is Test {
     Verification memory signature = Verification({r: r, s: s, v: v});
 
     vm.selectFork(chain1);
-    address sampleErc721Address = holographRegistryChain1.getHolographedHashAddress(erc721ConfigHash);
+    address cxipErc721Address = holographRegistryChain1.getHolographedHashAddress(erc721ConfigHash);
 
-    assertEq(sampleErc721Address, address(0), "ERC721 contract not deployed on chain1");
+    assertEq(cxipErc721Address, address(0), "ERC721 contract not deployed on chain1");
 
     vm.selectFork(chain2);
-    sampleErc721Address = holographRegistryChain2.getHolographedHashAddress(erc721ConfigHash);
+    cxipErc721Address = holographRegistryChain2.getHolographedHashAddress(erc721ConfigHash);
 
     vm.selectFork(chain1);
     bytes memory data = abi.encode(erc721Config, signature, deployer);
@@ -720,7 +728,7 @@ contract CrossChainMinting is Test {
     holographOperatorChain1.setMessagingModule(originalMessagingModule);
 
     vm.expectEmit(true, true, false, false);
-    emit BridgeableContractDeployed(sampleErc721Address, erc721ConfigHash);
+    emit BridgeableContractDeployed(cxipErc721Address, erc721ConfigHash);
 
     vm.prank(operator);
     (bool success2, ) = address(holographOperatorChain1).call{gas: estimatedGas.estimatedGas}(
@@ -728,7 +736,7 @@ contract CrossChainMinting is Test {
     );
 
     assertEq(
-      sampleErc721Address,
+      cxipErc721Address,
       holographRegistryChain1.getHolographedHashAddress(erc721ConfigHash),
       "ERC721 contract not deployed on chain1"
     );
@@ -738,17 +746,17 @@ contract CrossChainMinting is Test {
 
   // deploy chain1 equivalent on chain2
   function testHTokenChain2() public {
-    (DeploymentConfig memory erc20Config, bytes32 erc20ConfigHash) = getConfigSampleERC20(true);
+    (DeploymentConfig memory erc20Config, bytes32 erc20ConfigHash) = getConfigHtokenETH(true);
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, erc20ConfigHash);
     Verification memory signature = Verification({r: r, s: s, v: v});
 
     vm.selectFork(chain2);
-    address sampleErc20Address = holographRegistryChain2.getHolographedHashAddress(erc20ConfigHash);
+    address hTokenErc20Address = holographRegistryChain2.getHolographedHashAddress(erc20ConfigHash);
 
-    assertEq(sampleErc20Address, address(0), "ERC20 contract not deployed on chain2");
+    // assertEq(hTokenErc20Address, address(0), "ERC20 contract not deployed on chain2");
 
     vm.selectFork(chain1);
-    sampleErc20Address = holographRegistryChain1.getHolographedHashAddress(erc20ConfigHash);
+    hTokenErc20Address = holographRegistryChain1.getHolographedHashAddress(erc20ConfigHash);
 
     vm.selectFork(chain2);
     bytes memory data = abi.encode(erc20Config, signature, deployer);
@@ -783,7 +791,7 @@ contract CrossChainMinting is Test {
     holographOperatorChain2.setMessagingModule(originalMessagingModule);
 
     vm.expectEmit(true, true, false, false);
-    emit BridgeableContractDeployed(sampleErc20Address, erc20ConfigHash);
+    emit BridgeableContractDeployed(hTokenErc20Address, erc20ConfigHash);
 
     vm.prank(operator);
     (bool success2, ) = address(holographOperatorChain2).call{gas: estimatedGas.estimatedGas}(
@@ -791,7 +799,7 @@ contract CrossChainMinting is Test {
     );
 
     assertEq(
-      sampleErc20Address,
+      hTokenErc20Address,
       holographRegistryChain2.getHolographedHashAddress(erc20ConfigHash),
       "ERC20 contract not deployed on chain2"
     );
@@ -799,17 +807,17 @@ contract CrossChainMinting is Test {
 
   // deploy chain2 equivalent on chain1
   function testHTokenChain1() public {
-    (DeploymentConfig memory erc20Config, bytes32 erc20ConfigHash) = getConfigSampleERC20(false);
+    (DeploymentConfig memory erc20Config, bytes32 erc20ConfigHash) = getConfigHtokenETH(false);
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, erc20ConfigHash);
     Verification memory signature = Verification({r: r, s: s, v: v});
 
     vm.selectFork(chain1);
-    address sampleErc20Address = holographRegistryChain1.getHolographedHashAddress(erc20ConfigHash);
+    address hTokenErc20Address = holographRegistryChain1.getHolographedHashAddress(erc20ConfigHash);
 
-    assertEq(sampleErc20Address, address(0), "ERC20 contract not deployed on chain1");
+    assertEq(hTokenErc20Address, address(0), "ERC20 contract not deployed on chain1");
 
     vm.selectFork(chain2);
-    sampleErc20Address = holographRegistryChain2.getHolographedHashAddress(erc20ConfigHash);
+    hTokenErc20Address = holographRegistryChain2.getHolographedHashAddress(erc20ConfigHash);
 
     vm.selectFork(chain1);
     bytes memory data = abi.encode(erc20Config, signature, deployer);
@@ -844,7 +852,7 @@ contract CrossChainMinting is Test {
     holographOperatorChain1.setMessagingModule(originalMessagingModule);
 
     vm.expectEmit(true, true, false, false);
-    emit BridgeableContractDeployed(sampleErc20Address, erc20ConfigHash);
+    emit BridgeableContractDeployed(hTokenErc20Address, erc20ConfigHash);
 
     vm.prank(operator);
     (bool success2, ) = address(holographOperatorChain1).call{gas: estimatedGas.estimatedGas}(
@@ -852,7 +860,7 @@ contract CrossChainMinting is Test {
     );
 
     assertEq(
-      sampleErc20Address,
+      hTokenErc20Address,
       holographRegistryChain1.getHolographedHashAddress(erc20ConfigHash),
       "ERC20 contract not deployed on chain1"
     );
@@ -878,6 +886,13 @@ contract CrossChainMinting is Test {
     assertEq(sampleErc721Enforcer.totalSupply(), 0, "Chain1 should have a total supply of 0 on chain2");
   }
 
+  // chain2 should have a total supply of 0 on chain2
+  function testChain2ShouldHaveTotalSupplyOf0OnChain2() public {
+    vm.selectFork(chain2);
+    HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain2)));
+    assertEq(sampleErc721Enforcer.totalSupply(), 0, "Chain2 should have a total supply of 0 on chain2");
+  }
+
   // chain2 should have a total supply of 0 on chain1
   function testChain2ShouldHaveTotalSupplyOf0OnChain1() public {
     sampleERC721HelperChain1();
@@ -885,13 +900,6 @@ contract CrossChainMinting is Test {
     vm.selectFork(chain1);
     HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain2)));
     assertEq(sampleErc721Enforcer.totalSupply(), 0, "Chain2 should have a total supply of 0 on chain1");
-  }
-
-  // chain2 should have a total supply of 0 on chain2
-  function testChain2ShouldHaveTotalSupplyOf0OnChain2() public {
-    vm.selectFork(chain2);
-    HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain2)));
-    assertEq(sampleErc721Enforcer.totalSupply(), 0, "Chain2 should have a total supply of 0 on chain2");
   }
 
   // validate mint functionality
@@ -902,11 +910,11 @@ contract CrossChainMinting is Test {
     SampleERC721 sampleERC721 = SampleERC721(payable(address(sampleErc721HolographerChain1)));
 
     vm.expectEmit(true, true, true, false);
-    emit Transfer(address(0), deployer, 1);
+    emit Transfer(address(0), deployer, firstTokenIdChain1);
 
     uint256 gasBefore = gasleft();
     vm.prank(deployer);
-    sampleERC721.mint(deployer, 1, "https://holograph.xyz/sample1.json");
+    sampleERC721.mint(deployer, firstTokenIdChain1, "https://holograph.xyz/sample1.json");
     uint256 gasUsed = gasBefore - gasleft();
     assertTrue(gasUsed > 0, "Gas used should be greater than 0");
   }
@@ -917,13 +925,12 @@ contract CrossChainMinting is Test {
     vm.selectFork(chain2);
     SampleERC721 sampleERC721 = SampleERC721(payable(address(sampleErc721HolographerChain1)));
 
-    // vm.expectEmit(true, true, true, false);
-    // emit Transfer(address(0), deployer, 1);
-    // This test is failing because tokenId on the event is another value (115792089156436355422119065624686862592211092644729130771835866564602298892289)
+    vm.expectEmit(true, true, true, false);
+    emit Transfer(address(0), deployer, firstTokenIdChain2);
 
     uint256 gasBefore = gasleft();
     vm.prank(deployer);
-    sampleERC721.mint(deployer, 1, "https://holograph.xyz/sample1.json");
+    sampleERC721.mint(deployer, firstTokenIdChain1, "https://holograph.xyz/sample1.json");
     uint256 gasUsed = gasBefore - gasleft();
     assertTrue(gasUsed > 0, "Gas used should be greater than 0");
   }
@@ -935,35 +942,33 @@ contract CrossChainMinting is Test {
     SampleERC721 sampleERC721Chain1 = SampleERC721(payable(address(sampleErc721HolographerChain1)));
 
     vm.expectEmit(true, true, true, false);
-    emit Transfer(address(0), deployer, 2);
+    emit Transfer(address(0), deployer, secondTokenIdChain1);
 
     vm.prank(deployer);
-    sampleERC721Chain1.mint(deployer, 2, "https://holograph.xyz/sample2.json");
+    sampleERC721Chain1.mint(deployer, secondTokenIdChain1, "https://holograph.xyz/sample2.json");
 
     vm.selectFork(chain2);
     SampleERC721 sampleERC721Chain2 = SampleERC721(payable(address(sampleErc721HolographerChain1)));
 
-    // vm.expectEmit(true, true, true, false);
-    // emit Transfer(address(0), deployer, 2);
-    // This test is failing because tokenId on the event is another value (115792089156436355422119065624686862592211092644729130771835866564602298892289)
+    vm.expectEmit(true, true, true, false);
+    emit Transfer(address(0), deployer, secondTokenIdChain2);
 
     vm.prank(deployer);
-    sampleERC721Chain2.mint(deployer, 2, "https://holograph.xyz/sample2.json");
+    sampleERC721Chain2.mint(deployer, secondTokenIdChain1, "https://holograph.xyz/sample2.json");
 
     vm.selectFork(chain1);
     vm.expectEmit(true, true, true, false);
-    emit Transfer(address(0), deployer, 3);
+    emit Transfer(address(0), deployer, thirdTokenIdChain1);
 
     vm.prank(deployer);
-    sampleERC721Chain1.mint(deployer, 3, "https://holograph.xyz/sample3.json");
+    sampleERC721Chain1.mint(deployer, thirdTokenIdChain1, "https://holograph.xyz/sample3.json");
 
     vm.selectFork(chain2);
-    // vm.expectEmit(true, true, true, false);
-    // emit Transfer(address(0), deployer, 3);
-    // This test is failing because tokenId on the event is another value (115792089156436355422119065624686862592211092644729130771835866564602298892289)
+    vm.expectEmit(true, true, true, false);
+    emit Transfer(address(0), deployer, thirdTokenIdChain2);
 
     vm.prank(deployer);
-    sampleERC721Chain2.mint(deployer, 3, "https://holograph.xyz/sample3.json");
+    sampleERC721Chain2.mint(deployer, thirdTokenIdChain1, "https://holograph.xyz/sample3.json");
   }
 
   // validate bridge functionality
@@ -975,9 +980,9 @@ contract CrossChainMinting is Test {
 
     vm.selectFork(chain1);
     SampleERC721 sampleErc721 = SampleERC721(payable(address(sampleErc721HolographerChain1)));
-    string memory tokenURIBefore = sampleErc721.tokenURI(1);
+    string memory tokenURIBefore = sampleErc721.tokenURI(firstTokenIdChain1);
 
-    bytes memory data = abi.encode(deployer, deployer, 1);
+    bytes memory data = abi.encode(deployer, deployer, firstTokenIdChain1);
 
     address sampleErc721HolographerChain1Address = address(sampleErc721HolographerChain1);
 
@@ -1026,7 +1031,7 @@ contract CrossChainMinting is Test {
     holographOperatorChain2.setMessagingModule(originalMessagingModule);
 
     vm.expectEmit(true, true, true, false);
-    emit Transfer(address(0), deployer, 1);
+    emit Transfer(address(0), deployer, firstTokenIdChain1);
 
     vm.prank(operator);
     (bool success3, ) = address(holographOperatorChain2).call{gas: estimatedGas.estimatedGas}(
@@ -1034,10 +1039,10 @@ contract CrossChainMinting is Test {
     );
 
     HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain1)));
-    assertEq(sampleErc721Enforcer.ownerOf(1), deployer, "Token #1 should be owned by deployer on chain2");
+    assertEq(sampleErc721Enforcer.ownerOf(firstTokenIdChain1), deployer, "Token #1 should be owned by deployer on chain2");
 
     // token #2 beaming from chain1 to chain2 should keep TokenURI
-    string memory tokenURIAfter = sampleErc721Enforcer.tokenURI(1);
+    string memory tokenURIAfter = sampleErc721Enforcer.tokenURI(firstTokenIdChain1);
     assertEq(tokenURIBefore, tokenURIAfter, "TokenURI should be the same on chain2");
   }
 
@@ -1047,9 +1052,9 @@ contract CrossChainMinting is Test {
 
     vm.selectFork(chain2);
     SampleERC721 sampleErc721 = SampleERC721(payable(address(sampleErc721HolographerChain1)));
-    string memory tokenURIBefore = sampleErc721.tokenURI(1);
+    string memory tokenURIBefore = sampleErc721.tokenURI(firstTokenIdChain1);
 
-    bytes memory data = abi.encode(deployer, deployer, 1);
+    bytes memory data = abi.encode(deployer, deployer, firstTokenIdChain1);
 
     address sampleErc721HolographerChain1Address = address(sampleErc721HolographerChain1);
 
@@ -1098,7 +1103,7 @@ contract CrossChainMinting is Test {
     holographOperatorChain1.setMessagingModule(originalMessagingModule);
 
     vm.expectEmit(true, true, true, false);
-    emit Transfer(address(0), deployer, 1);
+    emit Transfer(address(0), deployer, firstTokenIdChain1);
 
     vm.prank(operator);
     (bool success3, ) = address(holographOperatorChain1).call{gas: estimatedGas.estimatedGas}(
@@ -1106,10 +1111,10 @@ contract CrossChainMinting is Test {
     );
 
     HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain1)));
-    assertEq(sampleErc721Enforcer.ownerOf(1), deployer, "Token #1 should be owned by deployer on chain1");
+    assertEq(sampleErc721Enforcer.ownerOf(firstTokenIdChain1), deployer, "Token #1 should be owned by deployer on chain1");
 
     // token #2 beaming from chain2 to chain1 should keep TokenURI
-    string memory tokenURIAfter = sampleErc721Enforcer.tokenURI(1);
+    string memory tokenURIAfter = sampleErc721Enforcer.tokenURI(firstTokenIdChain1);
     assertEq(tokenURIBefore, tokenURIAfter, "TokenURI should be the same on chain1");
   }
 
@@ -1117,7 +1122,7 @@ contract CrossChainMinting is Test {
   function testTokenBeamingFromChain1ToChain2ShouldFailAndRecover() public {
     testTokenBeamingFromChain2ToChain1ShouldSucceed();
 
-    bytes memory data = abi.encode(deployer, deployer, 1);
+    bytes memory data = abi.encode(deployer, deployer, firstTokenIdChain1);
 
     address sampleErc721HolographerChain1Address = address(sampleErc721HolographerChain1);
 
@@ -1191,14 +1196,14 @@ contract CrossChainMinting is Test {
     );
 
     vm.expectEmit(true, true, true, false);
-    emit Transfer(address(0), deployer, 1);
+    emit Transfer(address(0), deployer, firstTokenIdChain1);
 
     (bool success4, ) = address(holographOperatorChain2).call{gas: estimatedGas.estimatedGas}(
       abi.encodeWithSelector(holographOperatorChain2.recoverJob.selector, payload)
     );
 
     HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain1)));
-    assertEq(sampleErc721Enforcer.ownerOf(1), deployer, "Token #1 should be owned by deployer on chain2");
+    assertEq(sampleErc721Enforcer.ownerOf(firstTokenIdChain1), deployer, "Token #1 should be owned by deployer on chain2");
   }
 
   // token #2 beaming from chain1 to chain2 should keep TokenURI
@@ -1223,7 +1228,7 @@ contract CrossChainMinting is Test {
     HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain1)));
 
     vm.expectEmit(true, true, true, false);
-    emit Transfer(deployer, alice, 1);
+    emit Transfer(deployer, alice, firstTokenIdChain1);
 
     uint256 gasBefore = gasleft();
     vm.prank(deployer);
