@@ -92,16 +92,34 @@ contract CrossChainMinting is Test {
     uint256 dstGasPrice;
   }
 
+  /**
+   * @notice Get the gas cost for a message with payload in the local chain
+   * @param _payload The payload of the message
+   * @return The total gas cost for the message
+   */
   function getLzMsgGas(bytes memory _payload) public view returns (uint256) {
     uint256 totalGas = msgBaseGas + (_payload.length * msgGasPerByte);
     return totalGas;
   }
 
+  /**
+   * @notice Get the gas cost for a message with payload in the holograph job
+   * @param _gasLimit The gas limit for the message
+   * @param _payload The payload of the message
+   * @return The total gas cost for the message
+   */
   function getHlgMsgGas(uint256 _gasLimit, bytes memory _payload) public view returns (uint256) {
     uint256 totalGas = _gasLimit + jobBaseGas + (_payload.length * jobGasPerByte);
     return totalGas;
   }
 
+  /**
+   * @notice Get the request payload for a bridge out request
+   * @param _target The target address for the request
+   * @param _data The data for the request
+   * @param isL1 Flag indicating if the request is for chain 1 (localhost)
+   * @return The request payload
+   */
   function getRequestPayload(address _target, bytes memory _data, bool isL1) public returns (bytes memory) {
     if (isL1) {
       vm.selectFork(chain1);
@@ -128,6 +146,15 @@ contract CrossChainMinting is Test {
     }
   }
 
+  /**
+   * @dev Get estimated gas for a cross-chain transaction.
+   * @param _target The target contract address.
+   * @param _data The transaction data.
+   * @param _payload The payload data.
+   * @param isL1 Flag indicating if the transaction is on chain1 (true) or chain2 (false).
+   * @param _gasLimitAddition The additional gas limit.
+   * @return The estimated gas and fee information.
+   */
   function getEstimatedGas(
     address _target,
     bytes memory _data,
@@ -136,16 +163,21 @@ contract CrossChainMinting is Test {
     uint256 _gasLimitAddition
   ) public returns (EstimatedGas memory) {
     if (isL1) {
+      // Select chain2 fork
       vm.selectFork(chain2);
+      // Call holographOperatorChain2.jobEstimator to get job estimator gas
       (, bytes memory result) = address(holographOperatorChain2).call{gas: TESTGASLIMIT}(
         abi.encodeWithSelector(holographOperatorChain2.jobEstimator.selector, _payload)
       );
       uint256 jobEstimatorGas = abi.decode(result, (uint256));
 
+      // Calculate estimated gas
       uint256 estimatedGas = TESTGASLIMIT - jobEstimatorGas + _gasLimitAddition;
 
+      // Select chain1 fork
       vm.selectFork(chain1);
       vm.prank(deployer);
+      // Get bridge out request payload
       bytes memory payload = holographBridgeChain1.getBridgeOutRequestPayload(
         holographIdL2,
         _target,
@@ -154,6 +186,7 @@ contract CrossChainMinting is Test {
         _data
       );
 
+      // Get message fee
       (uint256 fee1, uint256 fee2, uint256 fee3) = holographBridgeChain1.getMessageFee(
         holographIdL2,
         estimatedGas,
@@ -163,7 +196,9 @@ contract CrossChainMinting is Test {
 
       uint256 total = fee1 + fee2;
 
+      // Select chain2 fork
       vm.selectFork(chain2);
+      // Call holographOperatorChain2.jobEstimator to get job estimator gas
       (, bytes memory result2) = address(holographOperatorChain2).call{gas: TESTGASLIMIT, value: total}(
         abi.encodeWithSelector(holographOperatorChain2.jobEstimator.selector, payload)
       );
@@ -172,6 +207,7 @@ contract CrossChainMinting is Test {
 
       estimatedGas = TESTGASLIMIT - jobEstimatorGas2 + _gasLimitAddition;
 
+      // Calculate HLG message gas
       estimatedGas = getHlgMsgGas(estimatedGas, payload);
 
       return
@@ -184,16 +220,21 @@ contract CrossChainMinting is Test {
           dstGasPrice: fee3
         });
     } else {
+      // Select chain1 fork
       vm.selectFork(chain1);
+      // Call holographOperatorChain1.jobEstimator to get job estimator gas
       (, bytes memory result) = address(holographOperatorChain1).call{gas: TESTGASLIMIT}(
         abi.encodeWithSelector(holographOperatorChain1.jobEstimator.selector, _payload)
       );
       uint256 jobEstimatorGas = abi.decode(result, (uint256));
 
+      // Calculate estimated gas
       uint256 estimatedGas = TESTGASLIMIT - jobEstimatorGas + _gasLimitAddition;
 
+      // Select chain2 fork
       vm.selectFork(chain2);
       vm.prank(deployer);
+      // Get bridge out request payload
       bytes memory payload = holographBridgeChain2.getBridgeOutRequestPayload(
         holographIdL1,
         _target,
@@ -202,6 +243,7 @@ contract CrossChainMinting is Test {
         _data
       );
 
+      // Get message fee
       (uint256 fee1, uint256 fee2, uint256 fee3) = holographBridgeChain2.getMessageFee(
         holographIdL1,
         estimatedGas,
@@ -211,7 +253,9 @@ contract CrossChainMinting is Test {
 
       uint256 total = fee1 + fee2;
 
+      // Select chain1 fork
       vm.selectFork(chain1);
+      // Call holographOperatorChain1.jobEstimator to get job estimator gas
       (, bytes memory result2) = address(holographOperatorChain1).call{gas: TESTGASLIMIT, value: total}(
         abi.encodeWithSelector(holographOperatorChain1.jobEstimator.selector, payload)
       );
@@ -220,6 +264,7 @@ contract CrossChainMinting is Test {
 
       estimatedGas = TESTGASLIMIT - jobEstimatorGas2 + _gasLimitAddition;
 
+      // Calculate HLG message gas
       estimatedGas = getHlgMsgGas(estimatedGas, payload);
 
       return
@@ -280,6 +325,10 @@ contract CrossChainMinting is Test {
 
   // Enable operators for chain1 and chain2
 
+  /**
+   * @notice Add an operator to the contract
+   * @param _operator The address of the operator to be added
+   */
   function addOperator(address _operator) public {
     vm.selectFork(chain1);
     (uint256 bondAmount, ) = holographOperatorChain1.getPodBondAmounts(1);
@@ -301,7 +350,10 @@ contract CrossChainMinting is Test {
     vm.stopPrank();
   }
 
-  // should add 10 operator wallets for each chain
+  /**
+   * @notice should add 10 operator wallets for each chain
+   * @dev Adds 10 operator wallets for each chain
+   */
   function testShouldAdd10OperatorsForEachChain() public {
     address[] memory wallets = new address[](10); // Array to hold operator addresses
 
@@ -315,45 +367,73 @@ contract CrossChainMinting is Test {
     }
   }
 
-  function getConfigSampleERC20(bool isL1) public view returns (DeploymentConfig memory, bytes32) {
-    DeploymentConfig memory deployConfig = HelperDeploymentConfig.getERC20(
+  /**
+   * @notice Get the configuration for SampleERC20 contract
+   * @dev Returns the deployment configuration and hash for SampleERC20 contract
+   * @param isL1 Boolean indicating if it's chain1 or chain2
+   * @return deployConfig The deployment configuration for SampleERC20 contract
+   * @return hashSampleERC20 The hash of the deployment configuration for SampleERC20 contract
+   */
+  function getConfigSampleERC20(bool isL1) public view returns (DeploymentConfig memory deployConfig, bytes32 hashSampleERC20) {
+    deployConfig = HelperDeploymentConfig.getERC20(
       isL1 ? Constants.getHolographIdL1() : Constants.getHolographIdL2(),
       vm.getCode("SampleERC20.sol:SampleERC20"),
       isL1
     );
 
-    bytes32 hashSampleERC20 = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
+    hashSampleERC20 = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
     return (deployConfig, hashSampleERC20);
   }
 
-  function getConfigSampleERC721(bool isL1) public view returns (DeploymentConfig memory, bytes32) {
-    DeploymentConfig memory deployConfig = HelperDeploymentConfig.getERC721(
+  /**
+   * @notice Get the configuration for SampleERC721 contract
+   * @dev Returns the deployment configuration and hash for SampleERC721 contract
+   * @param isL1 Boolean indicating if it's chain1 or chain2
+   * @return deployConfig The deployment configuration for SampleERC721 contract
+   * @return hashSampleERC721 The hash of the deployment configuration for SampleERC721 contract
+   */
+  function getConfigSampleERC721(bool isL1) public view returns (DeploymentConfig memory deployConfig, bytes32 hashSampleERC721) {
+    deployConfig = HelperDeploymentConfig.getERC721(
       isL1 ? Constants.getHolographIdL1() : Constants.getHolographIdL2(),
       vm.getCode("SampleERC721.sol:SampleERC721"),
       0x0000000000000000000000000000000000000000000000000000000000000086, // eventConfig,
       isL1
     );
 
-    bytes32 hashSampleERC721 = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
+    hashSampleERC721 = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
     return (deployConfig, hashSampleERC721);
   }
 
-  function getConfigCxipERC721(bool isL1) public view returns (DeploymentConfig memory, bytes32) {
-    DeploymentConfig memory deployConfig = HelperDeploymentConfig.getCxipERC721(
+  /**
+   * @notice Get the configuration for CxipERC721 contract
+   * @dev Returns the deployment configuration and hash for CxipERC721 contract
+   * @param isL1 Boolean indicating if it's chain1 or chain2
+   * @return deployConfig The deployment configuration for CxipERC721 contract
+   * @return hashSampleERC721 The hash of the deployment configuration for CxipERC721 contract
+   */
+  function getConfigCxipERC721(bool isL1) public view returns (DeploymentConfig memory deployConfig, bytes32 hashSampleERC721) {
+    deployConfig = HelperDeploymentConfig.getCxipERC721(
       isL1 ? Constants.getHolographIdL1() : Constants.getHolographIdL2(),
       vm.getCode("CxipERC721Proxy.sol:CxipERC721Proxy"),
       0x0000000000000000000000000000000000000000000000000000000000000086, // eventConfig,
       isL1
     );
 
-    bytes32 hashSampleERC721 = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
+    hashSampleERC721 = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
     return (deployConfig, hashSampleERC721);
   }
 
-  function getConfigHtokenETH(bool isL1) private returns (DeploymentConfig memory, bytes32) {
+  /**
+   * @notice Get the configuration for hTokenETH contract
+   * @dev Returns the deployment configuration and hash for hTokenETH contract
+   * @param isL1 Boolean indicating if it's chain1 or chain2
+   * @return deployConfig The deployment configuration for hTokenETH contract
+   * @return hashHtokenTest The hash of the deployment configuration for hTokenETH contract
+   */
+  function getConfigHtokenETH(bool isL1) private returns (DeploymentConfig memory deployConfig, bytes32 hashHtokenTest) {
     string memory tokenName = string.concat("Holographed TestToken chain ", ((isL1) ? "one" : "two"));
 
-    DeploymentConfig memory deployConfig = HelperDeploymentConfig.getDeployConfigERC20(
+    deployConfig = HelperDeploymentConfig.getDeployConfigERC20(
       bytes32(0x000000000000000000000000000000000000486f6c6f67726170684552433230), //hToken hash
       (isL1) ? Constants.getHolographIdL1() : Constants.getHolographIdL2(),
       vm.getCode("hTokenProxy.sol:hTokenProxy"),
@@ -363,7 +443,7 @@ contract CrossChainMinting is Test {
       tokenName,
       HelperDeploymentConfig.getInitCodeHtokenETH()
     );
-    bytes32 hashHtokenTest = HelperDeploymentConfig.getDeployConfigHash(deployConfig, Constants.getDeployer());
+    hashHtokenTest = HelperDeploymentConfig.getDeployConfigHash(deployConfig, Constants.getDeployer());
 
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(
       Constants.getPKDeployer(),
@@ -382,8 +462,14 @@ contract CrossChainMinting is Test {
     return (deployConfig, hashHtokenTest);
   }
 
-  // SampleERC20
-  // deploy chain1 equivalent on chain2
+  /**
+   * SampleERC20
+   */
+  
+  /**
+   * @notice deploy chain1 equivalent on chain2
+   * @dev deploy the SampleERC20 equivalent on chain2 and check if it's deployed
+   */
   function testSampleERC20Chain2() public {
     (DeploymentConfig memory erc20Config, bytes32 erc20ConfigHash) = getConfigSampleERC20(true);
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, erc20ConfigHash);
@@ -444,7 +530,10 @@ contract CrossChainMinting is Test {
     );
   }
 
-  // deploy chain2 equivalent on chain1
+  /**
+   * @notice deploy chain2 equivalent on chain1
+   * @dev deploy the SampleERC20 equivalent on chain1 and check if it's deployed
+   */
   function testSampleERC20Chain1() public {
     (DeploymentConfig memory erc20Config, bytes32 erc20ConfigHash) = getConfigSampleERC20(false);
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, erc20ConfigHash);
@@ -505,8 +594,14 @@ contract CrossChainMinting is Test {
     );
   }
 
-  // SampleERC721
+  /**
+   * SampleERC721
+   */
 
+  /**
+   * @notice Helper function to deploy SampleERC721 contract on chain2
+   * @dev This helper exists because the same logic will be used for other tests
+   */
   function sampleERC721HelperChain2() internal returns (address sampleErc721Address, bytes32 configHash) {
     (DeploymentConfig memory erc721Config, bytes32 erc721ConfigHash) = getConfigSampleERC721(true);
     configHash = erc721ConfigHash;
@@ -562,7 +657,10 @@ contract CrossChainMinting is Test {
     );
   }
 
-  // deploy chain1 equivalent on chain2
+  /**
+   * @notice deploy chain1 equivalent on chain2
+   * @dev deploy the SampleERC721 equivalent on chain2 and check if it's deployed
+   */
   function testSampleERC721Chain2() public {
     (address sampleErc721Address, bytes32 erc721ConfigHash) = sampleERC721HelperChain2();
 
@@ -574,6 +672,10 @@ contract CrossChainMinting is Test {
     );
   }
 
+  /**
+   * @notice Helper function to deploy SampleERC721 contract on chain1
+   * @dev This helper exists because the same logic will be used for other tests
+   */
   function sampleERC721HelperChain1() internal returns (address sampleErc721Address, bytes32 configHash) {
     (DeploymentConfig memory erc721Config, bytes32 erc721ConfigHash) = getConfigSampleERC721(false);
     configHash = erc721ConfigHash;
@@ -629,7 +731,10 @@ contract CrossChainMinting is Test {
     );
   }
 
-  // deploy chain2 equivalent on chain1
+  /**
+   * @notice deploy chain2 equivalent on chain1
+   * @dev deploy the SampleERC721 equivalent on chain1 and check if it's deployed
+   */
   function testSampleERC721Chain1() public {
     (address sampleErc721Address, bytes32 erc721ConfigHash) = sampleERC721HelperChain1();
 
@@ -641,9 +746,14 @@ contract CrossChainMinting is Test {
     );
   }
 
-  // CxipERC721
+  /**
+   * CxipERC721
+   */
 
-  // deploy chain1 equivalent on chain2
+  /**
+   * @notice deploy chain1 equivalent on chain2
+   * @dev deploy the CxipERC721 equivalent on chain2 and check if it's deployed
+   */
   function testCxipERC721Chain2() public {
     (DeploymentConfig memory erc721Config, bytes32 erc721ConfigHash) = getConfigCxipERC721(true);
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, erc721ConfigHash);
@@ -704,7 +814,10 @@ contract CrossChainMinting is Test {
     );
   }
 
-  // deploy chain2 equivalent on chain1
+  /**
+   * @notice deploy chain2 equivalent on chain1
+   * @dev deploy the CxipERC721 equivalent on chain1 and check if it's deployed
+   */
   function testCxipERC721Chain1() public {
     (DeploymentConfig memory erc721Config, bytes32 erc721ConfigHash) = getConfigCxipERC721(false);
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, erc721ConfigHash);
@@ -765,9 +878,14 @@ contract CrossChainMinting is Test {
     );
   }
 
-  // hToken
+  /**
+   * hToken
+   */
 
-  // deploy chain1 equivalent on chain2
+  /**
+   * @notice deploy chain1 equivalent on chain2
+   * @dev deploy the hTokenETH equivalent on chain2 and check if it's deployed
+   */
   function testHTokenChain2() public {
     (DeploymentConfig memory erc20Config, bytes32 erc20ConfigHash) = getConfigHtokenETH(true);
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, erc20ConfigHash);
@@ -776,7 +894,7 @@ contract CrossChainMinting is Test {
     vm.selectFork(chain2);
     address hTokenErc20Address = holographRegistryChain2.getHolographedHashAddress(erc20ConfigHash);
 
-    // assertEq(hTokenErc20Address, address(0), "ERC20 contract not deployed on chain2");
+    assertEq(hTokenErc20Address, address(0), "ERC20 contract not deployed on chain2");
 
     vm.selectFork(chain1);
     hTokenErc20Address = holographRegistryChain1.getHolographedHashAddress(erc20ConfigHash);
@@ -828,7 +946,10 @@ contract CrossChainMinting is Test {
     );
   }
 
-  // deploy chain2 equivalent on chain1
+  /**
+   * @notice deploy chain2 equivalent on chain1
+   * @dev deploy the hTokenETH equivalent on chain1 and check if it's deployed
+   */
   function testHTokenChain1() public {
     (DeploymentConfig memory erc20Config, bytes32 erc20ConfigHash) = getConfigHtokenETH(false);
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyDeployer, erc20ConfigHash);
@@ -889,18 +1010,28 @@ contract CrossChainMinting is Test {
     );
   }
 
-  // SampleERC721
+  /**
+   * SampleERC721
+   */
 
-  // check current state
+  /**
+   * check current state
+   */
 
-  // chain1 should have a total supply of 0 on chain1
+  /**
+   * @notice chain1 should have a total supply of 0 on chain1
+   * @dev Validates that sampleERC721Holographer has a total supply of 0 on chain1
+   */
   function testChain1ShouldHaveTotalSupplyOf0OnChain1() public {
     vm.selectFork(chain1);
     HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain1)));
     assertEq(sampleErc721Enforcer.totalSupply(), 0, "Chain1 should have a total supply of 0 on chain1");
   }
 
-  // chain1 should have a total supply of 0 on chain2
+  /**
+   * @notice chain1 should have a total supply of 0 on chain2
+   * @dev Validates that sampleERC721Holographer has a total supply of 0 on chain2
+   */
   function testChain1ShouldHaveTotalSupplyOf0OnChain2() public {
     sampleERC721HelperChain2();
 
@@ -909,14 +1040,20 @@ contract CrossChainMinting is Test {
     assertEq(sampleErc721Enforcer.totalSupply(), 0, "Chain1 should have a total supply of 0 on chain2");
   }
 
-  // chain2 should have a total supply of 0 on chain2
+  /**
+   * @notice chain2 should have a total supply of 0 on chain2
+   * @dev Validates that sampleERC721Holographer has a total supply of 0 on chain2
+   */
   function testChain2ShouldHaveTotalSupplyOf0OnChain2() public {
     vm.selectFork(chain2);
     HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain2)));
     assertEq(sampleErc721Enforcer.totalSupply(), 0, "Chain2 should have a total supply of 0 on chain2");
   }
 
-  // chain2 should have a total supply of 0 on chain1
+  /**
+   * @notice chain2 should have a total supply of 0 on chain1
+   * @dev Validates that sampleERC721Holographer has a total supply of 0 on chain1
+   */
   function testChain2ShouldHaveTotalSupplyOf0OnChain1() public {
     sampleERC721HelperChain1();
 
@@ -925,9 +1062,14 @@ contract CrossChainMinting is Test {
     assertEq(sampleErc721Enforcer.totalSupply(), 0, "Chain2 should have a total supply of 0 on chain1");
   }
 
-  // validate mint functionality
+  /**
+   * validate mint functionality
+   */
 
-  // chain1 should mint token #1 as #1 on chain1
+  /**
+   * @notice chain1 should mint token #1 as #1 on chain1
+   * @dev Validates that sampleERC721Holographer mints token #1 as #1 on chain1
+   */
   function testChain1ShouldMintToken1As1OnChain1() public {
     vm.selectFork(chain1);
     SampleERC721 sampleERC721 = SampleERC721(payable(address(sampleErc721HolographerChain1)));
@@ -942,7 +1084,10 @@ contract CrossChainMinting is Test {
     assertTrue(gasUsed > 0, "Gas used should be greater than 0");
   }
 
-  // chain1 should mint token #1 not as #1 on chain2
+  /**
+   * @notice chain1 should mint token #1 not as #1 on chain2
+   * @dev Validates that sampleERC721Holographer mints token #1 not as #1 on chain2
+   */
   function testChain1ShouldMintToken1NotAs1OnChain2() public {
     sampleERC721HelperChain2();
     vm.selectFork(chain2);
@@ -958,7 +1103,10 @@ contract CrossChainMinting is Test {
     assertTrue(gasUsed > 0, "Gas used should be greater than 0");
   }
 
-  // mint tokens #2 and #3 on chain1 and chain2
+  /**
+   * @notice mint tokens #2 and #3 on chain1 and chain2
+   * @dev Validates that sampleERC721Holographer mints tokens #2 and #3 on chain1 and chain2
+   */
   function testMintTokens2And3OnChain1AndChain2() public {
     sampleERC721HelperChain2();
     vm.selectFork(chain1);
@@ -994,9 +1142,14 @@ contract CrossChainMinting is Test {
     sampleERC721Chain2.mint(deployer, thirdTokenIdChain1, "https://holograph.xyz/sample3.json");
   }
 
-  // validate bridge functionality
+  /**
+   * validate bridge functionality
+   */
 
-  // token #1 beaming from chain1 to chain2 should succeed | original test uses #3
+  /**
+   * @notice token #1 beaming from chain1 to chain2 should succeed | original test uses #3
+   * @dev Validates that token #1 beaming from chain1 to chain2 should succeed
+   */
   function testTokenBeamingFromChain1ToChain2ShouldSucceed() public {
     testChain1ShouldMintToken1As1OnChain1();
     sampleERC721HelperChain2();
@@ -1073,7 +1226,10 @@ contract CrossChainMinting is Test {
     assertEq(tokenURIBefore, tokenURIAfter, "TokenURI should be the same on chain2");
   }
 
-  // token #1 beaming from chain2 to chain1 should succeed | original test uses #3
+  /**
+   * @notice token #1 beaming from chain2 to chain1 should succeed | original test uses #3
+   * @dev Validates that token #1 beaming from chain2 to chain1 should succeed
+   */
   function testTokenBeamingFromChain2ToChain1ShouldSucceed() public {
     testTokenBeamingFromChain1ToChain2ShouldSucceed();
 
@@ -1149,7 +1305,10 @@ contract CrossChainMinting is Test {
     assertEq(tokenURIBefore, tokenURIAfter, "TokenURI should be the same on chain1");
   }
 
-  // TODO: token #3 beaming from chain1 to chain2 should fail and recover
+  /**
+   * @notice token #1 beaming from chain1 to chain2 should fail and recover | original test uses #3
+   * @dev Validates that token #1 beaming from chain1 to chain2 should fail and recover
+   */
   function testTokenBeamingFromChain1ToChain2ShouldFailAndRecover() public {
     testTokenBeamingFromChain2ToChain1ShouldSucceed();
 
@@ -1241,21 +1400,34 @@ contract CrossChainMinting is Test {
     );
   }
 
-  // token #2 beaming from chain1 to chain2 should keep TokenURI
-  // this is the same logic as the previous test, but with a different tokenId. So we added the TokenURI check in testTokenBeamingFromChain1ToChain2ShouldSucceed
+  /**
+   * @notice token #2 beaming from chain1 to chain2 should keep TokenURI
+   * @dev this is the same logic as the previous test, but with a different tokenId. So we added the TokenURI check in testTokenBeamingFromChain1ToChain2ShouldSucceed
+   */
 
-  // token #2 beaming from chain2 to chain1 should keep TokenURI
-  // this is the same logic as the previous test, but with a different tokenId. So we added the TokenURI check in testTokenBeamingFromChain2ToChain1ShouldSucceed
+  /**
+   * @notice token #2 beaming from chain2 to chain1 should keep TokenURI
+   * @dev this is the same logic as the previous test, but with a different tokenId. So we added the TokenURI check in testTokenBeamingFromChain2ToChain1ShouldSucceed
+   */
 
-  // Get gas calculations
+  /**
+   * Get gas calculations
+   */
 
-  // SampleERC721 #1 mint on chain1
-  // gas is validated on the test testChain1ShouldMintToken1As1OnChain1
+  /**
+   * @notice SampleERC721 #1 mint on chain1
+   * @dev gas is validated on the test testChain1ShouldMintToken1As1OnChain1
+   */
 
-  // SampleERC721 #1 mint on chain2
-  // gas is validated on the test testChain1ShouldMintToken1NotAs1OnChain2
+  /**
+   * @notice SampleERC721 #1 mint on chain2
+   * @dev gas is validated on the test testChain1ShouldMintToken1NotAs1OnChain2
+   */
 
-  // SampleERC721 #1 transfer on chain1
+  /**
+   * @notice SampleERC721 #1 transfer on chain1
+   * @dev Validate gas calculation for transfer on chain1
+   */
   function testSampleERC721TransferGasCalculationChain1() public {
     testChain1ShouldMintToken1As1OnChain1();
 
@@ -1272,12 +1444,19 @@ contract CrossChainMinting is Test {
     assertTrue(gasUsed > 0, "Gas used should be greater than 0");
   }
 
-  // SampleERC721 #1 transfer on chain2
-  // is the same logic as the previous test
+  /**
+   * @notice SampleERC721 #1 transfer on chain2
+   * @dev is the same logic as the previous test
+   */
 
-  // Get hToken balances
+  /**
+   * Get hToken balances
+   */
 
-  // chain1 hToken should have more than 0
+  /**
+   * @notice chain1 hToken should have more than 0
+   * @dev Validates that chain1 hToken should have more than 0
+   */
   function testChain1HTokenShouldHaveMoreThan0() public {
     testTokenBeamingFromChain1ToChain2ShouldSucceed();
     vm.selectFork(chain1);
@@ -1285,7 +1464,10 @@ contract CrossChainMinting is Test {
     assertNotEq(hTokenAddress.balance, 0, "chain1 hToken should have more than 0");
   }
 
-  // chain2 hToken should have more than 0
+  /**
+   * @notice chain2 hToken should have more than 0
+   * @dev Validates that chain2 hToken should have more than 0
+   */
   function testChain2HTokenShouldHaveMoreThan0() public {
     testTokenBeamingFromChain2ToChain1ShouldSucceed();
     vm.selectFork(chain2);
