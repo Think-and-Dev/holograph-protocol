@@ -4,6 +4,7 @@ pragma solidity 0.8.13;
 import {Test, Vm, console} from "forge-std/Test.sol";
 import {Constants} from "../utils/Constants.sol";
 import {HelperDeploymentConfig} from "../utils/HelperDeploymentConfig.sol";
+import {HelperSignEthMessage} from "../utils/HelperSignEthMessage.sol";
 
 import {Holograph} from "../../../src/Holograph.sol";
 import {HolographBridge} from "../../../src/HolographBridge.sol";
@@ -49,7 +50,7 @@ contract CrossChainMinting is Test {
   uint224 constant secondTokenIdChain1 = 2;
   uint224 constant thirdTokenIdChain1 = 3;
 
-  uint256 constant firstTokenIdChain2 =  115792089156436355422119065624686862592211092644729130771835866564602298892289;
+  uint256 constant firstTokenIdChain2 = 115792089156436355422119065624686862592211092644729130771835866564602298892289;
   uint256 constant secondTokenIdChain2 = 115792089156436355422119065624686862592211092644729130771835866564602298892290;
   uint256 constant thirdTokenIdChain2 = 115792089156436355422119065624686862592211092644729130771835866564602298892291;
 
@@ -349,14 +350,36 @@ contract CrossChainMinting is Test {
     return (deployConfig, hashSampleERC721);
   }
 
-  function getConfigHtokenETH(bool isL1) public view returns (DeploymentConfig memory, bytes32) {
-    DeploymentConfig memory deployConfig = HelperDeploymentConfig.getHtokenEth(
-      isL1 ? Constants.getHolographIdL1() : Constants.getHolographIdL2(),
-      vm.getCode("hTokenProxy.sol:hTokenProxy")
-    );
+  function getConfigHtokenETH(bool isL1) private returns (DeploymentConfig memory, bytes32) {
+    string memory tokenName = string.concat("Holographed TestToken chain ", ((isL1) ? "one" : "two"));
 
-    bytes32 hashHtokenEth = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
-    return (deployConfig, hashHtokenEth);
+    DeploymentConfig memory deployConfig = HelperDeploymentConfig.getDeployConfigERC20(
+      bytes32(0x000000000000000000000000000000000000486f6c6f67726170684552433230), //hToken hash
+      (isL1) ? Constants.getHolographIdL1() : Constants.getHolographIdL2(),
+      vm.getCode("hTokenProxy.sol:hTokenProxy"),
+      tokenName,
+      "hTTC1",
+      bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
+      tokenName,
+      HelperDeploymentConfig.getInitCodeHtokenETH()
+    );
+    bytes32 hashHtokenTest = HelperDeploymentConfig.getDeployConfigHash(deployConfig, Constants.getDeployer());
+
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+      Constants.getPKDeployer(),
+      HelperSignEthMessage.toEthSignedMessageHash(hashHtokenTest)
+    );
+    Verification memory signature = Verification({v: v, r: r, s: s});
+
+    if ((isL1)) {
+      vm.selectFork(chain1);
+      holographFactoryChain1.deployHolographableContract(deployConfig, signature, Constants.getDeployer());
+    } else {
+      vm.selectFork(chain2);
+      holographFactoryChain2.deployHolographableContract(deployConfig, signature, Constants.getDeployer());
+    }
+
+    return (deployConfig, hashHtokenTest);
   }
 
   // SampleERC20
@@ -1039,7 +1062,11 @@ contract CrossChainMinting is Test {
     );
 
     HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain1)));
-    assertEq(sampleErc721Enforcer.ownerOf(firstTokenIdChain1), deployer, "Token #1 should be owned by deployer on chain2");
+    assertEq(
+      sampleErc721Enforcer.ownerOf(firstTokenIdChain1),
+      deployer,
+      "Token #1 should be owned by deployer on chain2"
+    );
 
     // token #2 beaming from chain1 to chain2 should keep TokenURI
     string memory tokenURIAfter = sampleErc721Enforcer.tokenURI(firstTokenIdChain1);
@@ -1111,7 +1138,11 @@ contract CrossChainMinting is Test {
     );
 
     HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain1)));
-    assertEq(sampleErc721Enforcer.ownerOf(firstTokenIdChain1), deployer, "Token #1 should be owned by deployer on chain1");
+    assertEq(
+      sampleErc721Enforcer.ownerOf(firstTokenIdChain1),
+      deployer,
+      "Token #1 should be owned by deployer on chain1"
+    );
 
     // token #2 beaming from chain2 to chain1 should keep TokenURI
     string memory tokenURIAfter = sampleErc721Enforcer.tokenURI(firstTokenIdChain1);
@@ -1203,7 +1234,11 @@ contract CrossChainMinting is Test {
     );
 
     HolographERC721 sampleErc721Enforcer = HolographERC721(payable(address(sampleErc721HolographerChain1)));
-    assertEq(sampleErc721Enforcer.ownerOf(firstTokenIdChain1), deployer, "Token #1 should be owned by deployer on chain2");
+    assertEq(
+      sampleErc721Enforcer.ownerOf(firstTokenIdChain1),
+      deployer,
+      "Token #1 should be owned by deployer on chain2"
+    );
   }
 
   // token #2 beaming from chain1 to chain2 should keep TokenURI
