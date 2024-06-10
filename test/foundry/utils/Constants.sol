@@ -176,4 +176,8 @@ library ErrorConstants {
   string constant EMPTY_CONTRACT_ERROR_MSG = "HOLOGRAPH: empty contract";
   string constant CONTRACT_ALREADY_SET_ERROR_MSG = "HOLOGRAPH: contract already set";
   string constant ROYALTIES_ONLY_OWNER_ERROR_MSG = "ROYALTIES: caller not an owner";
+  string constant ROYALTIES_MISSMATCHED_LENGHTS_ERROR_MSG = "ROYALTIES: missmatched lenghts";
+  string constant ROYALTIES_MAX_TEN_ADDRESSES_MSG = "ROYALTIES: max 10 addresses";
+  string constant ROYALTIES_BPS_MUST_EQUAL_1000 = "ROYALTIES: bps must equal 10000";
+  string constant ROYALTIES_SENDER_NOT_AUTORIZED = "ROYALTIES: sender not authorized";
 }
