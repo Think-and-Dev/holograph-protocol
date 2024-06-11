@@ -5,6 +5,7 @@ import {Test, Vm, console} from "forge-std/Test.sol";
 import {Constants} from "../utils/Constants.sol";
 import {ERC721H} from "../../../src/abstract/ERC721H.sol";
 import {Holographer} from "../../../src/enforcer/Holographer.sol";
+import {HolographLegacyERC721} from "../../../src/token/HolographLegacyERC721.sol";
 import {MockExternalCall} from "../../../src/mock/MockExternalCall.sol";
 
 /**
@@ -15,6 +16,7 @@ import {MockExternalCall} from "../../../src/mock/MockExternalCall.sol";
 contract ERC721HTests is Test {
   MockExternalCall mockExternalCall;
   ERC721H erc721h;
+  HolographLegacyERC721 holographLegacyERC721;
   bytes initCode;
   uint256 localHostFork;
   string LOCALHOST_RPC_URL = vm.envString("LOCALHOST_RPC_URL");
@@ -30,6 +32,7 @@ contract ERC721HTests is Test {
     localHostFork = vm.createFork(LOCALHOST_RPC_URL);
     vm.selectFork(localHostFork);
     erc721h = ERC721H(payable(Constants.getSampleERC721()));
+    holographLegacyERC721 = new HolographLegacyERC721();
     mockExternalCall = new MockExternalCall();
   }
 
@@ -151,62 +154,58 @@ contract ERC721HTests is Test {
   }
 
   /* -------------------------------------------------------------------------- */
-  /*                                _holographer                                */
+  /*                                holographer                                */
   /* -------------------------------------------------------------------------- */
   /**
-   * @notice Tests that the _holographer function is private
-   * @dev This test verifies that the _holographer function of the ERC721 contract is private and cannot be called.
-   * Refers to the hardhat test with the description 'is private function'
+   * @notice Tests that the _holographer function is internal
+   * @dev This test verifies that the holographer function of the ERC721 contract is internal and cannot be called.
+   * Refers to the hardhat test with the description 'is internal function'
    */
-  function testHolographerIsPrivateFunction() public {
-    vm.skip(true);
-    bytes memory encodedFunctionData = abi.encodeWithSignature("_holographer()");
-    vm.expectRevert();
-    address(erc721h).call(encodedFunctionData);
+  function testHolographerIsInternalFunction() public {
+    bytes memory encodedFunctionData = abi.encodeWithSignature("holographer()");
+    (bool success, bytes memory data) = address(holographLegacyERC721).call(encodedFunctionData);
+    assertFalse(success);
   }
 
   /* -------------------------------------------------------------------------- */
-  /*                                _msgSender()                                */
+  /*                                msgSender()                                */
   /* -------------------------------------------------------------------------- */
   /**
-   * @notice Tests that the _msgSender function is private
-   * @dev This test verifies that the _msgSender function of the ERC721 contract is private and cannot be called.
-   * Refers to the hardhat test with the description 'is private function'
+   * @notice Tests that the _msgSender function is internal
+   * @dev This test verifies that the msgSender function of the ERC721 contract is internal and cannot be called.
+   * Refers to the hardhat test with the description 'is internal function'
    */
-  function testMsgSenderIsPrivateFunction() public {
-    vm.skip(true);
-    bytes memory encodedFunctionData = abi.encodeWithSignature("_msgSender()");
-    vm.expectRevert();
-    address(erc721h).call(encodedFunctionData);
+  function testMsgSenderIsInternalFunction() public {
+    bytes memory encodedFunctionData = abi.encodeWithSignature("msgSender()");
+    (bool success, bytes memory data) = address(holographLegacyERC721).call(encodedFunctionData);
+    assertFalse(success);
   }
 
   /* -------------------------------------------------------------------------- */
   /*                                  _getOwner                                 */
   /* -------------------------------------------------------------------------- */
   /**
-   * @notice Tests that the _getOwner function is private
-   * @dev This test verifies that the _getOwner function of the ERC721 contract is private and cannot be called.
-   * Refers to the hardhat test with the description 'is private function'
+   * @notice Tests that the _getOwner function is internal
+   * @dev This test verifies that the _getOwner function of the ERC721 contract is internal and cannot be called.
+   * Refers to the hardhat test with the description 'is internal function'
    */
-  function testGetOwnerIsPrivateFunction() public {
+  function testGetOwnerIsInternalFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_getOwner()");
-    vm.skip(true);
-    vm.expectRevert();
-    address(erc721h).call(encodedFunctionData);
+    (bool success, bytes memory data) = address(holographLegacyERC721).call(encodedFunctionData);
+    assertFalse(success);
   }
 
   /* -------------------------------------------------------------------------- */
   /*                                  _setOwner                                 */
   /* -------------------------------------------------------------------------- */
   /**
-   * @notice Tests that the _setOwner function is private
-   * @dev This test verifies that the _setOwner function of the ERC721 contract is private and cannot be called.
-   * Refers to the hardhat test with the description 'is private function'
+   * @notice Tests that the _setOwner function is internal
+   * @dev This test verifies that the _setOwner function of the ERC721 contract is internal and cannot be called.
+   * Refers to the hardhat test with the description 'is internal function'
    */
-  function testSetOwnerIsPrivateFunction() public {
-    vm.skip(true);
+  function testSetOwnerIsInternalFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_setOwner()");
-    vm.expectRevert();
-    address(erc721h).call(encodedFunctionData);
+    (bool success, bytes memory data) = address(holographLegacyERC721).call(encodedFunctionData);
+    assertFalse(success);
   }
 }
