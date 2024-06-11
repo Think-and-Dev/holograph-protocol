@@ -374,7 +374,9 @@ contract CrossChainMinting is Test {
    * @return deployConfig The deployment configuration for SampleERC20 contract
    * @return hashSampleERC20 The hash of the deployment configuration for SampleERC20 contract
    */
-  function getConfigSampleERC20(bool isL1) public view returns (DeploymentConfig memory deployConfig, bytes32 hashSampleERC20) {
+  function getConfigSampleERC20(
+    bool isL1
+  ) public view returns (DeploymentConfig memory deployConfig, bytes32 hashSampleERC20) {
     deployConfig = HelperDeploymentConfig.getERC20(
       isL1 ? Constants.getHolographIdL1() : Constants.getHolographIdL2(),
       vm.getCode("SampleERC20.sol:SampleERC20"),
@@ -392,7 +394,9 @@ contract CrossChainMinting is Test {
    * @return deployConfig The deployment configuration for SampleERC721 contract
    * @return hashSampleERC721 The hash of the deployment configuration for SampleERC721 contract
    */
-  function getConfigSampleERC721(bool isL1) public view returns (DeploymentConfig memory deployConfig, bytes32 hashSampleERC721) {
+  function getConfigSampleERC721(
+    bool isL1
+  ) public view returns (DeploymentConfig memory deployConfig, bytes32 hashSampleERC721) {
     deployConfig = HelperDeploymentConfig.getERC721(
       isL1 ? Constants.getHolographIdL1() : Constants.getHolographIdL2(),
       vm.getCode("SampleERC721.sol:SampleERC721"),
@@ -411,7 +415,9 @@ contract CrossChainMinting is Test {
    * @return deployConfig The deployment configuration for CxipERC721 contract
    * @return hashSampleERC721 The hash of the deployment configuration for CxipERC721 contract
    */
-  function getConfigCxipERC721(bool isL1) public view returns (DeploymentConfig memory deployConfig, bytes32 hashSampleERC721) {
+  function getConfigCxipERC721(
+    bool isL1
+  ) public view returns (DeploymentConfig memory deployConfig, bytes32 hashSampleERC721) {
     deployConfig = HelperDeploymentConfig.getCxipERC721(
       isL1 ? Constants.getHolographIdL1() : Constants.getHolographIdL2(),
       vm.getCode("CxipERC721Proxy.sol:CxipERC721Proxy"),
@@ -430,7 +436,9 @@ contract CrossChainMinting is Test {
    * @return deployConfig The deployment configuration for hTokenETH contract
    * @return hashHtokenTest The hash of the deployment configuration for hTokenETH contract
    */
-  function getConfigHtokenETH(bool isL1) private returns (DeploymentConfig memory deployConfig, bytes32 hashHtokenTest) {
+  function getConfigHtokenETH(
+    bool isL1
+  ) private returns (DeploymentConfig memory deployConfig, bytes32 hashHtokenTest) {
     string memory tokenName = string.concat("Holographed TestToken chain ", ((isL1) ? "one" : "two"));
 
     deployConfig = HelperDeploymentConfig.getDeployConfigERC20(
@@ -465,7 +473,7 @@ contract CrossChainMinting is Test {
   /**
    * SampleERC20
    */
-  
+
   /**
    * @notice deploy chain1 equivalent on chain2
    * @dev deploy the SampleERC20 equivalent on chain2 and check if it's deployed
