@@ -10,6 +10,11 @@ import {HolographFactory} from "../../../src/HolographFactory.sol";
 import {HolographERC20} from "../../../src/enforcer/HolographERC20.sol";
 import {SampleERC20} from "../../../src/token/SampleERC20.sol";
 
+/**
+ * @title Testing the Holograph Royalties
+ * @notice Suite of unit tests for the Holograph Royalties contract
+ * @dev Translation of a suite of Hardhat tests found in test/20_holograph_royalties_tests.ts
+ */
 contract RoyaltiesTests is Test {
   HolographRoyalties royalties;
   HolographRoyalties royaltiesNoDeployed;
@@ -22,6 +27,11 @@ contract RoyaltiesTests is Test {
   HolographERC20 erc20;
   SampleERC20 sampleErc20;
 
+  /**
+   * @notice Sets up the environment for testing royalties distribution
+   * @dev This function creates a fork of the local host, selects the fork,
+   * and initializes the necessary contracts and variables for testing.
+   */
   function setUp() public {
     localHostFork = vm.createFork(LOCALHOST_RPC_URL);
     vm.selectFork(localHostFork);
@@ -40,6 +50,7 @@ contract RoyaltiesTests is Test {
    * @notice Tests that calling `init()` when the contract is already initialized reverts
    * @dev This test checks that the contract reverts with the `ROYALTIES: already initialized`
    * error message when calling `init()` when the contract is already initialized.
+   * Refers to the hardhat test with the description ''should fail if already initialized'
    */
   function testAlreadyInitializedRevert() public {
     vm.expectRevert(bytes(ErrorConstants.HOLOGRAPHER_ALREADY_INITIALIZED_ERROR_MSG));
@@ -54,6 +65,7 @@ contract RoyaltiesTests is Test {
    * @notice Tests that calling `initHolographRoyalties()` when the royalties are already initialized reverts
    * @dev This test checks that the contract reverts with the `ROYALTIES: already initialized` error
    * message when calling `initHolographRoyalties()` when the royalties are already initialized.
+   * Refers to the hardhat test with the description 'should fail be initialized twice'
    */
   function testInitializedTwiceRevert() public {
     vm.expectRevert(bytes(ErrorConstants.ROYALTIES_ALREADY_INITIALIZED_ERROR_MSG));
@@ -67,6 +79,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `owner()` function returns the correct owner address
    * @dev This test checks that the `owner()` function returns the correct owner address.
+   * Refers to the hardhat test with the description 'should return the correct owner address'
    */
   function testReturnCorrectOwnerAddress() public {
     address ownerAddress = royalties.owner();
@@ -76,6 +89,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that comparing the wrong address reverts
    * @dev This test checks that comparing the wrong address reverts.
+   * Refers to the hardhat test with the description 'should return the correct owner address'
    */
   function testComparingWrongAddressRevert() public {
     address ownerAddress = royalties.owner();
@@ -85,6 +99,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that an external contract can call the `owner()` function
    * @dev This test checks that an external contract can call the `owner()` function.
+   * Refers to the hardhat test with the description 'should allow external contract to call fn'
    */
   function testAllowExternalContractToCallFnOwner() public {
     bytes memory encodeSignature = abi.encodeWithSignature("owner()");
@@ -97,6 +112,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `isOwner()` function is private
    * @dev This test checks that the `isOwner()` function is private and cannot be called directly.
+   * Refers to the hardhat test with the description 'is private function'
    */
   function testIsOwnerIsPrivateFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("isOwner()");
@@ -110,6 +126,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `_getDefaultReceiver()` function is private
    * @dev This test checks that the `_getDefaultReceiver()` function is private and cannot be called directly.
+   * Refers to the hardhat test with the description 'is private function'
    */
   function testGetDefaultReceiverIsPrivateFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_getDefaultReceiver()");
@@ -123,6 +140,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `_setDefaultReceiver()` function is private
    * @dev This test checks that the `_setDefaultReceiver()` function is private and cannot be called directly.
+   * Refers to the hardhat test with the description 'is private function'
    */
   function testSetDefaultReceiverIsPrivateFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_setDefaultReceiver()");
@@ -136,6 +154,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `_getDefaultBp()` function is private
    * @dev This test checks that the `_getDefaultBp()` function is private and cannot be called directly.
+   * Refers to the hardhat test with the description 'is private function'
    */
   function testGetDefaultBpIsPrivateFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_getDefaultBp()");
@@ -149,6 +168,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `_setDefaultBp()` function is private
    * @dev This test checks that the `_setDefaultBp()` function is private and cannot be called directly.
+   * Refers to the hardhat test with the description 'is private function'
    */
   function testSetDefaultBpIsPrivateFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_setDefaultBp()");
@@ -162,6 +182,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `_getReceiver()` function is private
    * @dev This test checks that the `_getReceiver()` function is private and cannot be called directly.
+   * Refers to the hardhat test with the description 'is private function'
    */
   function testGetReceiverIsPrivateFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_getReceiver()");
@@ -175,6 +196,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `_setReceiver()` function is private
    * @dev This test checks that the `_setReceiver()` function is private and cannot be called directly.
+   * Refers to the hardhat test with the description 'is private function'
    */
   function testSetReceiverIsPrivateFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_setReceiver()");
@@ -188,6 +210,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `_getBp()` function is private
    * @dev This test checks that the `_getBp()` function is private and cannot be called directly.
+   * Refers to the hardhat test with the description 'is private function'
    */
   function testGetBpIsPrivateFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_getBp()");
@@ -201,6 +224,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `_setBp()` function is private
    * @dev This test checks that the `_setBp()` function is private and cannot be called directly.
+   * Refers to the hardhat test with the description 'is private function'
    */
   function testSetBpIsPrivateFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_setBp()");
@@ -214,6 +238,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `_getPayoutAddresses()` function is private
    * @dev This test checks that the `_getPayoutAddresses()` function is private and cannot be called directly.
+   * Refers to the hardhat test with the description 'is private function'
    */
   function testGetPayoutAddressesIsPrivateFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_getPayoutAddresses()");
@@ -227,6 +252,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `_setPayoutAddresses()` function is private
    * @dev This test checks that the `_setPayoutAddresses()` function is private and cannot be called directly.
+   * Refers to the hardhat test with the description 'is private function'
    */
   function testSetPayoutAddressesIsPrivateFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_setPayoutAddresses()");
@@ -240,6 +266,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `_getPayoutBps()` function is private
    * @dev This test checks that the `_getPayoutBps()` function is private and cannot be called directly.
+   * Refers to the hardhat test with the description 'is private function'
    */
   function testGetPayoutBpsIsPrivateFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_getPayoutBps()");
@@ -253,6 +280,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `_setPayoutBps()` function is private
    * @dev This test checks that the `_setPayoutBps()` function is private and cannot be called directly.
+   * Refers to the hardhat test with the description 'is private function'
    */
   function testSetPayoutBpsIsPrivateFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_setPayoutBps()");
@@ -266,6 +294,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `_getTokenAddress()` function is private
    * @dev This test checks that the `_getTokenAddress()` function is private and cannot be called directly.
+   * Refers to the hardhat test with the description 'is private function'
    */
   function testGetTokenAddressIsPrivateFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_getTokenAddress()");
@@ -279,6 +308,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `_setTokenAddress()` function is private
    * @dev This test checks that the `_setTokenAddress()` function is private and cannot be called directly.
+   * Refers to the hardhat test with the description 'is private function'
    */
   function testSetTokenAddressIsPrivateFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_setTokenAddress()");
@@ -292,6 +322,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `_payoutEth()` function is private
    * @dev This test checks that the `_payoutEth()` function is private and cannot be called directly.
+   * Refers to the hardhat test with the description 'is private function'
    */
   function testPayoutEthIsPrivateFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_payoutEth()");
@@ -305,6 +336,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `_payoutToken()` function is private
    * @dev This test checks that the `_payoutToken()` function is private and cannot be called directly.
+   * Refers to the hardhat test with the description 'is private function'
    */
   function testPayoutTokenIsPrivateFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_payoutToken()");
@@ -318,6 +350,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `_payoutTokens()` function is private
    * @dev This test checks that the `_payoutTokens()` function is private and cannot be called directly.
+   * Refers to the hardhat test with the description 'is private function'
    */
   function testPayoutTokensIsPrivateFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_payoutTokens()");
@@ -331,6 +364,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that the `_validatePayoutRequestor()` function is private
    * @dev This test checks that the `_validatePayoutRequestor()` function is private and cannot be called directly.
+   * Refers to the hardhat test with the description 'is private function'
    */
   function testValidatePayoutRequestorIsPrivateFunction() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("_validatePayoutRequestor()");
@@ -345,6 +379,7 @@ contract RoyaltiesTests is Test {
    * @notice Tests that the `configurePayouts` function can be called by the owner
    * @dev This test checks that the `configurePayouts` function can be called by the owner
    * and that the payout addresses and percentages are correctly set.
+   * Refers to the hardhat test with the description 'should be callable by the owner'
    */
   function testCallableByTheOwner() public {
     address payable[] memory addresses = new address payable[](2);
@@ -371,6 +406,7 @@ contract RoyaltiesTests is Test {
    * @notice Tests that the `configurePayouts` function reverts if the arguments arrays have different lengths
    * @dev This test checks that the `configurePayouts` function reverts with the `ROYALTIES: missmatched lenghts`
    * error message if the `addresses` and `bps` arrays have different lengths.
+   * Refers to the hardhat test with the description 'should fail if the arguments arrays have different lenghts'
    */
   function testIfArgumentsArraysHaveDifferentLenghtsRevert() public {
     address payable[] memory addresses = new address payable[](1);
@@ -389,6 +425,7 @@ contract RoyaltiesTests is Test {
    * @notice Tests that the `configurePayouts` function reverts if there are more than 10 payout addresses
    * @dev This test checks that the `configurePayouts` function reverts with the `ROYALTIES: max 10 addresses`
    * error message if there are more than 10 payout addresses.
+   * Refers to the hardhat test with the description 'should fail if there are more than 10 payout addresses'
    */
   function testIfThereAreMoreThanTenPayoutAddressesRevert() public {
     address payable[] memory addresses = new address payable[](11);
@@ -409,6 +446,7 @@ contract RoyaltiesTests is Test {
    * @notice Tests that the `configurePayouts` function reverts if the BPS do not equal 1000
    * @dev This test checks that the `configurePayouts` function reverts with the `ROYALTIES: bps must equal 10000`
    * error message if the BPS do not equal 1000.
+   * Refers to the hardhat test with the description "should fail if the bps down't equal 10000"
    */
   function testIfBpsDontEqualRevert() public {
     address payable[] memory addresses = new address payable[](1);
@@ -426,6 +464,7 @@ contract RoyaltiesTests is Test {
    * @notice Tests that the `configurePayouts` function reverts if it is not the owner calling
    * @dev This test checks that the `configurePayouts` function reverts with the `ROYALTIES: caller not an owner`
    * error message if it is not the owner calling the function.
+   * Refers to the hardhat test with the description 'should fail if it is not the owner calling it'
    */
   function testIfItIsNotTheOwnerCallingRevert() public {
     address payable[] memory addresses = new address payable[](1);
@@ -444,6 +483,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `getPayoutInfo` function
    * @dev This test checks that the `getPayoutInfo` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'anyone should be able to call the fn',
    */
   function testAnyoneShouldBeAbleToCallTheFnGetPayoutInfo() public {
     royalties.getPayoutInfo();
@@ -452,6 +492,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that an external contract can call the `getPayoutInfo` function
    * @dev This test checks that an external contract can call the `getPayoutInfo` function.
+   * Refers to the hardhat test with the description 'should allow external contract to call fn'
    */
   function testAllowExternalContractToCallFnGetPayoutInfo() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("getPayoutInfo()");
@@ -466,6 +507,7 @@ contract RoyaltiesTests is Test {
    * @notice Tests that the `getEthPayout` function reverts if the sender is not authorized
    * @dev This test checks that the `getEthPayout` function reverts with the `ROYALTIES: sender not authorized`
    * error message if the sender is not the owner.
+   * Refers to the hardhat test with the description 'Should fail if sender is not authorized'
    */
   function testIfSenderIsNotAuthorizedGetEtHPayputRevert() public {
     vm.prank(notOwner);
@@ -481,6 +523,7 @@ contract RoyaltiesTests is Test {
    * @notice Tests that the `getTokenPayout` function reverts if the sender is not authorized
    * @dev This test checks that the `getTokenPayout` function reverts with the `ROYALTIES: sender not authorized`
    * error message if the sender is not the owner.
+   * Refers to the hardhat test with the description 'Should fail if sender is not authorized'
    */
   function testIfSenderIsNotAuthorizedGetTokenPayoutRevert() public {
     vm.prank(notOwner);
@@ -496,6 +539,7 @@ contract RoyaltiesTests is Test {
    * @notice Tests that the `getTokensPayout` function reverts if the sender is not authorized
    * @dev This test checks that the `getTokensPayout` function reverts with the `ROYALTIES: sender not authorized`
    * error message if the sender is not the owner.
+   * Refers to the hardhat test with the description 'Should fail if sender is not authorized'
    */
   function testIfSenderIsNotAuthorizedGetTokensPayoutRevert() public {
     address[] memory addresses = new address[](2);
@@ -514,6 +558,7 @@ contract RoyaltiesTests is Test {
    * @notice Tests that the `setRoyalties` function reverts if it is not the owner calling
    * @dev This test checks that the `setRoyalties` function reverts with the `ROYALTIES: caller not an owner`
    * error message if the sender is not the owner.
+   * Refers to the hardhat test with the description 'should be callable by the owner'
    */
   function testIfItIsNotTheOwnerCallingSetRoyaltiesRevert() public {
     address payable anyaddress = payable(RandomAddress.randomAddress());
@@ -528,6 +573,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `royaltyInfo` function
    * @dev This test checks that the `royaltyInfo` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'anyone should be able to call the fn'
    */
   function testAnyoneShouldBeAbleToCallTheFnRoyaltyInfo() public {
     royalties.royaltyInfo(1, 10);
@@ -536,6 +582,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that an external contract can call the `royaltyInfo` function
    * @dev This test checks that an external contract can call the `royaltyInfo` function.
+   * Refers to the hardhat test with the description 'should allow external contract to call fn'
    */
   function testAllowExternalContractToCallFnRoyaltiInfo() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("royaltyInfo(uint256,uint256)", 1, 10);
@@ -548,6 +595,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `getFeeBps` function
    * @dev This test checks that the `getFeeBps` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'anyone should be able to call the fn'
    */
   function testAnyoneShouldBeAbleToCallTheFnGetFeeBps() public {
     royalties.getFeeBps(1);
@@ -556,6 +604,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that an external contract can call the `getFeeBps` function
    * @dev This test checks that an external contract can call the `getFeeBps` function.
+   * Refers to the hardhat test with the description 'should allow external contract to call fn'
    */
   function testAllowExternalContractToCallFnGetFeeBps() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("getFeeBps(uint256)", 1);
@@ -568,6 +617,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `getFeeRecipients` function
    * @dev This test checks that the `getFeeRecipients` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'anyone should be able to call the fn'
    */
   function testAnyoneShouldBeAbleToCallTheFnGetFeeRecipients() public {
     royalties.getFeeRecipients(1);
@@ -576,6 +626,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `getFeeRecipients` function
    * @dev This test checks that the `getFeeRecipients` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'should allow external contract to call fn'
    */
   function testAllowExternalContractToCallFnGetFeeRecipients() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("getFeeRecipients(uint256)", 1);
@@ -588,6 +639,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `getRoyalties` function
    * @dev This test checks that the `getRoyalties` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'anyone should be able to call the fn'
    */
   function testAnyoneShouldBeAbleToCallTheFnGetRoyalties() public {
     royalties.getRoyalties(1);
@@ -596,6 +648,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `getRoyalties` function
    * @dev This test checks that the `getRoyalties` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'should allow external contract to call fn'
    */
   function testAllowExternalContractToCallFnGetRoyalties() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("getRoyalties(uint256)", 1);
@@ -608,6 +661,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `getFees` function
    * @dev This test checks that the `getFees` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'anyone should be able to call the fn'
    */
   function testAnyoneShouldBeAbleToCallTheFnGetFees() public {
     royalties.getFees(1);
@@ -616,6 +670,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `getFees` function
    * @dev This test checks that the `getFees` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'should allow external contract to call fn'
    */
   function testAllowExternalContractToCallFnGetFees() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("getFees(uint256)", 1);
@@ -628,6 +683,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `tokenCreators` function
    * @dev This test checks that the `tokenCreators` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'anyone should be able to call the fn'
    */
   function testAnyoneShouldBeAbleToCallTheFnTokenCreator() public {
     royalties.tokenCreators(0);
@@ -636,6 +692,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `tokenCreators` function
    * @dev This test checks that the `tokenCreators` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'should allow external contract to call fn'
    */
   function testAllowExternalContractToCallFnTokenCreator() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("tokenCreators(uint256)", 0);
@@ -648,6 +705,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `calculateRoyaltyFee` function
    * @dev This test checks that the `calculateRoyaltyFee` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'anyone should be able to call the fn'
    */
   function testAnyoneShouldBeAbleToCallTheFnCalculateRoyaltyFee() public {
     royalties.calculateRoyaltyFee(RandomAddress.randomAddress(), 1, 1);
@@ -656,6 +714,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `calculateRoyaltyFee` function
    * @dev This test checks that the `calculateRoyaltyFee` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'should allow external contract to call fn'
    */
   function testAllowExternalContractToCallFnCalculateRoyaltyFee() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature(
@@ -673,6 +732,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `marketContract` function
    * @dev This test checks that the `marketContract` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'anyone should be able to call the fn'
    */
   function testAnyoneShouldBeAbleToCallTheFnMarketContract() public {
     royalties.marketContract();
@@ -681,6 +741,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `marketContract` function
    * @dev This test checks that the `marketContract` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'should allow external contract to call fn'
    */
   function testAllowExternalContractToCallFnMarketContract() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("marketContract()");
@@ -693,6 +754,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `tokenCreators` function
    * @dev This test checks that the `tokenCreators` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'anyone should be able to call the fn'
    */
   function testAnyoneShouldBeAbleToCallTheFnTokenCreators() public {
     royalties.tokenCreators(1);
@@ -701,6 +763,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `tokenCreators` function
    * @dev This test checks that the `tokenCreators` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'should allow external contract to call fn'
    */
   function testAllowExternalContractToCallFnTokenCreators() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("tokenCreators(uint256)", 1);
@@ -713,6 +776,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `bidSharesForToken` function
    * @dev This test checks that the `bidSharesForToken` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'anyone should be able to call the fn'
    */
   function testAnyoneShouldBeAbleToCallTheFnBidSharesForToken() public {
     royalties.bidSharesForToken(0);
@@ -721,6 +785,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `bidSharesForToken` function
    * @dev This test checks that the `bidSharesForToken` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'should allow external contract to call fn'
    */
   function testAllowExternalContractToCallFnBidSharesForToken() public {
     bytes memory encodedFunctionData = abi.encodeWithSignature("bidSharesForToken(uint256)", 0);
@@ -733,6 +798,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `getTokenAddress` function
    * @dev This test checks that the `getTokenAddress` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'anyone should be able to call the fn'
    */
   function testAnyoneShouldBeAbleToCallTheFnGetTokenAddress() public {
     // TODO change 4294967294 to Constants.getHolographIdL1()
@@ -743,6 +809,7 @@ contract RoyaltiesTests is Test {
   /**
    * @notice Tests that anyone can call the `getTokenAddress` function
    * @dev This test checks that the `getTokenAddress` function can be called by anyone without restrictions.
+   * Refers to the hardhat test with the description 'should allow external contract to call fn'
    */
   function testAllowExternalContractToCallFnGetTokenAddress() public {
     string memory tokenName = "Sample ERC721 Contract 4294967294";
@@ -754,10 +821,13 @@ contract RoyaltiesTests is Test {
   /*                      Royalties Distribution Validation                     */
   /* -------------------------------------------------------------------------- */
 
+  /* --------------------- 'A collection with 1 recipient' -------------------- */
+
   /**
    * @notice Tests that the contract can withdraw all native token balance
    * @dev This test checks that the contract can withdraw all native token balance
    * and that the owner's balance increases accordingly.
+   * Refers to the hardhat test with the description 'should be able to withdraw all native token balance'
    */
   function testRoyaltiesContractWithdrawsNativeTokens() public {
     vm.prank(owner);
@@ -781,6 +851,7 @@ contract RoyaltiesTests is Test {
    * @notice Tests that the contract can withdraw balance of an ERC20 token
    * @dev This test checks that the contract can withdraw balance of an ERC20
    * token and that the owner's balance increases accordingly.
+   * Refers to the hardhat test with the description 'should be able to withdraw balance of an ERC20 token'
    */
   function testRoyaltiesContractWithdrawsERC20Tokens() public {
     vm.prank(owner);
@@ -802,10 +873,13 @@ contract RoyaltiesTests is Test {
     assertGt(accountBalanceAfter, accountBalanceBefore);
   }
 
+  /* ---------- A collection has 2 recipients with a 60% / 40% split ---------- */
+
   /**
    * @notice Tests that the contract can withdraw all native token balance with multiple recipients
    * @dev This test checks that the contract can withdraw all native token balance with multiple
    * recipients and that each recipient's balance increases accordingly.
+   * Refers to the hardhat test with the description 'should be able to withdraw all native token balance'
    */
   function testRoyaltiesContractWithdrawsNativeTokensToMultipleRecipients() public {
     address anyAddress = RandomAddress.randomAddress();
@@ -845,6 +919,7 @@ contract RoyaltiesTests is Test {
    * @notice Tests that the contract can withdraw balance of an ERC20 token with multiple recipients
    * @dev This test checks that the contract can withdraw balance of an ERC20 token with multiple
    * recipients and that each recipient's balance increases accordingly.
+   * Refers to the hardhat test with the description 'should be able to withdraw balance of an ERC20 token'
    */
   function testRoyaltiesContractWithdrawsERC20TokensToMultipleRecipients() public {
     address anyAddress = RandomAddress.randomAddress();
@@ -882,10 +957,13 @@ contract RoyaltiesTests is Test {
     assertEq(accountBBalanceAfter, accountBBalanceBefore + fortyPercentOfRoyalties);
   }
 
+  /* ------- A collection has 3 recipients with a 20 % / 50% / 30% split ------ */
+
   /**
    * @notice Tests that the contract can withdraw all native token balance with multiple recipients and custom percentages
    * @dev This test checks that the contract can withdraw all native token balance with multiple recipients and custom
    * percentages, and that each recipient's balance increases accordingly.
+   * Refers to the hardhat test with the description 'should be able to withdraw all native token balance'
    */
   function testRoyaltiesContractWithdrawsNativeTokensToMultipleRecipientsWithCustomPercentages() public {
     address anyAddress = vm.addr(2);
@@ -932,6 +1010,7 @@ contract RoyaltiesTests is Test {
    * @notice Tests that the contract can withdraw balance of an ERC20 token with multiple recipients and custom percentages
    * @dev This test checks that the contract can withdraw balance of an ERC20 token with multiple recipients and custom
    * percentages, and that each recipient's balance increases accordingly.
+   * Refers to the hardhat test with the description 'should be able to withdraw balance of an ERC20 token'
    */
   function testRoyaltiesContractWithdrawsERC20TokensToMultipleRecipientsWithCustomPercentages() public {
     address anyAddress = vm.addr(2);
