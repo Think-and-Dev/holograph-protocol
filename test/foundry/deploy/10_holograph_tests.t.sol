@@ -2,7 +2,8 @@
 pragma solidity 0.8.13;
 
 import {Test, Vm, console} from "forge-std/Test.sol";
-import {Constants} from "../utils/Constants.sol";
+import {Constants, ErrorConstants} from "../utils/Constants.sol";
+import {RandomAddress} from "../utils/Utils.sol";
 import {Holograph} from "../../../src/Holograph.sol";
 import {MockExternalCall} from "../../../src/mock/MockExternalCall.sol";
 
@@ -20,10 +21,8 @@ import {MockExternalCall} from "../../../src/mock/MockExternalCall.sol";
 contract HolographTests is Test {
   address admin = vm.addr(1);
   address user = vm.addr(2);
-  address origin = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38; //default address origin in foundry
-  uint256 privateKeyDeployer = 0xff22437ccbedfffafa93a9f1da2e8c19c1711052799acf3b58ae5bebb5c6bd7b;
-  address deployer = vm.addr(privateKeyDeployer);
-
+  address origin = Constants.originAddress; //default address origin in foundry
+  address deployer = Constants.getDeployer();
   bytes initCode;
   uint32 holographChainId;
   address bridge;
@@ -33,14 +32,8 @@ contract HolographTests is Test {
   address registry;
   address treasury;
   address utilityToken;
-
   Holograph holograph;
   MockExternalCall mockExternalCall;
-
-  function randomAddress() public view returns (address) {
-    uint256 randomNum = uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty)));
-    return address(uint160(randomNum));
-  }
 
   function setUp() public {
     // Deploy contracts
@@ -50,15 +43,15 @@ contract HolographTests is Test {
     vm.stopPrank();
 
     holographChainId = 1;
-    bridge = randomAddress();
-    factory = randomAddress();
-    interfaces = randomAddress();
-    operator = randomAddress();
-    registry = randomAddress();
-    treasury = randomAddress();
-    utilityToken = randomAddress();
+    bridge = RandomAddress.randomAddress();
+    factory = RandomAddress.randomAddress();
+    interfaces = RandomAddress.randomAddress();
+    operator = RandomAddress.randomAddress();
+    registry = RandomAddress.randomAddress();
+    treasury = RandomAddress.randomAddress();
+    utilityToken = RandomAddress.randomAddress();
 
-    bytes memory initCode = generateInitCode(
+    bytes memory initCode = abi.encode(
       holographChainId,
       bridge,
       factory,
@@ -71,33 +64,21 @@ contract HolographTests is Test {
     holograph.init(initCode);
   }
 
-  function generateInitCode(
-    uint32 holographChainId,
-    address bridge,
-    address factory,
-    address interfaces,
-    address operator,
-    address registry,
-    address treasury,
-    address utilityToken
-  ) public pure returns (bytes memory) {
-    return abi.encode(holographChainId, bridge, factory, interfaces, operator, registry, treasury, utilityToken);
-  }
-
-  /*
-    INIT()
-*/
+  /* -------------------------------------------------------------------------- */
+  /*                                   INIT()                                   */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Test the initialization of the Holograph contract.
    * @dev This is a basic test to ensure the initialization process works as expected.
    * This test deploys a new instance of the Holograph contract, generates initialization code,
    * and initializes the contract with the provided parameters.
+   * Refers to the hardhat test with the description 'should successfully init once'
    */
   function testInit() public {
     Holograph holographTest;
     holographTest = new Holograph();
-    bytes memory initCode = generateInitCode(
+    bytes memory initCode = abi.encode(
       holographChainId,
       bridge,
       factory,
@@ -116,6 +97,7 @@ contract HolographTests is Test {
    * This test retrieves the current admin address from the Holograph contract,
    * performs a prank operation on the admin address using the VM,
    * and then sets a new admin address to the contract.
+   * Refers to the hardhat test with the description 'should successfully init once'
    */
   function testSetAdmin() public {
     vm.prank(origin);
@@ -127,23 +109,25 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that the contract reverts as expected when the contract has already been initialized.
    * This test expects a revert with the message 'HOLOGRAPH: already initialized' when trying to initialize
    * a Holograph contract that is already initialized.
+   * Refers to the hardhat test with the description 'should fail to init if already initialized'
    */
   function testInitAlreadyInitializedRevert() public {
-    vm.expectRevert("HOLOGRAPH: already initialized");
+    vm.expectRevert(bytes(ErrorConstants.ALREADY_INITIALIZED_ERROR_MSG));
     holograph.init(initCode);
   }
 
-  /*
-    GET BRIDGE
-*/
+  /* -------------------------------------------------------------------------- */
+  /*                                 GET BRIDGE                                 */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Test the validity of the bridge slot in the Holograph contract.
    * @dev This test is designed to ensure the correct functionality of the bridge slot in the contract.
    * This test verifies that the value returned by `getBridge()` in the Holograph contract
    * matches the expected `bridge` address.
+   * Refers to the hardhat test with the description 'Should return valid _bridgeSlot'
    */
-  function testReturnValid_bridgeSlot() public {
+  function testReturnValid_bridgeSlot() public view {
     assertEq(holograph.getBridge(), bridge);
   }
 
@@ -153,25 +137,28 @@ contract HolographTests is Test {
    * function in the Holograph contract.
    * This test encodes the signature of the getBridge function and calls it from an external contract
    * using mockExternalCall.
+   * Refers to the hardhat test with the description 'Should allow external contract to call fn'
    */
   function testAllowExternalContractToCallGetBridge() public {
     bytes memory encodeSignature = abi.encodeWithSignature("getBridge()");
     mockExternalCall.callExternalFn(address(holograph), encodeSignature);
   }
 
-  /*
-    SET BRIDGE
-*/
+  /* -------------------------------------------------------------------------- */
+  /*                                 SET BRIDGE                                 */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Test the ability of the admin to alter the bridge slot in the Holograph contract.
    * @dev This test is designed to verify that the admin can alter the bridge slot in the contract.
    * This test performs a prank operation on the current admin address of the Holograph contract,
    * and then sets a new random address as the bridge in the contract.
+   * Refers to the hardhat test with the description 'should allow admin to alter _bridgeSlot'
    */
   function testAllowAdminAlter_bridgeSlot() public {
+    address random = RandomAddress.randomAddress();
     vm.prank(origin);
-    holograph.setBridge(randomAddress());
+    holograph.setBridge(random);
   }
 
   /**
@@ -179,10 +166,12 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that only the admin can alter the bridge slot in the contract.
    * This test expects a revert with the message 'HOLOGRAPH: admin only function' when the owner attempts to
    * alter the bridge slot in the Holograph contract.
+   * Refers to the hardhat test with the description 'should fail to allow owner to alter _bridgeSlot'
    */
   function testAllowOwnerToAlter_bridgeSlotRevert() public {
-    vm.expectRevert("HOLOGRAPH: admin only function");
-    holograph.setBridge(randomAddress());
+    address random = RandomAddress.randomAddress();
+    vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
+    holograph.setBridge(random);
   }
 
   /**
@@ -190,25 +179,27 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that only the admin can alter the bridge slot in the contract.
    * This test expects a revert with the message 'HOLOGRAPH: admin only function' when a non-owner attempts to
    * alter the bridge slot in the Holograph contract.
+   * Refers to the hardhat test with the description 'should fail to allow non-owner to alter _bridgeSlot'
    */
   function testAllowNonOwnerToAlter_bridgeSlotRevert() public {
-    vm.expectRevert("HOLOGRAPH: admin only function");
+    address random = RandomAddress.randomAddress();
+    vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     vm.prank(user);
-    holograph.setBridge(randomAddress());
+    holograph.setBridge(random);
   }
 
-  /*
-    GET CHAINID
-*/
+  /* -------------------------------------------------------------------------- */
+  /*                                 GET CHAINID                                */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Test the validity of the chainId slot in the Holograph contract.
    * @dev This test is designed to ensure the correct functionality of the chainId slot in the contract.
    * This test verifies that the value returned by `getChainId()` in the Holograph contract
    * is not equal to zero.
+   * Refers to the hardhat test with the description 'Should return valid _chainIdSlot'
    */
-  function testReturnValid_chainIdSlot() public {
-    //TODO Empty ChainId equals ChainId = 0 ??
+  function testReturnValid_chainIdSlot() public view {
     assertNotEq(holograph.getChainId(), 0);
   }
 
@@ -218,21 +209,23 @@ contract HolographTests is Test {
    * function in the Holograph contract.
    * This test encodes the signature of the getChainId function and calls it from an external contract
    * using mockExternalCall.
+   * Refers to the hardhat test with the description 'Should allow external contract to call fn'
    */
   function testAllowExternalContractToCallGetChainID() public {
     bytes memory encodeSignature = abi.encodeWithSignature("getChainId()");
     mockExternalCall.callExternalFn(address(holograph), encodeSignature);
   }
 
-  /*
-    SET CHAIN ID
-*/
+  /* -------------------------------------------------------------------------- */
+  /*                                 GET CHAINID                                */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Test the ability of the admin to alter the chainId slot in the Holograph contract.
    * @dev This test is designed to verify that the admin can alter the chainId slot in the contract.
    * This test performs a prank operation on the current admin address of the Holograph contract,
    * and then sets a new random address as the chainId in the contract.
+   * Refers to the hardhat test with the description 'should allow admin to alter _chainIdSlot'
    */
   function testAllowAdminAlter_chainIdSlot() public {
     vm.prank(origin);
@@ -244,9 +237,10 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that only the admin can alter the chainId slot in the contract.
    * This test expects a revert with the message 'HOLOGRAPH: admin only function' when the owner attempts to
    * alter the chainId slot in the Holograph contract.
+   * Refers to the hardhat test with the description 'should fail to allow owner to alter _chainIdSlot'
    */
   function testAllowOwnerAlter_chainIdSlotRevert() public {
-    vm.expectRevert("HOLOGRAPH: admin only function");
+    vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     holograph.setChainId(3);
   }
 
@@ -255,24 +249,26 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that only the admin can alter the chainId slot in the contract.
    * This test expects a revert with the message 'HOLOGRAPH: admin only function' when a non-owner attempts to
    * alter the chainId slot in the Holograph contract.
+   * Refers to the hardhat test with the description 'should fail to allow non-owner to alter _chainIdSlot'
    */
   function testAllowNonOwnerAlter_chainIdSlotRevert() public {
-    vm.expectRevert("HOLOGRAPH: admin only function");
+    vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     vm.prank(user);
     holograph.setChainId(4);
   }
 
-  /*
-    GET FACTORY
-*/
+  /* -------------------------------------------------------------------------- */
+  /*                                 GET FACTORY                                */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Test the validity of the factory slot in the Holograph contract.
    * @dev This test is designed to ensure the correct functionality of the factory slot in the contract.
    * This test verifies that the value returned by `getFactory()` in the Holograph contract
    * matches the expected `factory` address.
+   * Refers to the hardhat test with the description 'Should return valid _factorySlot'
    */
-  function testReturnValid_factorySlot() public {
+  function testReturnValid_factorySlot() public view {
     assertEq(holograph.getFactory(), factory);
   }
 
@@ -282,25 +278,28 @@ contract HolographTests is Test {
    * function in the Holograph contract.
    * This test encodes the signature of the getFactory function and calls it from an external contract
    * using mockExternalCall.
+   * Refers to the hardhat test with the description 'Should allow external contract to call fn'a
    */
   function testAllowExternalContractToCallGetFactory() public {
     bytes memory encodeSignature = abi.encodeWithSignature("getFactory()");
     mockExternalCall.callExternalFn(address(holograph), encodeSignature);
   }
 
-  /*
-    SET FACTORY
-*/
+  /* -------------------------------------------------------------------------- */
+  /*                                 SET FACTORY                                */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Test the ability of the admin to alter the factory slot in the Holograph contract.
    * @dev This test is designed to verify that the admin can alter the factory slot in the contract.
    * This test performs a prank operation on the current admin address of the Holograph contract,
    * and then sets a new random address as the factory in the contract.
+   * Refers to the hardhat test with the description 'should allow admin to alter _factorySlot'
    */
   function testAllowAdminAlter_factorySlot() public {
+    address random = RandomAddress.randomAddress();
     vm.prank(origin);
-    holograph.setFactory(randomAddress());
+    holograph.setFactory(random);
   }
 
   /**
@@ -308,10 +307,12 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that only the admin can alter the factory slot in the contract.
    * This test expects a revert with the message 'HOLOGRAPH: admin only function' when the owner attempts to
    * alter the factory slot in the Holograph contract.
+   * Refers to the hardhat test with the description 'should fail to allow owner to alter _factorySlot'
    */
   function testAllowOwnerAlter_factorySlotRevert() public {
-    vm.expectRevert("HOLOGRAPH: admin only function");
-    holograph.setFactory(randomAddress());
+    address random = RandomAddress.randomAddress();
+    vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
+    holograph.setFactory(random);
   }
 
   /**
@@ -319,24 +320,27 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that only the admin can alter the factory slot in the contract.
    * This test expects a revert with the message 'HOLOGRAPH: admin only function' when a non-owner attempts to
    * alter the factory slot in the Holograph contract.
+   * Refers to the hardhat test with the description 'should fail to allow non-owner to alter _factorySlot',
    */
   function testAllowNonOwnerAlter_factorySlotRevert() public {
-    vm.expectRevert("HOLOGRAPH: admin only function");
+    address random = RandomAddress.randomAddress();
+    vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     vm.prank(user);
-    holograph.setFactory(randomAddress());
+    holograph.setFactory(random);
   }
 
-  /*
-    GET HOLOGRAPH CHAINID
-*/
+  /* -------------------------------------------------------------------------- */
+  /*                            GET HOLOGRAPH CHAINID                           */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Test the validity of the holographChainId slot in the Holograph contract.
    * @dev This test is designed to ensure the correct functionality of the holographChainId slot in the contract.
    * This test verifies that the value returned by `getHolographChainId()` in the Holograph contract
    * matches the expected `holographChainId` address.
+   * Refers to the hardhat test with the description 'Should return valid _holographChainIdSlot'
    */
-  function testReturnValid_holographChainIdSlot() public {
+  function testReturnValid_holographChainIdSlot() public view {
     assertEq(holograph.getHolographChainId(), holographChainId);
   }
 
@@ -346,21 +350,23 @@ contract HolographTests is Test {
    * function in the Holograph contract.
    * This test encodes the signature of the getHolographChainId function and calls it from an external contract
    * using mockExternalCall.
+   * Refers to the hardhat test with the description 'Should allow external contract to call fn'
    */
   function testAllowExternalContractToCallGetHolographChainId() public {
     bytes memory encodeSignature = abi.encodeWithSignature("getHolographChainId()");
     mockExternalCall.callExternalFn(address(holograph), encodeSignature);
   }
 
-  /*
-    SET HOLOGRAPH CHAINID
-*/
+  /* -------------------------------------------------------------------------- */
+  /*                            SET HOLOGRAPH CHAINID                           */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Test the ability of the admin to alter the holographChainId slot in the Holograph contract.
    * @dev This test is designed to verify that the admin can alter the holographChainId slot in the contract.
    * This test performs a prank operation on the current admin address of the Holograph contract,
    * and then sets a new random address as the holographChainId in the contract.
+   * Refers to the hardhat test with the description 'should allow admin to alter _holographChainIdSlot'
    */
   function testAllowAdminAlter_holographChainIdSlot() public {
     vm.prank(origin);
@@ -372,9 +378,10 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that only the admin can alter the holographChainId slot in the contract.
    * This test expects a revert with the message 'HOLOGRAPH: admin only function' when the owner attempts to
    * alter the holographChainId slot in the Holograph contract.
+   * Refers to the hardhat test with the description 'should fail to allow owner to alter _holographChainIdSlot'
    */
   function testAllowOwnerAlter_holographChainIdSlotRevert() public {
-    vm.expectRevert("HOLOGRAPH: admin only function");
+    vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     holograph.setHolographChainId(3);
   }
 
@@ -383,24 +390,26 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that only the admin can alter the holographChainId slot in the contract.
    * This test expects a revert with the message 'HOLOGRAPH: admin only function' when a non-owner attempts to
    * alter the holographChainId slot in the Holograph contract.
+   * Refers to the hardhat test with the description 'should fail to allow non-owner to alter _holographChainIdSlot'
    */
   function testAllowNonOwnerAlter_holographChainIdSlotRevert() public {
-    vm.expectRevert("HOLOGRAPH: admin only function");
+    vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     vm.prank(user);
     holograph.setHolographChainId(4);
   }
 
-  /*
-    GET INTERFACES
-*/
+  /* -------------------------------------------------------------------------- */
+  /*                               GET INTERFACES                               */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Test the validity of the interfaces slot in the Holograph contract.
    * @dev This test is designed to ensure the correct functionality of the interfaces slot in the contract.
    * This test verifies that the value returned by `getInterfaces()` in the Holograph contract
    * matches the expected `interfaces` address.
+   * Refers to the hardhat test with the description 'Should return valid _interfacesSlot'
    */
-  function testReturnValid_interfacesSlot() public {
+  function testReturnValid_interfacesSlot() public view {
     assertEq(holograph.getInterfaces(), interfaces);
   }
 
@@ -410,25 +419,28 @@ contract HolographTests is Test {
    * function in the Holograph contract.
    * This test encodes the signature of the getInterfaces function and calls it from an external contract
    * using mockExternalCall.
+   * Refers to the hardhat test with the description 'Should allow external contract to call fn'
    */
   function testAllowExternalContractToCallGetInterfaces() public {
     bytes memory encodeSignature = abi.encodeWithSignature("getInterfaces()");
     mockExternalCall.callExternalFn(address(holograph), encodeSignature);
   }
 
-  /*
-    SET INTERFACES
-*/
+  /* -------------------------------------------------------------------------- */
+  /*                               SET INTERFACES                               */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Test the ability of the admin to alter the interfaces slot in the Holograph contract.
    * @dev This test is designed to verify that the admin can alter the interfaces slot in the contract.
    * This test performs a prank operation on the current admin address of the Holograph contract,
    * and then sets a new random address as the interfaces in the contract.
+   * Refers to the hardhat test with the description 'should allow admin to alter _interfacesSlot'
    */
   function testAllowAdminAlter_interfacesSlot() public {
+    address random = RandomAddress.randomAddress();
     vm.prank(origin);
-    holograph.setInterfaces(randomAddress());
+    holograph.setInterfaces(random);
   }
 
   /**
@@ -436,10 +448,12 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that only the admin can alter the interfaces slot in the contract.
    * This test expects a revert with the message 'HOLOGRAPH: admin only function' when the owner attempts to
    * alter the interfaces slot in the Holograph contract.
+   * Refers to the hardhat test with the description 'should fail to allow owner to alter _interfacesSlot'
    */
   function testAllowOwnerAlter_interfacesSlotRevert() public {
-    vm.expectRevert("HOLOGRAPH: admin only function");
-    holograph.setInterfaces(randomAddress());
+    address random = RandomAddress.randomAddress();
+    vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
+    holograph.setInterfaces(random);
   }
 
   /**
@@ -447,24 +461,27 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that only the admin can alter the interfaces slot in the contract.
    * This test expects a revert with the message 'HOLOGRAPH: admin only function' when a non-owner attempts to
    * alter the interfaces slot in the Holograph contract.
+   * Refers to the hardhat test with the description 'should fail to allow non-owner to alter _interfacesSlot'
    */
   function testAllowNonOwnerAlter_interfacesSlotRevert() public {
-    vm.expectRevert("HOLOGRAPH: admin only function");
+    address random = RandomAddress.randomAddress();
+    vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     vm.prank(user);
-    holograph.setInterfaces(randomAddress());
+    holograph.setInterfaces(random);
   }
 
-  /*
-    GET OPERATOR
-*/
+  /* -------------------------------------------------------------------------- */
+  /*                                GET OPERATOR                                */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Test the validity of the operator slot in the Holograph contract.
    * @dev This test is designed to ensure the correct functionality of the operator slot in the contract.
    * This test verifies that the value returned by `getOperator()` in the Holograph contract
    * matches the expected `operator` address.
+   * Refers to the hardhat test with the description 'Should return valid _operatorSlot'
    */
-  function testReturnValid_operatorSlot() public {
+  function testReturnValid_operatorSlot() public view {
     assertEq(holograph.getOperator(), operator);
   }
 
@@ -474,25 +491,28 @@ contract HolographTests is Test {
    * function in the Holograph contract.
    * This test encodes the signature of the getOperator function and calls it from an external contract
    * using mockExternalCall.
+   * Refers to the hardhat test with the description 'Should allow external contract to call fn'
    */
   function testAllowExternalContractToCallGetOperator() public {
     bytes memory encodeSignature = abi.encodeWithSignature("getOperator()");
     mockExternalCall.callExternalFn(address(holograph), encodeSignature);
   }
 
-  /*
-    SET OPERATOR
-*/
+  /* -------------------------------------------------------------------------- */
+  /*                                SET OPERATOR                                */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Test the ability of the admin to alter the operator slot in the Holograph contract.
    * @dev This test is designed to verify that the admin can alter the operator slot in the contract.
    * This test performs a prank operation on the current admin address of the Holograph contract,
    * and then sets a new random address as the operator in the contract.
+   * Refers to the hardhat test with the description 'should allow admin to alter _operatorSlot'
    */
   function testAllowAdminAlter_operatorSlot() public {
+    address random = RandomAddress.randomAddress();
     vm.prank(origin);
-    holograph.setOperator(randomAddress());
+    holograph.setOperator(random);
   }
 
   /**
@@ -500,10 +520,12 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that only the admin can alter the operator slot in the contract.
    * This test expects a revert with the message 'HOLOGRAPH: admin only function' when the owner attempts to
    * alter the operator slot in the Holograph contract.
+   * Refers to the hardhat test with the description 'should fail to allow owner to alter _operatorSlot'
    */
   function testAllowOwnerAlter_operatorSlotRevert() public {
-    vm.expectRevert("HOLOGRAPH: admin only function");
-    holograph.setOperator(randomAddress());
+    address random = RandomAddress.randomAddress();
+    vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
+    holograph.setOperator(random);
   }
 
   /**
@@ -511,24 +533,27 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that only the admin can alter the operator slot in the contract.
    * This test expects a revert with the message 'HOLOGRAPH: admin only function' when a non-owner attempts to
    * alter the operator slot in the Holograph contract.
+   * Refers to the hardhat test with the description 'should fail to allow non-owner to alter _operatorSlot'
    */
   function testAllowNonOwnerAlter_operatorSlotRevert() public {
-    vm.expectRevert("HOLOGRAPH: admin only function");
+    address random = RandomAddress.randomAddress();
+    vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     vm.prank(user);
-    holograph.setOperator(randomAddress());
+    holograph.setOperator(random);
   }
 
-  /*
-    GET REGISTRY
-*/
+  /* -------------------------------------------------------------------------- */
+  /*                                GET REGISTRY                                */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Test the validity of the registry slot in the Holograph contract.
    * @dev This test is designed to ensure the correct functionality of the registry slot in the contract.
    * This test verifies that the value returned by `getRegistry()` in the Holograph contract
    * matches the expected `registry` address.
+   * Refers to the hardhat test with the description 'Should return valid _registrySlot'
    */
-  function testReturnValid_registrySlot() public {
+  function testReturnValid_registrySlot() public view {
     assertEq(holograph.getRegistry(), registry);
   }
 
@@ -538,25 +563,28 @@ contract HolographTests is Test {
    * function in the Holograph contract.
    * This test encodes the signature of the getRegistry function and calls it from an external contract
    * using mockExternalCall.
+   * Refers to the hardhat test with the description 'Should allow external contract to call fn'
    */
   function testAllowExternalContractToCallGetRegistry() public {
     bytes memory encodeSignature = abi.encodeWithSignature("getRegistry()");
     mockExternalCall.callExternalFn(address(holograph), encodeSignature);
   }
 
-  /*
-    SET REGISTRY
-*/
+  /* -------------------------------------------------------------------------- */
+  /*                                SET REGISTRY                                */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Test the ability of the admin to alter the registry slot in the Holograph contract.
    * @dev This test is designed to verify that the admin can alter the registry slot in the contract.
    * This test performs a prank operation on the current admin address of the Holograph contract,
    * and then sets a new random address as the registry in the contract.
+   * Refers to the hardhat test with the description 'should allow admin to alter _registrySlot'
    */
   function testAllowAdminAlter_registrySlot() public {
+    address random = RandomAddress.randomAddress();
     vm.prank(origin);
-    holograph.setRegistry(randomAddress());
+    holograph.setRegistry(random);
   }
 
   /**
@@ -564,10 +592,12 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that only the admin can alter the registry slot in the contract.
    * This test expects a revert with the message 'HOLOGRAPH: admin only function' when the owner attempts to
    * alter the registry slot in the Holograph contract.
+   * Refers to the hardhat test with the description 'should fail to allow owner to alter _registrySlot'
    */
   function testAllowOwnerAlter_registrySlotRevert() public {
-    vm.expectRevert("HOLOGRAPH: admin only function");
-    holograph.setRegistry(randomAddress());
+    address random = RandomAddress.randomAddress();
+    vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
+    holograph.setRegistry(random);
   }
 
   /**
@@ -575,24 +605,27 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that only the admin can alter the registry slot in the contract.
    * This test expects a revert with the message 'HOLOGRAPH: admin only function' when a non-owner attempts to
    * alter the registry slot in the Holograph contract.
+   * Refers to the hardhat test with the description 'should fail to allow non-owner to alter _registrySlot'
    */
   function testAllowNonOwnerAlter_registrySlotRevert() public {
-    vm.expectRevert("HOLOGRAPH: admin only function");
+    address random = RandomAddress.randomAddress();
+    vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     vm.prank(user);
-    holograph.setRegistry(randomAddress());
+    holograph.setRegistry(random);
   }
 
-  /*
-    GET TREASURY
-*/
+  /* -------------------------------------------------------------------------- */
+  /*                                GET TREASURY                                */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Test the validity of the treasury slot in the Holograph contract.
    * @dev This test is designed to ensure the correct functionality of the treasury slot in the contract.
    * This test verifies that the value returned by `getTreasury()` in the Holograph contract
    * matches the expected `treasury` address.
+   * Refers to the hardhat test with the description 'Should return valid _treasurySlot'
    */
-  function testReturnValid_treasurySlot() public {
+  function testReturnValid_treasurySlot() public view {
     assertEq(holograph.getTreasury(), treasury);
   }
 
@@ -602,25 +635,28 @@ contract HolographTests is Test {
    * function in the Holograph contract.
    * This test encodes the signature of the getTreasury function and calls it from an external contract
    * using mockExternalCall.
+   * Refers to the hardhat test with the description 'Should allow external contract to call fn'
    */
   function testAllowExternalContractToCallGetTreasury() public {
     bytes memory encodeSignature = abi.encodeWithSignature("getTreasury()");
     mockExternalCall.callExternalFn(address(holograph), encodeSignature);
   }
 
-  /*
-    SET TREASURY
-*/
+  /* -------------------------------------------------------------------------- */
+  /*                                SET TREASURY                                */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Test the ability of the admin to alter the treasury slot in the Holograph contract.
    * @dev This test is designed to verify that the admin can alter the treasury slot in the contract.
    * This test performs a prank operation on the current admin address of the Holograph contract,
    * and then sets a new random address as the treasury in the contract.
+   * Refers to the hardhat test with the description 'should allow admin to alter _treasurySlot'
    */
   function testAllowAdminAlter_treasurySlot() public {
+    address random = RandomAddress.randomAddress();
     vm.prank(origin);
-    holograph.setTreasury(randomAddress());
+    holograph.setTreasury(random);
   }
 
   /**
@@ -628,10 +664,12 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that only the admin can alter the treasury slot in the contract.
    * This test expects a revert with the message 'HOLOGRAPH: admin only function' when the owner attempts to
    * alter the treasury slot in the Holograph contract.
+   * Refers to the hardhat test with the description 'should fail to allow owner to alter _treasurySlot'
    */
   function testAllowOwnerAlter_treasurySlotRevert() public {
-    vm.expectRevert("HOLOGRAPH: admin only function");
-    holograph.setTreasury(randomAddress());
+    address random = RandomAddress.randomAddress();
+    vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
+    holograph.setTreasury(random);
   }
 
   /**
@@ -639,24 +677,27 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that only the admin can alter the treasury slot in the contract.
    * This test expects a revert with the message 'HOLOGRAPH: admin only function' when a non-owner attempts to
    * alter the treasury slot in the Holograph contract.
+   * Refers to the hardhat test with the description 'should fail to allow non-owner to alter _treasurySlot'
    */
   function testAllowNonOwnerAlter_treasurySlotRevert() public {
-    vm.expectRevert("HOLOGRAPH: admin only function");
+    address random = RandomAddress.randomAddress();
+    vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     vm.prank(user);
-    holograph.setTreasury(randomAddress());
+    holograph.setTreasury(random);
   }
 
-  /*
-    GET UTILITY TOKEN
-*/
+  /* -------------------------------------------------------------------------- */
+  /*                              GET UTILITY TOKEN                             */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Test the validity of the utilityToken slot in the Holograph contract.
    * @dev This test is designed to ensure the correct functionality of the utilityToken slot in the contract.
    * This test verifies that the value returned by `getUtilityToken()` in the Holograph contract
    * matches the expected `utilityToken` address.
+   * Refers to the hardhat test with the description 'Should return valid _utilityTokenSlot'
    */
-  function testReturnValid_utilityTokenSlot() public {
+  function testReturnValid_utilityTokenSlot() public view {
     assertEq(holograph.getUtilityToken(), utilityToken);
   }
 
@@ -666,25 +707,28 @@ contract HolographTests is Test {
    * function in the Holograph contract.
    * This test encodes the signature of the getUtilityToken function and calls it from an external contract
    * using mockExternalCall.
+   * Refers to the hardhat test with the description 'Should allow external contract to call fn'
    */
   function testAllowExternalContractToCallGetUtilityToken() public {
     bytes memory encodeSignature = abi.encodeWithSignature("getUtilityToken()");
     mockExternalCall.callExternalFn(address(holograph), encodeSignature);
   }
 
-  /*
-    SET UTILITY TOKEN
-*/
+  /* -------------------------------------------------------------------------- */
+  /*                              SET UTILITY TOKEN                             */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Test the ability of the admin to alter the utilityToken slot in the Holograph contract.
    * @dev This test is designed to verify that the admin can alter the utilityToken slot in the contract.
    * This test performs a prank operation on the current admin address of the Holograph contract,
    * and then sets a new random address as the utilityToken in the contract.
+   * Refers to the hardhat test with the description 'should allow admin to alter _utilityTokenSlot'
    */
   function testAllowAdminAlter_utilityTokenSlot() public {
+    address random = RandomAddress.randomAddress();
     vm.prank(origin);
-    holograph.setUtilityToken(randomAddress());
+    holograph.setUtilityToken(random);
   }
 
   /**
@@ -692,10 +736,12 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that only the admin can alter the utilityToken slot in the contract.
    * This test expects a revert with the message 'HOLOGRAPH: admin only function' when the owner attempts to
    * alter the utilityToken slot in the Holograph contract.
+   * Refers to the hardhat test with the description 'should fail to allow owner to alter _utilityTokenSlot'
    */
   function testAllowOwnerAlter_utilityTokenSlotRevert() public {
-    vm.expectRevert("HOLOGRAPH: admin only function");
-    holograph.setUtilityToken(randomAddress());
+    address random = RandomAddress.randomAddress();
+    vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
+    holograph.setUtilityToken(random);
   }
 
   /**
@@ -703,10 +749,12 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that only the admin can alter the utilityToken slot in the contract.
    * This test expects a revert with the message 'HOLOGRAPH: admin only function' when a non-owner attempts to
    * alter the utilityToken slot in the Holograph contract.
+   * Refers to the hardhat test with the description 'should fail to allow non-owner to alter _utilityTokenSlot'
    */
   function testAllowNonOwnerAlter_utilityTokenSlotRevert() public {
-    vm.expectRevert("HOLOGRAPH: admin only function");
+    address random = RandomAddress.randomAddress();
+    vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     vm.prank(user);
-    holograph.setUtilityToken(randomAddress());
+    holograph.setUtilityToken(random);
   }
 }
