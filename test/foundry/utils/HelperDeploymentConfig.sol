@@ -1,12 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
-import {Constants} from "../utils/Constants.sol";
+import {Constants} from "./Constants.sol";
+import {RandomAddress} from "./Utils.sol";
+import {DummyMetadataRenderer} from "./DummyMetadataRenderer.sol";
 
 import {DeploymentConfig} from "../../../src/struct/DeploymentConfig.sol";
 import {Test, Vm, console} from "forge-std/Test.sol";
 
+import {DropsInitializerV2} from "../../../src/drops/struct/DropsInitializerV2.sol";
+import {SalesConfiguration} from "../../../src/drops/struct/SalesConfiguration.sol";
 
 library HelperDeploymentConfig {
+  uint256 constant dropEventConfig = 0x0000000000000000000000000000000000000000000000000000000000040000;
   function getInitCodeHtokenETH() public pure returns (bytes memory) {
     return
       abi.encode(
@@ -55,7 +60,6 @@ library HelperDeploymentConfig {
     );
     return deployConfig;
   }
-
   function getDeployConfigERC721(
     bytes32 contractType,
     uint32 chainType,
@@ -100,7 +104,9 @@ library HelperDeploymentConfig {
    */
   function getHtokenEth(
     uint32 chainType,
-    bytes memory contractByteCode
+    bytes memory contractByteCode,
+    bytes32 eventConfig,
+    bool isL1
   ) public pure returns (DeploymentConfig memory deployConfig) {
     return
       getDeployConfigERC20(
@@ -112,28 +118,6 @@ library HelperDeploymentConfig {
         0x0000000000000000000000000000000000000000000000000000000000000000,
         "Holographed ETH",
         getInitCodeHtokenETH()
-      );
-  }
-  /*
-   * @note This contract is used to get the DeploymentConfig for hToken ETH
-   * @dev This contract provides helper functions  to get the DeploymentConfig by chainType (getHolographIdL1 or getHolographIdL2) for hToken ETH
-   */
-  function getERC721(
-    uint32 chainType,
-    bytes memory contractByteCode,
-    bytes32 eventConfig,
-    bool isL1
-  ) public pure returns (DeploymentConfig memory deployConfig) {
-    return
-      getDeployConfigERC721(
-        bytes32(0x0000000000000000000000000000000000486f6c6f6772617068455243373231), //HolographERC721 hash,
-        chainType,
-        contractByteCode,
-        isL1 ? "Sample ERC721 Contract (localhost)" : "Sample ERC721 Contract (localhost2)",
-        "SMPLR",
-        eventConfig, //eventConfig
-        1000, //royalty
-        getInitCodeSampleErc721()
       );
   }
 
@@ -172,5 +156,58 @@ library HelperDeploymentConfig {
         1000, //royalty
         getInitCodeCxipERC721()
       );
+  }
+
+  function getERC721(
+    uint32 chainType,
+    bytes memory contractByteCode,
+    bytes32 eventConfig,
+    bool isL1
+  ) public pure returns (DeploymentConfig memory deployConfig) {
+    return
+      getDeployConfigERC721(
+        bytes32(0x0000000000000000000000000000000000486f6c6f6772617068455243373231), //HolographERC721 hash,
+        chainType,
+        contractByteCode,
+        isL1 ? "Sample ERC721 Contract (localhost)" : "Sample ERC721 Contract (localhost2)",
+        "SMPLR",
+        eventConfig, //eventConfig
+        1000, //royalty
+        getInitCodeSampleErc721()
+      );
+  }
+
+  function getERC721WithConfigDropERC721V2(
+    uint32 chainType,
+    bytes memory contractByteCode,
+    bytes32 eventConfig,
+    bool isL1
+  ) public pure returns (DeploymentConfig memory deployConfig) {
+    SalesConfiguration memory salesConfiguration = SalesConfiguration({
+      publicSaleStart: 0,
+      publicSaleEnd: 0,
+      presaleStart: 0,
+      presaleEnd: 0,
+      publicSalePrice: 0,
+      maxSalePurchasePerAddress: 0,
+      presaleMerkleRoot: bytes32(0x0000000000000000000000000000000000000000000000000000000000000000)
+    });
+
+    DropsInitializerV2 memory initializer = DropsInitializerV2({
+      initialOwner: Constants.getDeployer(),
+      fundsRecipient: payable(Constants.getDeployer()),
+      editionSize: 0,
+      royaltyBPS: 1000,
+      salesConfiguration: salesConfiguration,
+      metadataRenderer: Constants.getEditionsMetadataRendererProxy(),
+      metadataRendererInit: abi.encode("decscription", "imageURI", "animationURI")
+    });
+
+    deployConfig.contractType = bytes32(0x0000000000000000000000486f6c6f677261706844726f704552433732315632); //Source contract type HolographDropERC721V2
+    deployConfig.chainType = chainType; //holograph id
+    deployConfig.salt = Constants.saltHex;
+    deployConfig.byteCode = contractByteCode;
+    deployConfig.initCode = abi.encode(initializer);
+    return deployConfig;
   }
 }

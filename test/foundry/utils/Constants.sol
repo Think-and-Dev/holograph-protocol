@@ -151,7 +151,15 @@ library Constants {
   function getDropsEventConfig() internal pure returns (uint256) {
     return 0x0000000000000000000000000000000000000000000000000000000000040000;
   }
-
+  function getHolographDropERC721V2() internal pure returns (address) {
+    return address(0x30F9D1c28584e0874dEE1b2f0101D77077D316e4);
+  }
+  function getEditionsMetadataRendererProxy() internal pure returns (address) {
+    return address(0xdF26982B2D5A4904757f6099b939c0eBcFE70668);
+  }
+  function getHolographDropERC721() internal pure returns (address) {
+    return address(0xc4aE0619B36BC57227DC258472E57A7265C5f2aA);
+  }
   function getHolographIdL1() internal pure returns (uint32) {
     return 4294967294;
   }
