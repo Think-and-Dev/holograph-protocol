@@ -136,10 +136,6 @@ library Constants {
     return address(0xB94053201514E26133770eA1351959AffF0DE684);
   }
 
-  function getZeroAddress() internal pure returns (address) {
-    return address(0x0000000000000000000000000000000000000000);
-  }
-
   function getDropsEventConfig() internal pure returns (uint256) {
     return 0x0000000000000000000000000000000000000000000000000000000000040000;
   }
@@ -156,6 +152,10 @@ library Constants {
     return address(0xdf5295149F367b1FBFD595bdA578BAd22e59f504);
   }
 
+  function getGenesisDeployer() internal pure returns (address) {
+    return address(0xBB566182f35B9E5Ae04dB02a5450CC156d2f89c1);
+  }
+
   function getPKDeployer() internal pure returns (uint256) {
     return uint256(0xff22437ccbedfffafa93a9f1da2e8c19c1711052799acf3b58ae5bebb5c6bd7b);
   }
@@ -163,6 +163,8 @@ library Constants {
   address public constant zeroAddress = address(0x0000000000000000000000000000000000000000);
   address public constant originAddress = address(0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38);
   bytes32 public constant saltHex = bytes32(0x00000000000000000000000000000000000000000000000000000000000003e8);
+  uint256 constant MAX_UINT256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+  uint256 constant MIN_UINT256 = 0x00000000000000000000000000000000000000000000000000000000000000;
 }
 
 library ErrorConstants {
@@ -176,4 +178,8 @@ library ErrorConstants {
   string constant EMPTY_CONTRACT_ERROR_MSG = "HOLOGRAPH: empty contract";
   string constant CONTRACT_ALREADY_SET_ERROR_MSG = "HOLOGRAPH: contract already set";
   string constant ROYALTIES_ONLY_OWNER_ERROR_MSG = "ROYALTIES: caller not an owner";
+  string constant INCORRECT_CHAIN_ID = "HOLOGRAPH: incorrect chain id";
+  string constant DEPLOYMENT_FAIL = "HOLOGRAPH: deployment failed";
+  string constant INITIALIZATION_FAIL = "HOLOGRAPH: initialization failed";
+  string constant DEPLOYER_NOT_APPROVED = "HOLOGRAPH: deployer not approved";
 }
