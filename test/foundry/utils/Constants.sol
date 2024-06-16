@@ -111,13 +111,13 @@ library Constants {
   // NOTE: This has to be updated to the correct address every time a new contract is added to be
   //       deployed within the hardhat deploy pipeline
   function getERC20Mock() internal pure returns (address) {
-    return address(0x71B7f5A882F25c7292d0Ae5fa6d78129f431b957);
+    return address(0x4aF55cAE288F8B9867AF8992F5910080D3cebB4f);
   }
 
   // NOTE: This has to be updated to the correct address every time a new contract is added to be
   //       deployed within the hardhat deploy pipeline
   function getMockERC721Receiver() internal pure returns (address) {
-    return address(0x3a95a5263bb12083088c0A11296B18655121C9Ec);
+    return address(0xE13E4368adA84D7F73d30648cd67215B348D9D15);
   }
 
   function getSampleERC20() internal pure returns (address) {
@@ -134,6 +134,14 @@ library Constants {
 
   function getSampleERC721_L2() internal pure returns (address) {
     return address(0xB94053201514E26133770eA1351959AffF0DE684);
+  }
+
+  function getMockLZEndpoint() internal pure returns (address) {
+    return address(0x4d186eac2A5F2ec7a16079B8b111ab2EfB8b4342);
+  }
+
+  function getLayerZeroModuleProxy() internal pure returns (address) {
+    return address(0x350856f758d9A1b8c24540d8E10cd6AB45B1466d);
   }
 
   function getZeroAddress() internal pure returns (address) {

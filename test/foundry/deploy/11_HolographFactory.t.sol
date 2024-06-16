@@ -67,7 +67,7 @@ contract HolographFactoryTest is Test {
     DeploymentConfig memory deployConfig = HelperDeploymentConfig.getERC721(
       Constants.getHolographIdL1(),
       vm.getCode("SampleERC721.sol:SampleERC721"),
-      bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
+      0x0000000000000000000000000000000000000000000000000000000000000000, // eventConfig,
       true
     );
 

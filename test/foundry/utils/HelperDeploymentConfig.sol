@@ -5,6 +5,8 @@ import {RandomAddress} from "./Utils.sol";
 import {DummyMetadataRenderer} from "./DummyMetadataRenderer.sol";
 
 import {DeploymentConfig} from "../../../src/struct/DeploymentConfig.sol";
+import {Test, Vm, console} from "forge-std/Test.sol";
+
 import {DropsInitializerV2} from "../../../src/drops/struct/DropsInitializerV2.sol";
 import {SalesConfiguration} from "../../../src/drops/struct/SalesConfiguration.sol";
 
@@ -50,8 +52,7 @@ library HelperDeploymentConfig {
       tokenName, //token name
       tokenSymbol, //tokenSymbol
       uint8(18), //decimals
-      eventConfig,
-      // uint256(0x0000000000000000000000000000000000000000000000000000000000000000), //eventConfig
+      eventConfig, //eventConfig
       domainSeparator, //domainSeparator
       "1", //domainVersion
       false, //skipInit,
@@ -77,7 +78,7 @@ library HelperDeploymentConfig {
       tokenName, //token name
       tokenSymbol, //tokenSymbol
       royaltyBps, //royaltyBps
-      eventConfig,
+      eventConfig, //eventConfig
       false, //skipInit,
       initCode
     );
@@ -114,7 +115,7 @@ library HelperDeploymentConfig {
         contractByteCode,
         "Holographed ETH",
         "hETH",
-        bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
+        0x0000000000000000000000000000000000000000000000000000000000000000,
         "Holographed ETH",
         getInitCodeHtokenETH()
       );
