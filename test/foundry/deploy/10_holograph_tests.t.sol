@@ -94,14 +94,15 @@ contract HolographTests is Test {
   /**
    * @notice Test the setAdmin function of the Holograph contract.
    * @dev This test is designed to verify the functionality of setting a new admin address in the contract.
-   * This test retrieves the current admin address from the Holograph contract,
-   * performs a prank operation on the admin address using the VM,
-   * and then sets a new admin address to the contract.
+   * The test performs a prank operation on the admin address using the VM and
+   * sets a new admin address to the contract using the `setAdmin()` function.
+   * This ensures that the admin address is updated as expected.
    * Refers to the hardhat test with the description 'should successfully init once'
    */
   function testSetAdmin() public {
     vm.prank(origin);
     holograph.setAdmin(admin);
+    assertEq(holograph.getAdmin(), admin);
   }
 
   /**
@@ -153,12 +154,14 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that the admin can alter the bridge slot in the contract.
    * This test performs a prank operation on the current admin address of the Holograph contract,
    * and then sets a new random address as the bridge in the contract.
+   * This ensures that the bridge is updated as expected.
    * Refers to the hardhat test with the description 'should allow admin to alter _bridgeSlot'
    */
   function testAllowAdminAlterBridgeSlot() public {
     address random = RandomAddress.randomAddress();
     vm.prank(origin);
     holograph.setBridge(random);
+    assertEq(holograph.getBridge(), random);
   }
 
   /**
@@ -225,11 +228,13 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that the admin can alter the chainId slot in the contract.
    * This test performs a prank operation on the current admin address of the Holograph contract,
    * and then sets a new random address as the chainId in the contract.
+   * This ensures that the chainId is updated as expected.
    * Refers to the hardhat test with the description 'should allow admin to alter _chainIdSlot'
    */
   function testAllowAdminAlterChainIdSlot() public {
     vm.prank(origin);
     holograph.setChainId((2));
+    assertEq(holograph.getChainId(), 2);
   }
 
   /**
@@ -294,12 +299,14 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that the admin can alter the factory slot in the contract.
    * This test performs a prank operation on the current admin address of the Holograph contract,
    * and then sets a new random address as the factory in the contract.
+   * This ensures that the factory is updated as expected.
    * Refers to the hardhat test with the description 'should allow admin to alter _factorySlot'
    */
   function testAllowAdminAlterFactorySlot() public {
     address random = RandomAddress.randomAddress();
     vm.prank(origin);
     holograph.setFactory(random);
+    assertEq(holograph.getFactory(), random);
   }
 
   /**
@@ -366,11 +373,13 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that the admin can alter the holographChainId slot in the contract.
    * This test performs a prank operation on the current admin address of the Holograph contract,
    * and then sets a new random address as the holographChainId in the contract.
+   * This ensures that the holograph chanId is updated as expected.
    * Refers to the hardhat test with the description 'should allow admin to alter _holographChainIdSlot'
    */
   function testAllowAdminAlterHolographChainIdSlot() public {
     vm.prank(origin);
     holograph.setHolographChainId(2);
+    assertEq(holograph.getHolographChainId(), 2);
   }
 
   /**
@@ -435,12 +444,14 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that the admin can alter the interfaces slot in the contract.
    * This test performs a prank operation on the current admin address of the Holograph contract,
    * and then sets a new random address as the interfaces in the contract.
+   * This ensures that the interfaces is updated as expected.
    * Refers to the hardhat test with the description 'should allow admin to alter _interfacesSlot'
    */
   function testAllowAdminAlterInterfacesSlot() public {
     address random = RandomAddress.randomAddress();
     vm.prank(origin);
     holograph.setInterfaces(random);
+    assertEq(holograph.getInterfaces(), random);
   }
 
   /**
@@ -507,12 +518,14 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that the admin can alter the operator slot in the contract.
    * This test performs a prank operation on the current admin address of the Holograph contract,
    * and then sets a new random address as the operator in the contract.
+   * This ensures that the operator is updated as expected.
    * Refers to the hardhat test with the description 'should allow admin to alter _operatorSlot'
    */
   function testAllowAdminAlterOperatorSlot() public {
     address random = RandomAddress.randomAddress();
     vm.prank(origin);
     holograph.setOperator(random);
+    assertEq(holograph.getOperator(), random);
   }
 
   /**
@@ -579,12 +592,14 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that the admin can alter the registry slot in the contract.
    * This test performs a prank operation on the current admin address of the Holograph contract,
    * and then sets a new random address as the registry in the contract.
+   * This ensures that the registry is updated as expected.
    * Refers to the hardhat test with the description 'should allow admin to alter _registrySlot'
    */
   function testAllowAdminAlterRegistrySlot() public {
     address random = RandomAddress.randomAddress();
     vm.prank(origin);
     holograph.setRegistry(random);
+    assertEq(holograph.getRegistry(), random);
   }
 
   /**
@@ -651,12 +666,14 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that the admin can alter the treasury slot in the contract.
    * This test performs a prank operation on the current admin address of the Holograph contract,
    * and then sets a new random address as the treasury in the contract.
+   * This ensures that the treasury is updated as expected.
    * Refers to the hardhat test with the description 'should allow admin to alter _treasurySlot'
    */
   function testAllowAdminAlterTreasurySlot() public {
     address random = RandomAddress.randomAddress();
     vm.prank(origin);
     holograph.setTreasury(random);
+    assertEq(holograph.getTreasury(), random);
   }
 
   /**
@@ -723,12 +740,14 @@ contract HolographTests is Test {
    * @dev This test is designed to verify that the admin can alter the utilityToken slot in the contract.
    * This test performs a prank operation on the current admin address of the Holograph contract,
    * and then sets a new random address as the utilityToken in the contract.
+   * This ensures that the utility token is updated as expected.
    * Refers to the hardhat test with the description 'should allow admin to alter _utilityTokenSlot'
    */
   function testAllowAdminAlterUtilityTokenSlot() public {
     address random = RandomAddress.randomAddress();
     vm.prank(origin);
     holograph.setUtilityToken(random);
+    assertEq(holograph.getUtilityToken(), random);
   }
 
   /**
