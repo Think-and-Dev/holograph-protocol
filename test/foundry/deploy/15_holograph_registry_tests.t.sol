@@ -76,7 +76,7 @@ contract HolographRegistryTests is Test {
     DeploymentConfig memory deployConfig = HelperDeploymentConfig.getERC721(
       Constants.getHolographIdL1(),
       vm.getCode("SampleERC721.sol:SampleERC721"),
-      bytes32(0x0000000000000000000000000000000000000000000000000000000000000086),
+      Constants.eventConfig,
       true
     );
     erc721ConfigHash = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
@@ -158,10 +158,10 @@ contract HolographRegistryTests is Test {
       expectedHolographableContractsCount
     );
     assertEq(contracts.length, expectedHolographableContractsCount);
-    address add = address(registryDeployedByScript.getHolographedHashAddress(erc721ConfigHash));
+    address hashAddress = address(registryDeployedByScript.getHolographedHashAddress(erc721ConfigHash));
     bool found = false;
     for (uint i = 0; i < contracts.length; i++) {
-      if (contracts[i] == add) {
+      if (contracts[i] == hashAddress) {
         found = true;
         break;
       }
@@ -298,8 +298,8 @@ contract HolographRegistryTests is Test {
    * Refers to the hardhat test with the description 'Should return valid _holographedContractsHashMap'
    */
   function testReturnValidHolographedContractsHashMap() public {
-    address add = registryDeployedByScript.getHolographedHashAddress(erc721ConfigHash);
-    assertEq(add, address(registryDeployedByScript.getHolographedHashAddress(erc721ConfigHash)));
+    address hashAddress = registryDeployedByScript.getHolographedHashAddress(erc721ConfigHash);
+    assertEq(hashAddress, address(registryDeployedByScript.getHolographedHashAddress(erc721ConfigHash)));
   }
 
   /**
@@ -310,8 +310,8 @@ contract HolographRegistryTests is Test {
    * Refers to the hardhat test with the description 'should return 0x0 for invalid hash'
    */
   function testReturn0x0ForInvalidHash() public view {
-    address add = registryDeployedByScript.getHolographedHashAddress(contractHash);
-    assertEq(add, zeroAddress);
+    address hashAddress = registryDeployedByScript.getHolographedHashAddress(contractHash);
+    assertEq(hashAddress, zeroAddress);
   }
 
   /**
