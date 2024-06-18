@@ -198,8 +198,7 @@ contract HolographTests is Test {
   /**
    * @notice Test the validity of the chainId slot in the Holograph contract.
    * @dev This test is designed to ensure the correct functionality of the chainId slot in the contract.
-   * This test verifies that the value returned by `getChainId()` in the Holograph contract
-   * is not equal to zero.
+   * This test verifies that the value for chainId is correctly set in the initialization.
    * Refers to the hardhat test with the description 'Should return valid _chainIdSlot'
    */
   function testReturnValidChainIdSlot() public view {
