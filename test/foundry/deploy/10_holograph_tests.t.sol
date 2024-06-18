@@ -127,7 +127,7 @@ contract HolographTests is Test {
    * matches the expected `bridge` address.
    * Refers to the hardhat test with the description 'Should return valid _bridgeSlot'
    */
-  function testReturnValid_bridgeSlot() public view {
+  function testReturnValidBridgeSlot() public view {
     assertEq(holograph.getBridge(), bridge);
   }
 
@@ -155,7 +155,7 @@ contract HolographTests is Test {
    * and then sets a new random address as the bridge in the contract.
    * Refers to the hardhat test with the description 'should allow admin to alter _bridgeSlot'
    */
-  function testAllowAdminAlter_bridgeSlot() public {
+  function testAllowAdminAlterBridgeSlot() public {
     address random = RandomAddress.randomAddress();
     vm.prank(origin);
     holograph.setBridge(random);
@@ -168,7 +168,7 @@ contract HolographTests is Test {
    * alter the bridge slot in the Holograph contract.
    * Refers to the hardhat test with the description 'should fail to allow owner to alter _bridgeSlot'
    */
-  function testAllowOwnerToAlter_bridgeSlotRevert() public {
+  function testAllowOwnerToAlterBridgeSlotRevert() public {
     address random = RandomAddress.randomAddress();
     vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     holograph.setBridge(random);
@@ -181,7 +181,7 @@ contract HolographTests is Test {
    * alter the bridge slot in the Holograph contract.
    * Refers to the hardhat test with the description 'should fail to allow non-owner to alter _bridgeSlot'
    */
-  function testAllowNonOwnerToAlter_bridgeSlotRevert() public {
+  function testAllowNonOwnerToAlterBridgeSlotRevert() public {
     address random = RandomAddress.randomAddress();
     vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     vm.prank(user);
@@ -199,7 +199,7 @@ contract HolographTests is Test {
    * is not equal to zero.
    * Refers to the hardhat test with the description 'Should return valid _chainIdSlot'
    */
-  function testReturnValid_chainIdSlot() public view {
+  function testReturnValidChainIdSlot() public view {
     assertNotEq(holograph.getChainId(), 0);
   }
 
@@ -227,7 +227,7 @@ contract HolographTests is Test {
    * and then sets a new random address as the chainId in the contract.
    * Refers to the hardhat test with the description 'should allow admin to alter _chainIdSlot'
    */
-  function testAllowAdminAlter_chainIdSlot() public {
+  function testAllowAdminAlterChainIdSlot() public {
     vm.prank(origin);
     holograph.setChainId((2));
   }
@@ -239,7 +239,7 @@ contract HolographTests is Test {
    * alter the chainId slot in the Holograph contract.
    * Refers to the hardhat test with the description 'should fail to allow owner to alter _chainIdSlot'
    */
-  function testAllowOwnerAlter_chainIdSlotRevert() public {
+  function testAllowOwnerAlterChainIdSlotRevert() public {
     vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     holograph.setChainId(3);
   }
@@ -251,7 +251,7 @@ contract HolographTests is Test {
    * alter the chainId slot in the Holograph contract.
    * Refers to the hardhat test with the description 'should fail to allow non-owner to alter _chainIdSlot'
    */
-  function testAllowNonOwnerAlter_chainIdSlotRevert() public {
+  function testAllowNonOwnerAlterChainIdSlotRevert() public {
     vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     vm.prank(user);
     holograph.setChainId(4);
@@ -268,7 +268,7 @@ contract HolographTests is Test {
    * matches the expected `factory` address.
    * Refers to the hardhat test with the description 'Should return valid _factorySlot'
    */
-  function testReturnValid_factorySlot() public view {
+  function testReturnValidFactorySlot() public view {
     assertEq(holograph.getFactory(), factory);
   }
 
@@ -296,7 +296,7 @@ contract HolographTests is Test {
    * and then sets a new random address as the factory in the contract.
    * Refers to the hardhat test with the description 'should allow admin to alter _factorySlot'
    */
-  function testAllowAdminAlter_factorySlot() public {
+  function testAllowAdminAlterFactorySlot() public {
     address random = RandomAddress.randomAddress();
     vm.prank(origin);
     holograph.setFactory(random);
@@ -309,7 +309,7 @@ contract HolographTests is Test {
    * alter the factory slot in the Holograph contract.
    * Refers to the hardhat test with the description 'should fail to allow owner to alter _factorySlot'
    */
-  function testAllowOwnerAlter_factorySlotRevert() public {
+  function testAllowOwnerAlterFactorySlotRevert() public {
     address random = RandomAddress.randomAddress();
     vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     holograph.setFactory(random);
@@ -322,7 +322,7 @@ contract HolographTests is Test {
    * alter the factory slot in the Holograph contract.
    * Refers to the hardhat test with the description 'should fail to allow non-owner to alter _factorySlot',
    */
-  function testAllowNonOwnerAlter_factorySlotRevert() public {
+  function testAllowNonOwnerAlterFactorySlotRevert() public {
     address random = RandomAddress.randomAddress();
     vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     vm.prank(user);
@@ -340,7 +340,7 @@ contract HolographTests is Test {
    * matches the expected `holographChainId` address.
    * Refers to the hardhat test with the description 'Should return valid _holographChainIdSlot'
    */
-  function testReturnValid_holographChainIdSlot() public view {
+  function testReturnValidHolographChainIdSlot() public view {
     assertEq(holograph.getHolographChainId(), holographChainId);
   }
 
@@ -368,7 +368,7 @@ contract HolographTests is Test {
    * and then sets a new random address as the holographChainId in the contract.
    * Refers to the hardhat test with the description 'should allow admin to alter _holographChainIdSlot'
    */
-  function testAllowAdminAlter_holographChainIdSlot() public {
+  function testAllowAdminAlterHolographChainIdSlot() public {
     vm.prank(origin);
     holograph.setHolographChainId(2);
   }
@@ -380,7 +380,7 @@ contract HolographTests is Test {
    * alter the holographChainId slot in the Holograph contract.
    * Refers to the hardhat test with the description 'should fail to allow owner to alter _holographChainIdSlot'
    */
-  function testAllowOwnerAlter_holographChainIdSlotRevert() public {
+  function testAllowOwnerAlterHolographChainIdSlotRevert() public {
     vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     holograph.setHolographChainId(3);
   }
@@ -392,7 +392,7 @@ contract HolographTests is Test {
    * alter the holographChainId slot in the Holograph contract.
    * Refers to the hardhat test with the description 'should fail to allow non-owner to alter _holographChainIdSlot'
    */
-  function testAllowNonOwnerAlter_holographChainIdSlotRevert() public {
+  function testAllowNonOwnerAlterHolographChainIdSlotRevert() public {
     vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     vm.prank(user);
     holograph.setHolographChainId(4);
@@ -409,7 +409,7 @@ contract HolographTests is Test {
    * matches the expected `interfaces` address.
    * Refers to the hardhat test with the description 'Should return valid _interfacesSlot'
    */
-  function testReturnValid_interfacesSlot() public view {
+  function testReturnValidInterfacesSlot() public view {
     assertEq(holograph.getInterfaces(), interfaces);
   }
 
@@ -437,7 +437,7 @@ contract HolographTests is Test {
    * and then sets a new random address as the interfaces in the contract.
    * Refers to the hardhat test with the description 'should allow admin to alter _interfacesSlot'
    */
-  function testAllowAdminAlter_interfacesSlot() public {
+  function testAllowAdminAlterInterfacesSlot() public {
     address random = RandomAddress.randomAddress();
     vm.prank(origin);
     holograph.setInterfaces(random);
@@ -450,7 +450,7 @@ contract HolographTests is Test {
    * alter the interfaces slot in the Holograph contract.
    * Refers to the hardhat test with the description 'should fail to allow owner to alter _interfacesSlot'
    */
-  function testAllowOwnerAlter_interfacesSlotRevert() public {
+  function testAllowOwnerAlterInterfacesSlotRevert() public {
     address random = RandomAddress.randomAddress();
     vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     holograph.setInterfaces(random);
@@ -463,7 +463,7 @@ contract HolographTests is Test {
    * alter the interfaces slot in the Holograph contract.
    * Refers to the hardhat test with the description 'should fail to allow non-owner to alter _interfacesSlot'
    */
-  function testAllowNonOwnerAlter_interfacesSlotRevert() public {
+  function testAllowNonOwnerAlterInterfacesSlotRevert() public {
     address random = RandomAddress.randomAddress();
     vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     vm.prank(user);
@@ -481,7 +481,7 @@ contract HolographTests is Test {
    * matches the expected `operator` address.
    * Refers to the hardhat test with the description 'Should return valid _operatorSlot'
    */
-  function testReturnValid_operatorSlot() public view {
+  function testReturnValidOperatorSlot() public view {
     assertEq(holograph.getOperator(), operator);
   }
 
@@ -509,7 +509,7 @@ contract HolographTests is Test {
    * and then sets a new random address as the operator in the contract.
    * Refers to the hardhat test with the description 'should allow admin to alter _operatorSlot'
    */
-  function testAllowAdminAlter_operatorSlot() public {
+  function testAllowAdminAlterOperatorSlot() public {
     address random = RandomAddress.randomAddress();
     vm.prank(origin);
     holograph.setOperator(random);
@@ -522,7 +522,7 @@ contract HolographTests is Test {
    * alter the operator slot in the Holograph contract.
    * Refers to the hardhat test with the description 'should fail to allow owner to alter _operatorSlot'
    */
-  function testAllowOwnerAlter_operatorSlotRevert() public {
+  function testAllowOwnerAlterOperatorSlotRevert() public {
     address random = RandomAddress.randomAddress();
     vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     holograph.setOperator(random);
@@ -535,7 +535,7 @@ contract HolographTests is Test {
    * alter the operator slot in the Holograph contract.
    * Refers to the hardhat test with the description 'should fail to allow non-owner to alter _operatorSlot'
    */
-  function testAllowNonOwnerAlter_operatorSlotRevert() public {
+  function testAllowNonOwnerAlterOperatorSlotRevert() public {
     address random = RandomAddress.randomAddress();
     vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     vm.prank(user);
@@ -553,7 +553,7 @@ contract HolographTests is Test {
    * matches the expected `registry` address.
    * Refers to the hardhat test with the description 'Should return valid _registrySlot'
    */
-  function testReturnValid_registrySlot() public view {
+  function testReturnValidRegistrySlot() public view {
     assertEq(holograph.getRegistry(), registry);
   }
 
@@ -581,7 +581,7 @@ contract HolographTests is Test {
    * and then sets a new random address as the registry in the contract.
    * Refers to the hardhat test with the description 'should allow admin to alter _registrySlot'
    */
-  function testAllowAdminAlter_registrySlot() public {
+  function testAllowAdminAlterRegistrySlot() public {
     address random = RandomAddress.randomAddress();
     vm.prank(origin);
     holograph.setRegistry(random);
@@ -594,7 +594,7 @@ contract HolographTests is Test {
    * alter the registry slot in the Holograph contract.
    * Refers to the hardhat test with the description 'should fail to allow owner to alter _registrySlot'
    */
-  function testAllowOwnerAlter_registrySlotRevert() public {
+  function testAllowOwnerAlterRegistrySlotRevert() public {
     address random = RandomAddress.randomAddress();
     vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     holograph.setRegistry(random);
@@ -607,7 +607,7 @@ contract HolographTests is Test {
    * alter the registry slot in the Holograph contract.
    * Refers to the hardhat test with the description 'should fail to allow non-owner to alter _registrySlot'
    */
-  function testAllowNonOwnerAlter_registrySlotRevert() public {
+  function testAllowNonOwnerAlterRegistrySlotRevert() public {
     address random = RandomAddress.randomAddress();
     vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     vm.prank(user);
@@ -625,7 +625,7 @@ contract HolographTests is Test {
    * matches the expected `treasury` address.
    * Refers to the hardhat test with the description 'Should return valid _treasurySlot'
    */
-  function testReturnValid_treasurySlot() public view {
+  function testReturnValidTreasurySlot() public view {
     assertEq(holograph.getTreasury(), treasury);
   }
 
@@ -653,7 +653,7 @@ contract HolographTests is Test {
    * and then sets a new random address as the treasury in the contract.
    * Refers to the hardhat test with the description 'should allow admin to alter _treasurySlot'
    */
-  function testAllowAdminAlter_treasurySlot() public {
+  function testAllowAdminAlterTreasurySlot() public {
     address random = RandomAddress.randomAddress();
     vm.prank(origin);
     holograph.setTreasury(random);
@@ -666,7 +666,7 @@ contract HolographTests is Test {
    * alter the treasury slot in the Holograph contract.
    * Refers to the hardhat test with the description 'should fail to allow owner to alter _treasurySlot'
    */
-  function testAllowOwnerAlter_treasurySlotRevert() public {
+  function testAllowOwnerAlterTreasurySlotRevert() public {
     address random = RandomAddress.randomAddress();
     vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     holograph.setTreasury(random);
@@ -679,7 +679,7 @@ contract HolographTests is Test {
    * alter the treasury slot in the Holograph contract.
    * Refers to the hardhat test with the description 'should fail to allow non-owner to alter _treasurySlot'
    */
-  function testAllowNonOwnerAlter_treasurySlotRevert() public {
+  function testAllowNonOwnerAlterTreasurySlotRevert() public {
     address random = RandomAddress.randomAddress();
     vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     vm.prank(user);
@@ -697,7 +697,7 @@ contract HolographTests is Test {
    * matches the expected `utilityToken` address.
    * Refers to the hardhat test with the description 'Should return valid _utilityTokenSlot'
    */
-  function testReturnValid_utilityTokenSlot() public view {
+  function testReturnValidUtilityTokenSlot() public view {
     assertEq(holograph.getUtilityToken(), utilityToken);
   }
 
@@ -725,7 +725,7 @@ contract HolographTests is Test {
    * and then sets a new random address as the utilityToken in the contract.
    * Refers to the hardhat test with the description 'should allow admin to alter _utilityTokenSlot'
    */
-  function testAllowAdminAlter_utilityTokenSlot() public {
+  function testAllowAdminAlterUtilityTokenSlot() public {
     address random = RandomAddress.randomAddress();
     vm.prank(origin);
     holograph.setUtilityToken(random);
@@ -738,7 +738,7 @@ contract HolographTests is Test {
    * alter the utilityToken slot in the Holograph contract.
    * Refers to the hardhat test with the description 'should fail to allow owner to alter _utilityTokenSlot'
    */
-  function testAllowOwnerAlter_utilityTokenSlotRevert() public {
+  function testAllowOwnerAlterUtilityTokenSlotRevert() public {
     address random = RandomAddress.randomAddress();
     vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     holograph.setUtilityToken(random);
@@ -751,7 +751,7 @@ contract HolographTests is Test {
    * alter the utilityToken slot in the Holograph contract.
    * Refers to the hardhat test with the description 'should fail to allow non-owner to alter _utilityTokenSlot'
    */
-  function testAllowNonOwnerAlter_utilityTokenSlotRevert() public {
+  function testAllowNonOwnerAlterUtilityTokenSlotRevert() public {
     address random = RandomAddress.randomAddress();
     vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     vm.prank(user);
