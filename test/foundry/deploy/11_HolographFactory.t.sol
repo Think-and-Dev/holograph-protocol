@@ -50,7 +50,9 @@ contract HolographFactoryTest is Test {
   function getConfigHtokenETH() public view returns (DeploymentConfig memory, bytes32) {
     DeploymentConfig memory deployConfig = HelperDeploymentConfig.getHtokenEth(
       Constants.getHolographIdL1(),
-      vm.getCode("hTokenProxy.sol:hTokenProxy")
+      vm.getCode("hTokenProxy.sol:hTokenProxy"),
+      bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
+      true
     );
 
     bytes32 hashHtokenEth = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
@@ -64,7 +66,9 @@ contract HolographFactoryTest is Test {
   function getConfigERC721() public view returns (DeploymentConfig memory, bytes32) {
     DeploymentConfig memory deployConfig = HelperDeploymentConfig.getERC721(
       Constants.getHolographIdL1(),
-      vm.getCode("SampleERC721.sol:SampleERC721")
+      vm.getCode("SampleERC721.sol:SampleERC721"),
+      0x0000000000000000000000000000000000000000000000000000000000000000, // eventConfig,
+      true
     );
 
     bytes32 hashSampleERC721 = HelperDeploymentConfig.getDeployConfigHash(deployConfig, deployer);
