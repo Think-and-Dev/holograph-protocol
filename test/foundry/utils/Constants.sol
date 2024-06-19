@@ -41,7 +41,7 @@ library Constants {
   }
 
   function getHolographOperator() internal pure returns (address) {
-    return address(0x0d173B3F4Da8e50333734F36E40c5f475874A7b3);
+    return address(0x443d6F2051716473e0849fb475e19f09ed488404);
   }
 
   function getHolographOperatorProxy() internal pure returns (address) {
@@ -104,16 +104,20 @@ library Constants {
     return address(0xE7AD7a544fa0262256F035Da6F77e396A271eA4C);
   }
 
-  function getERC20Mock() internal pure returns (address) {
-    return address(0x6eF2a267742D2EdA91cE4f3D875a91c599e5e079);
-  }
-
   function getHToken() internal pure returns (address) {
-    return address(0x0533A3bfB526Af481FEA67BDC6dF1E09e91084ec);
+    return address(0xEe7804e943659DB09338718F0B4123117A085109);
   }
 
+  // NOTE: This has to be updated to the correct address every time a new contract is added to be
+  //       deployed within the hardhat deploy pipeline
+  function getERC20Mock() internal pure returns (address) {
+    return address(0x4aF55cAE288F8B9867AF8992F5910080D3cebB4f);
+  }
+
+  // NOTE: This has to be updated to the correct address every time a new contract is added to be
+  //       deployed within the hardhat deploy pipeline
   function getMockERC721Receiver() internal pure returns (address) {
-    return address(0x01b03bC53D35925930Accb84345eA839b6c77dCF);
+    return address(0xE13E4368adA84D7F73d30648cd67215B348D9D15);
   }
 
   function getSampleERC20() internal pure returns (address) {
@@ -132,7 +136,64 @@ library Constants {
     return address(0xB94053201514E26133770eA1351959AffF0DE684);
   }
 
+  function getMockLZEndpoint() internal pure returns (address) {
+    return address(0x4d186eac2A5F2ec7a16079B8b111ab2EfB8b4342);
+  }
+
+  function getLayerZeroModuleProxy() internal pure returns (address) {
+    return address(0x350856f758d9A1b8c24540d8E10cd6AB45B1466d);
+  }
+
+  function getZeroAddress() internal pure returns (address) {
+    return address(0x0000000000000000000000000000000000000000);
+  }
+
   function getDropsEventConfig() internal pure returns (uint256) {
     return 0x0000000000000000000000000000000000000000000000000000000000040000;
   }
+  function getHolographDropERC721V2() internal pure returns (address) {
+    return address(0x30F9D1c28584e0874dEE1b2f0101D77077D316e4);
+  }
+  function getEditionsMetadataRendererProxy() internal pure returns (address) {
+    return address(0xdF26982B2D5A4904757f6099b939c0eBcFE70668);
+  }
+  function getHolographDropERC721() internal pure returns (address) {
+    return address(0xc4aE0619B36BC57227DC258472E57A7265C5f2aA);
+  }
+  function getHolographIdL1() internal pure returns (uint32) {
+    return 4294967294;
+  }
+
+  function getHolographIdL2() internal pure returns (uint32) {
+    return 4294967293;
+  }
+
+  function getDeployer() internal pure returns (address) {
+    return address(0xdf5295149F367b1FBFD595bdA578BAd22e59f504);
+  }
+
+  function getPKDeployer() internal pure returns (uint256) {
+    return uint256(0xff22437ccbedfffafa93a9f1da2e8c19c1711052799acf3b58ae5bebb5c6bd7b);
+  }
+
+  address public constant zeroAddress = address(0x0000000000000000000000000000000000000000);
+  address public constant originAddress = address(0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38);
+  bytes32 public constant saltHex = bytes32(0x00000000000000000000000000000000000000000000000000000000000003e8);
+}
+
+library ErrorConstants {
+  string constant ONLY_ADMIN_ERROR_MSG = "HOLOGRAPH: admin only function";
+  string constant ALREADY_INITIALIZED_ERROR_MSG = "HOLOGRAPH: already initialized";
+  string constant ALREADY_DEPLOYED_ERROR_MSG = "HOLOGRAPH: already deployed";
+  string constant INVALID_SIGNATURE_ERROR_MSG = "HOLOGRAPH: invalid signature";
+  string constant HOLOGRAPHER_ALREADY_INITIALIZED_ERROR_MSG = "HOLOGRAPHER: already initialized";
+  string constant ROYALTIES_ALREADY_INITIALIZED_ERROR_MSG = "ROYALTIES: already initialized";
+  string constant FACTORY_ONLY_ERROR_MSG = "HOLOGRAPH: factory only function";
+  string constant EMPTY_CONTRACT_ERROR_MSG = "HOLOGRAPH: empty contract";
+  string constant CONTRACT_ALREADY_SET_ERROR_MSG = "HOLOGRAPH: contract already set";
+  string constant ROYALTIES_ONLY_OWNER_ERROR_MSG = "ROYALTIES: caller not an owner";
+  string constant ROYALTIES_MISSMATCHED_LENGHTS_ERROR_MSG = "ROYALTIES: missmatched lenghts";
+  string constant ROYALTIES_MAX_TEN_ADDRESSES_MSG = "ROYALTIES: max 10 addresses";
+  string constant ROYALTIES_BPS_MUST_EQUAL_1000 = "ROYALTIES: bps must equal 10000";
+  string constant ROYALTIES_SENDER_NOT_AUTORIZED = "ROYALTIES: sender not authorized";
 }
