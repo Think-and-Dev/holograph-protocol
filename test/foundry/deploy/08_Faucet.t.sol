@@ -43,9 +43,9 @@ contract FaucetTest is Test {
     vm.stopPrank();
   }
 
-  /*
-   * INIT Section
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                                INIT Section                                */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice This function tests the `init` function of the `Faucet` contract. Initialize the contract
@@ -56,9 +56,9 @@ contract FaucetTest is Test {
     faucet.init(abi.encode(address(deployer), address(holographERC20)));
   }
 
-  /*
-   * DRIP Section
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                                DRIP Section                                */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice This function tests the `isAllowedToWithdraw` function of the `Faucet` contract. User is allowed to withdraw
@@ -97,9 +97,9 @@ contract FaucetTest is Test {
     faucet.requestTokens();
   }
 
-  /*
-   * OWNER DRIP Section
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                             OWNER DRIP Section                             */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice This function tests the `grantTokens` function of the `Faucet` contract. Owner can grant tokens
@@ -142,9 +142,9 @@ contract FaucetTest is Test {
     faucet.grantTokens(alice);
   }
 
-  /*
-   * OWNER ADJUST Withdraw Cooldown
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                       OWNER ADJUST Withdraw Cooldown                       */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice This function tests the `setWithdrawCooldown` function of the `Faucet` contract. Owner can adjust Withdraw Cooldown
@@ -185,9 +185,9 @@ contract FaucetTest is Test {
     faucet.setWithdrawCooldown(0);
   }
 
-  /*
-   * OWNER ADJUST Withdraw Amount
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                        OWNER ADJUST Withdraw Amount                        */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice This function tests the `setWithdrawAmount` function of the `Faucet` contract. Owner can adjust Withdraw Amount
@@ -221,9 +221,9 @@ contract FaucetTest is Test {
     faucet.setWithdrawAmount(DEFAULT_DRIP_AMOUNT - 2);
   }
 
-  /*
-   * OWNER can Withdraw funds
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                          OWNER can Withdraw funds                          */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice This function tests the `withdrawTokens` function of the `Faucet` contract. Owner can withdraw funds
