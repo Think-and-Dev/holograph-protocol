@@ -21,7 +21,10 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v3
-
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.12.2'
       - name: Prettify code
         uses: creyD/prettier_action@v3.3
         with:
