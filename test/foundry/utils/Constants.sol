@@ -136,8 +136,28 @@ library Constants {
     return address(0xB94053201514E26133770eA1351959AffF0DE684);
   }
 
+  function getMockLZEndpoint() internal pure returns (address) {
+    return address(0x4d186eac2A5F2ec7a16079B8b111ab2EfB8b4342);
+  }
+
+  function getLayerZeroModuleProxy() internal pure returns (address) {
+    return address(0x350856f758d9A1b8c24540d8E10cd6AB45B1466d);
+  }
+
   function getDropsEventConfig() internal pure returns (uint256) {
     return 0x0000000000000000000000000000000000000000000000000000000000040000;
+  }
+
+  function getHolographDropERC721V2() internal pure returns (address) {
+    return address(0x30F9D1c28584e0874dEE1b2f0101D77077D316e4);
+  }
+
+  function getEditionsMetadataRendererProxy() internal pure returns (address) {
+    return address(0xdF26982B2D5A4904757f6099b939c0eBcFE70668);
+  }
+
+  function getHolographDropERC721() internal pure returns (address) {
+    return address(0xc4aE0619B36BC57227DC258472E57A7265C5f2aA);
   }
 
   function getHolographIdL1() internal pure returns (uint32) {
@@ -182,4 +202,8 @@ library ErrorConstants {
   string constant DEPLOYMENT_FAIL = "HOLOGRAPH: deployment failed";
   string constant INITIALIZATION_FAIL = "HOLOGRAPH: initialization failed";
   string constant DEPLOYER_NOT_APPROVED = "HOLOGRAPH: deployer not approved";
+  string constant ROYALTIES_MISSMATCHED_LENGHTS_ERROR_MSG = "ROYALTIES: missmatched lenghts";
+  string constant ROYALTIES_MAX_TEN_ADDRESSES_MSG = "ROYALTIES: max 10 addresses";
+  string constant ROYALTIES_BPS_MUST_EQUAL_1000 = "ROYALTIES: bps must equal 10000";
+  string constant ROYALTIES_SENDER_NOT_AUTORIZED = "ROYALTIES: sender not authorized";
 }
