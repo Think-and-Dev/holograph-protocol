@@ -25,8 +25,7 @@ contract FaucetTest is Test {
   string REVERT_COME_BACK_LATER = "Come back later";
   string REVERT_NOT_AN_OWNER = "Caller is not the owner";
 
-  uint256 privateKeyDeployer = 0xff22437ccbedfffafa93a9f1da2e8c19c1711052799acf3b58ae5bebb5c6bd7b;
-  address deployer = vm.addr(privateKeyDeployer);
+  address deployer = vm.addr(Constants.getPKDeployer());
   address alice = vm.addr(1);
   address bob = vm.addr(2);
 
