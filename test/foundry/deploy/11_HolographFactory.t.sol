@@ -36,7 +36,7 @@ contract HolographFactoryTest is Test {
   address owner = vm.addr(1);
   address newOwner = vm.addr(2);
   address alice = vm.addr(3);
-  bytes constant invalidSignature = abi.encode(0x0000000000000000000000000000000000000000000000000000000000000000);
+  bytes invalidSignature = Constants.EMPTY_BYTES;
 
   /**
    * @notice Sets up the environment for testing the Holograph Factory
@@ -65,7 +65,7 @@ contract HolographFactoryTest is Test {
     DeploymentConfig memory deployConfig = HelperDeploymentConfig.getHtokenEth(
       Constants.getHolographIdL1(),
       vm.getCode("hTokenProxy.sol:hTokenProxy"),
-      bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
+      bytes32(Constants.EMPTY_BYTES),
       true
     );
 
@@ -263,7 +263,7 @@ contract HolographFactoryTest is Test {
    * Refers to the hardhat test with the description 'should revert if payload data is invalid'
    */
   function testRevertDataPayloadInvalid() public {
-    bytes memory payload = "0x0000000000000000000000000000000000000000000000000000000000000000";
+    bytes memory payload = Constants.EMPTY_BYTES;
 
     vm.expectRevert();
     vm.prank(deployer);
