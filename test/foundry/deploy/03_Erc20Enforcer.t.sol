@@ -2,7 +2,7 @@
 pragma solidity 0.8.13;
 
 import {Test, Vm, console} from "forge-std/Test.sol";
-import {Constants} from "../utils/Constants.sol";
+import {Constants, ErrorConstants} from "../utils/Constants.sol";
 import {HolographERC20} from "../../../src/enforcer/HolographERC20.sol";
 import {SampleERC20} from "../../../src/token/SampleERC20.sol";
 import {ERC20Mock} from "../../../src/mock/ERC20Mock.sol";
@@ -20,7 +20,6 @@ contract Erc20Enforcer is Test {
   event Transfer(address indexed _from, address indexed _to, uint256 _value);
   event Approval(address indexed _owner, address indexed _spender, uint256 _value);
   event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-  address public constant zeroAddress = address(0x0000000000000000000000000000000000000000);
   uint256 localHostFork;
   string LOCALHOST_RPC_URL = vm.envString("LOCALHOST_RPC_URL");
   HolographERC20 holographERC20;
@@ -29,16 +28,19 @@ contract Erc20Enforcer is Test {
   Admin admin;
   PermitSigUtils permitSigUtils;
   uint16 tokenDecimals = 18;
-  uint256 privateKeyDeployer = 0xff22437ccbedfffafa93a9f1da2e8c19c1711052799acf3b58ae5bebb5c6bd7b;
-  address deployer = vm.addr(privateKeyDeployer);
+  uint256 privateKeyDeployer = Constants.getPKDeployer();
+  address deployer = vm.addr(Constants.getPKDeployer());
   address alice = vm.addr(1);
   address bob = vm.addr(2);
   uint256 initialValue = 1;
-  uint256 maxValue = 2 ** 256 - 1;
-  uint256 halfValue = 2 ** 128 - 1;
-  uint256 halfInverseValue = 115792089237316195423570985008687907852929702298719625575994209400481361428480;
-  bytes zeroBytes = bytes(abi.encode("0x0000000000000000000000000000000000000000"));
-  bytes32 zeroSignature = bytes32(abi.encode(0x0000000000000000000000000000000000000000000000000000000000000000));
+  // uint256 maxValue = 2 ** 256 - 1;
+  // uint256 halfValue = 2 ** 128 - 1;
+  // uint256 halfInverseValue = 115792089237316195423570985008687907852929702298719625575994209400481361428480;
+  bytes zeroBytes = Constants.EMPTY_BYTES;
+  uint256 maxValue = Constants.MAX_UINT256;
+  uint256 halfValue = Constants.HALF_VALUE;
+  uint256 halfInverseValue = Constants.HALF_INVERSE_VALUE;
+  bytes32 zeroSignature = Constants.EMPTY_BYTES32;
   bytes32 signature = bytes32(abi.encode(0x1111111111111111111111111111111111111111111111111111111111111111));
   bytes32 signature2 = bytes32(abi.encode(0x35353535353535353535353535353535353535353535353535353535353535));
   bytes32 signature3 = bytes32(abi.encode(0x68686868686868686868686868686868686868686868686868686868686868));
@@ -466,7 +468,7 @@ contract Erc20Enforcer is Test {
    */
   function testInitRevert() public {
     bytes memory paramInit = abi.encode("0x0000000000000000000000000000000000000000");
-    vm.expectRevert("HOLOGRAPHER: already initialized");
+    vm.expectRevert(bytes(ErrorConstants.HOLOGRAPHER_ALREADY_INITIALIZED_ERROR_MSG));
     holographERC20.init(paramInit);
   }
 
@@ -530,7 +532,7 @@ contract Erc20Enforcer is Test {
    */
   function testMintEmitEvent() public {
     vm.expectEmit(true, true, false, true);
-    emit Transfer(zeroAddress, alice, initialValue);
+    emit Transfer(Constants.zeroAddress, alice, initialValue);
     mintToAlice();
   }
 
@@ -566,8 +568,8 @@ contract Erc20Enforcer is Test {
    * Refers to the hardhat test with the description 'should fail when approving a zero address'
    */
   function testApprovalRevertZeroAddress() public {
-    vm.expectRevert("ERC20: spender is zero address");
-    holographERC20.approve(zeroAddress, maxValue);
+    vm.expectRevert(bytes(ErrorConstants.ERC20_SPENDER_SERO_ADDRES_ERROR_MSG));
+    holographERC20.approve(Constants.zeroAddress, maxValue);
   }
 
   /**
@@ -603,7 +605,7 @@ contract Erc20Enforcer is Test {
   function testDecreaseAllowanceBelongToZeroRevert() public {
     increaseAllowanceToAlice(maxValue);
     decreaseAllowanceToAlice(halfValue);
-    vm.expectRevert("ERC20: decreased below zero");
+    vm.expectRevert(bytes(ErrorConstants.ERC20_DECREASED_BELOW_ZERO_ERROR_MSG));
     decreaseAllowanceToAlice(maxValue);
   }
 
@@ -615,7 +617,7 @@ contract Erc20Enforcer is Test {
    */
   function testIncreaseAllowanceAboveToMaxValueRevert() public {
     increaseAllowanceToAlice(maxValue);
-    vm.expectRevert("ERC20: increased above max value");
+    vm.expectRevert(bytes(ErrorConstants.ERC20_INCREASED_ABOVE_MAX_ERROR_MSG));
     increaseAllowanceToAlice(maxValue);
   }
 
@@ -654,7 +656,7 @@ contract Erc20Enforcer is Test {
    * Refers to the hardhat test with the description 'should fail if sender doesn't have enough tokens'
    */
   function testTransferNotEnoughTokensRevert() public {
-    vm.expectRevert("ERC20: amount exceeds balance");
+    vm.expectRevert(bytes(ErrorConstants.ERC20_AMOUNT_EXCEEDS_BALANCE_ERROR_MSG));
     holographERC20.transfer(alice, maxValue);
   }
 
@@ -665,8 +667,8 @@ contract Erc20Enforcer is Test {
    * Refers to the hardhat test with the description 'should fail if sending to zero address'
    */
   function testTransferToZeroAddressRevert() public {
-    vm.expectRevert("ERC20: recipient is zero address");
-    holographERC20.transfer(zeroAddress, maxValue);
+    vm.expectRevert(bytes(ErrorConstants.ERC20_RECIPIENT_SERO_ADDRESS__ERROR_MSG));
+    holographERC20.transfer(Constants.zeroAddress, maxValue);
   }
 
   /**
@@ -676,9 +678,9 @@ contract Erc20Enforcer is Test {
    * Refers to the hardhat test with the description 'should fail if sending from zero address'
    */
   function testTransferFromZeroAddressRevert() public {
-    vm.expectRevert("ERC20: amount exceeds allowance");
+    vm.expectRevert(bytes(ErrorConstants.ERC20_AMOUNT_EXCEEDS_ALLOWANCE_ERROR_MSG));
     vm.prank(deployer);
-    holographERC20.transferFrom(zeroAddress, alice, maxValue);
+    holographERC20.transferFrom(Constants.zeroAddress, alice, maxValue);
   }
 
   /**
@@ -688,7 +690,7 @@ contract Erc20Enforcer is Test {
    * Refers to the hardhat test with the description 'should fail if sending from not approved address'
    */
   function testTransferFromNotAprrovalAddressRevert() public {
-    vm.expectRevert("ERC20: amount exceeds allowance");
+    vm.expectRevert(bytes(ErrorConstants.ERC20_AMOUNT_EXCEEDS_ALLOWANCE_ERROR_MSG));
     vm.prank(alice);
     holographERC20.transferFrom(deployer, alice, maxValue);
   }
@@ -701,7 +703,7 @@ contract Erc20Enforcer is Test {
    */
   function testTransferFromSmallerAprrovalAmountRevert() public {
     approvalToBob(halfValue);
-    vm.expectRevert("ERC20: amount exceeds allowance");
+    vm.expectRevert(bytes(ErrorConstants.ERC20_AMOUNT_EXCEEDS_ALLOWANCE_ERROR_MSG));
     vm.prank(bob);
     holographERC20.transferFrom(deployer, alice, maxValue);
   }
@@ -713,7 +715,7 @@ contract Erc20Enforcer is Test {
    * Refers to the hardhat test with the description 'should fail for non-contract onERC20Received call'
    */
   function testErc20ReceivedNonContractRevert() public {
-    vm.expectRevert("ERC20: operator not contract");
+    vm.expectRevert(bytes(ErrorConstants.ERC20_OPERATOR_NOT_CONTRACT_ERROR_MSG));
     holographERC20.onERC20Received(
       deployer,
       deployer,
@@ -725,7 +727,7 @@ contract Erc20Enforcer is Test {
   //TODO see why mock token have balance? remove Fail to the name of the function
   function testErc20ReceivedFakeContractRevert() public {
     vm.skip(true);
-    vm.expectRevert("ERC20: balance check failed");
+    vm.expectRevert(bytes(ErrorConstants.ERC20_BALANCE_CHECK_FAILED_ERROR_MSG));
     holographERC20.onERC20Received(
       address(erc20Mock),
       deployer,
@@ -739,7 +741,7 @@ contract Erc20Enforcer is Test {
   function testSafeTransferBrokenErc20ReceivedRevert() public {
     vm.skip(true);
     erc20Mock.toggleWorks(false);
-    vm.expectRevert("ERC20: non ERC20Receiver");
+    vm.expectRevert(bytes(ErrorConstants.ERC20_NON_ERC20RECEIVER_ERROR_MSG));
     vm.prank(deployer);
     holographERC20.safeTransfer(address(erc20Mock), initialValue);
   }
@@ -749,7 +751,7 @@ contract Erc20Enforcer is Test {
   function testSafeTransferBytesBrokenErc20ReceivedRevert() public {
     vm.skip(true);
     erc20Mock.toggleWorks(false);
-    vm.expectRevert("ERC20: non ERC20Receiver");
+    vm.expectRevert(bytes(ErrorConstants.ERC20_NON_ERC20RECEIVER_ERROR_MSG));
     vm.prank(deployer);
     holographERC20.safeTransfer(
       address(erc20Mock),
@@ -766,7 +768,7 @@ contract Erc20Enforcer is Test {
     erc20Mock.toggleWorks(false);
 
     approvalToAlice(maxValue);
-    vm.expectRevert("ERC20: non ERC20Receiver");
+    vm.expectRevert(bytes(ErrorConstants.ERC20_NON_ERC20RECEIVER_ERROR_MSG));
     vm.prank(alice);
 
     holographERC20.safeTransferFrom(address(deployer), address(erc20Mock), initialValue);
@@ -779,7 +781,7 @@ contract Erc20Enforcer is Test {
     sampleERC20.mint(deployer, halfValue);
     erc20Mock.toggleWorks(false);
     approvalToAlice(maxValue);
-    vm.expectRevert("ERC20: non ERC20Receiver");
+    vm.expectRevert(bytes(ErrorConstants.ERC20_NON_ERC20RECEIVER_ERROR_MSG));
     vm.prank(alice);
     holographERC20.safeTransferFrom(address(deployer), address(erc20Mock), initialValue, zeroBytes);
   }
@@ -991,7 +993,7 @@ contract Erc20Enforcer is Test {
    * Refers to the hardhat test with the description 'should fail burning more tokens than current balance'
    */
   function testBurneableExceedsBalanceRevert() public {
-    vm.expectRevert("ERC20: amount exceeds balance");
+    vm.expectRevert(bytes(ErrorConstants.ERC20_AMOUNT_EXCEEDS_BALANCE_ERROR_MSG));
     holographERC20.burn(initialValue);
   }
 
@@ -1004,7 +1006,7 @@ contract Erc20Enforcer is Test {
   function testBurn() public {
     mintToDeployer();
     vm.expectEmit(true, true, false, true);
-    emit Transfer(address(deployer), zeroAddress, initialValue);
+    emit Transfer(address(deployer), Constants.zeroAddress, initialValue);
     vm.prank(deployer);
     holographERC20.burn(initialValue);
   }
@@ -1016,7 +1018,7 @@ contract Erc20Enforcer is Test {
    * Refers to the hardhat test with the description 'should fail burning via not approved spender'
    */
   function testBurnFromNotApproveRevert() public {
-    vm.expectRevert("ERC20: amount exceeds allowance");
+    vm.expectRevert(bytes(ErrorConstants.ERC20_AMOUNT_EXCEEDS_ALLOWANCE_ERROR_MSG));
     vm.prank(alice);
     holographERC20.burnFrom(deployer, initialValue);
   }
@@ -1031,7 +1033,7 @@ contract Erc20Enforcer is Test {
     mintToDeployer();
     approvalToAlice(initialValue);
     vm.expectEmit(true, true, false, true);
-    emit Transfer(address(deployer), zeroAddress, initialValue);
+    emit Transfer(address(deployer), Constants.zeroAddress, initialValue);
     vm.prank(alice);
     holographERC20.burnFrom(deployer, initialValue);
   }
@@ -1072,7 +1074,7 @@ contract Erc20Enforcer is Test {
    * Refers to the hardhat test with the description 'should fail for expired deadline'
    */
   function testPermitBadDeadLineRevert() public {
-    vm.expectRevert("ERC20: expired deadline");
+    vm.expectRevert(bytes(ErrorConstants.ERC20_EXPIRED_DEADLINE_ERROR_MSG));
     holographERC20.permit(deployer, alice, initialValue, badDeadLine, uint8(0x00), zeroSignature, zeroSignature);
   }
 
@@ -1083,7 +1085,7 @@ contract Erc20Enforcer is Test {
    * Refers to the hardhat test with the description 'should fail for empty signature'
    */
   function testPermitEmptySignatureRevert() public {
-    vm.expectRevert("ERC20: zero address signer");
+    vm.expectRevert(bytes(ErrorConstants.ERC20_ZERO_ADDRESS_SIGNER_ERROR_MSG));
     holographERC20.permit(deployer, alice, initialValue, goodDeadLine, uint8(0x1b), zeroSignature, zeroSignature);
   }
 
@@ -1095,7 +1097,7 @@ contract Erc20Enforcer is Test {
    */
   function testPermitZeroAddressSignatureRevert() public {
     //TODO see, for me not work fine, 0x1b always rever for zerdo address
-    vm.expectRevert("ERC20: zero address signer");
+    vm.expectRevert(bytes(ErrorConstants.ERC20_ZERO_ADDRESS_SIGNER_ERROR_MSG));
     holographERC20.permit(deployer, alice, initialValue, goodDeadLine, uint8(0x1b), signature, signature);
   }
 
@@ -1106,7 +1108,7 @@ contract Erc20Enforcer is Test {
    * Refers to the hardhat test with the description 'should fail for invalid signature v value'
    */
   function testPermitInvalidSignatureV_ValueRevert() public {
-    vm.expectRevert("ERC20: invalid v-value");
+    vm.expectRevert(bytes(ErrorConstants.ERC20_INVALID_V_VALUE_ERROR_MSG));
     holographERC20.permit(deployer, alice, initialValue, goodDeadLine, uint8(0x04), zeroSignature, zeroSignature);
   }
 
@@ -1117,7 +1119,7 @@ contract Erc20Enforcer is Test {
    * Refers to the hardhat test with the description 'should fail for invalid signature'
    */
   function testPermitInvalidSignatureRevert() public {
-    vm.expectRevert("ERC20: invalid signature");
+    vm.expectRevert(bytes(ErrorConstants.ERC20_INVALID_SIGNATURE_ERROR_MSG));
     vm.prank(deployer);
     holographERC20.permit(deployer, alice, initialValue, goodDeadLine, uint8(0x1b), signature2, signature3);
   }
@@ -1213,7 +1215,7 @@ contract Erc20Enforcer is Test {
    * Refers to the hardhat test with the description 'deployer should fail transferring ownership'
    */
   function testErc20DeployerTransferOwnerRevert() public {
-    vm.expectRevert("HOLOGRAPH: owner only function");
+    vm.expectRevert(bytes(ErrorConstants.ONLY_OWNER_ERROR_MSG));
     vm.prank(alice);
     holographERC20.setOwner(alice);
   }
@@ -1275,7 +1277,7 @@ contract Erc20Enforcer is Test {
    * Refers to the hardhat test with the description 'wallet1 should fail setting admin'
    */
   function testErc20SetAdminRevert() public {
-    vm.expectRevert("HOLOGRAPH: admin only function");
+    vm.expectRevert(bytes(ErrorConstants.ONLY_ADMIN_ERROR_MSG));
     vm.prank(alice);
     holographERC20.setAdmin(address(admin));
   }
