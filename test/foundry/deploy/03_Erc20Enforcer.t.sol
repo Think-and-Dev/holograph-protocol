@@ -94,9 +94,9 @@ contract Erc20Enforcer is Test {
       );
   }
 
-  /*
-   * HELPER FUNCTIONS
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                              HELPER FUNCTIONS                              */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Mints the specified `initialValue` to the address `alice`
@@ -152,9 +152,9 @@ contract Erc20Enforcer is Test {
     holographERC20.decreaseAllowance(alice, amount);
   }
 
-  /*
-   * INIT INTERFACES
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                               INIT INTERFACES                              */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Verifies that the ERC20 contract supports the ERC165 interface
@@ -456,9 +456,9 @@ contract Erc20Enforcer is Test {
     assertTrue(holographERC20.supportsInterface(computedId));
   }
 
-  /*
-   * INIT TEST
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                                  INIT TEST                                 */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Verifies that the contract initialization reverts if already initialized
@@ -477,9 +477,9 @@ contract Erc20Enforcer is Test {
     vm.skip(true);
   }
 
-  /*
-   * METADATA TEST
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                                METADATA TEST                               */
+  /* -------------------------------------------------------------------------- */
 
   //TODO change name by network
   /**
@@ -512,9 +512,9 @@ contract Erc20Enforcer is Test {
     assertEq(holographERC20.decimals(), tokenDecimals);
   }
 
-  /*
-   * MINT TOKEN TEST
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                               MINT TOKEN TEST                              */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Verifies that the total supply of the ERC20 token is 0
@@ -556,10 +556,9 @@ contract Erc20Enforcer is Test {
     assertEq(holographERC20.balanceOf(alice), initialValue);
   }
 
-  /*
-   * ERC20 TEST
-   *    Tokens Approvals
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                         ERC20 TEST Tokens Approvals                        */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Verifies that attempting to approve tokens for the zero address reverts with the message "ERC20: spender
@@ -644,10 +643,9 @@ contract Erc20Enforcer is Test {
     increaseAllowanceToAlice(maxValue);
   }
 
-  /*
-   * ERC20 TEST
-   *    Failed Transfers
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                        ERC20 TEST  Failed Transfers                        */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Verifies that attempting to transfer more tokens than the sender has reverts
@@ -786,10 +784,9 @@ contract Erc20Enforcer is Test {
     holographERC20.safeTransferFrom(address(deployer), address(erc20Mock), initialValue, zeroBytes);
   }
 
-  /*
-   * ERC20 TEST
-   *    Successful Transfers
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                      ERC20 TEST   Successful Transfers                     */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Verifies that transferring available tokens succeeds
@@ -981,10 +978,9 @@ contract Erc20Enforcer is Test {
     assertEq(holographERC20.allowance(deployer, alice), 0);
   }
 
-  /*
-   * ERC20 TEST
-   *    Burneable
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                           ERC20 TEST   Burneable                           */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Verifies that attempting to burn more tokens than the current balance fails
@@ -1038,10 +1034,9 @@ contract Erc20Enforcer is Test {
     holographERC20.burnFrom(deployer, initialValue);
   }
 
-  /*
-   * ERC20 TEST
-   *    Permit
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                             ERC20 TEST   Permit                            */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Verifies that the function returns the correct domain separator
@@ -1165,10 +1160,9 @@ contract Erc20Enforcer is Test {
     assertEq(holographERC20.nonces(deployer), 1);
   }
 
-  /*
-   * ERC20 TEST
-   *    Ownership tests
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                        ERC20 TEST   Ownership tests                        */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Verifies that the owner of the contract is the deployer
@@ -1247,10 +1241,9 @@ contract Erc20Enforcer is Test {
     holographERC20.setOwner(address(admin));
   }
 
-  /*
-   * ERC20 TEST
-   *    Admin
-   */
+  /* -------------------------------------------------------------------------- */
+  /*                             ERC20 TEST    Admin                            */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @notice Verifies that the ERC20 contract's admin is set correctly
