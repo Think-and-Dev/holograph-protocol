@@ -145,8 +145,7 @@ contract FaucetTest is Test {
    * with arbitrary amount
    * @dev This test checks that the `grantTokens` function of the Faucet contract grants a specific amount of
    * tokens to the specified address.
-   * It pranks as the deployer and calls the `grantTokens` function with an arbitrary address and a specific
-   * amount of tokens.
+   * It pranks as the deployer and calls the `grantTokens` function with an arbitrary address and a specific amount of tokens.
    * The test then asserts that this address has the specified amount of tokens.
    * Refers to the hardhat test with the description 'grantTokens(): Owner can grant tokens again with arbitrary amount'
    */
@@ -190,11 +189,9 @@ contract FaucetTest is Test {
   /**
    * @notice This function tests the `setWithdrawCooldown` function of the `Faucet` contract.
    * Owner can adjust Withdraw Cooldown
-   * @dev This test checks that the `isAllowedToWithdraw` function of the Faucet contract returns
-   * `false` when the owner tries
-   * to withdraw tokens twice.
-   * It pranks as the deployer and requests tokens. Then, it asserts that the owner is not allowed
-   * to withdraw tokens.
+   * @dev This test checks that the `isAllowedToWithdraw` function of the Faucet contract returns `false` when
+   * the owner tries to withdraw tokens twice.
+   * It pranks as the deployer and requests tokens. Then, it asserts that the owner is not allowed to withdraw tokens.
    * Refers to the hardhat test with the description 'isAllowedToWithdraw(): Owner is not allowed to withdraw'
    */
   function testOwnerIsNotAllowedToWithdrawTwice() public {
@@ -342,7 +339,7 @@ contract FaucetTest is Test {
    * Not owner can't withdraw all the funds
    * @dev This test checks that the `withdrawAllTokens` function of the Faucet contract reverts
    *  when called by a non-owner.
-   * It pranks as `alice` and expects the function to revert with the `Caller is not the owner` error message.
+   * It pranks as an arbitrary user and expects the function to revert with the `Caller is not the owner` error message.
    * Refers to the hardhat test with the description 'withdrawAllTokens()'
    */
   function testWithdrawAllTokensRevert() public {
