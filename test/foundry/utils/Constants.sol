@@ -111,8 +111,8 @@ library Constants {
   // NOTE: This has to be updated to the correct address every time a new contract is added to be
   //       deployed within the hardhat deploy pipeline
   function getERC20Mock() internal pure returns (address) {
-    //return address(0x4aF55cAE288F8B9867AF8992F5910080D3cebB4f);
-    return address(0x71B7f5A882F25c7292d0Ae5fa6d78129f431b957);
+    return address(0x4aF55cAE288F8B9867AF8992F5910080D3cebB4f);
+    //return address(0x71B7f5A882F25c7292d0Ae5fa6d78129f431b957);
   }
 
   // NOTE: This has to be updated to the correct address every time a new contract is added to be
