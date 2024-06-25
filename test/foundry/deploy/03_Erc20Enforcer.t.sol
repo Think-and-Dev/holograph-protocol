@@ -386,21 +386,20 @@ contract Erc20Enforcer is Test {
    * safeTransfer functions and checking if the contract supports it.
    * Refers to the hardhat test with the description 'ERC20Safer interface supported'
    */
-  //TODO review why it fails and fix it
   function testERC20SaferInterface() public {
-    vm.skip(true);
     bytes memory safeTransfer = abi.encodeWithSelector(bytes4(keccak256("safeTransfer(address,uint256)")));
     bytes memory safeTransferBytes = abi.encodeWithSelector(bytes4(keccak256("safeTransfer(address,uint256,bytes)")));
-    bytes memory safeTransferUint = abi.encodeWithSelector(bytes4(keccak256("safeTransfer(address,uint256,uint256)")));
-    bytes memory safeTransferBytesUint = abi.encodeWithSelector(
-      bytes4(keccak256("safeTransfer(address,address,uint256,bytes)"))
+    bytes memory safeTransferFrom = abi.encodeWithSelector(
+      bytes4(keccak256("safeTransferFrom(address,address,uint256)"))
+    );
+    bytes memory safeTransferFromBytes = abi.encodeWithSelector(
+      bytes4(keccak256("safeTransferFrom(address,address,uint256,bytes)"))
     );
 
     bytes4 computedId = bytes4(
-      bytes4(safeTransfer) ^ bytes4(safeTransferBytes) ^ bytes4(safeTransferUint) ^ bytes4(safeTransferBytesUint)
+      bytes4(safeTransfer) ^ bytes4(safeTransferBytes) ^ bytes4(safeTransferFrom) ^ bytes4(safeTransferFromBytes)
     );
     assertTrue(holographERC20.supportsInterface(computedId));
-    // holographERC20.supportsInterface(holographERC20.supportsInterface(type(ERC20).interfaceId));
   }
 
   /**
