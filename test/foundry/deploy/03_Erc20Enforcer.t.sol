@@ -707,14 +707,18 @@ contract Erc20Enforcer is Test {
    * @notice Verifies that attempting to call onERC20Received from a non-contract address reverts
    * @dev This test expects a revert with the message "ERC20: operator not contract" when trying to call onERC20Received
    * from a non-contract address.
-   * Refers to the hardhat test with the description 'should fail for non-contract onERC20Received call'
+   * Refers to the hardhat test with the description 'should fail for non-contract onERC20Received call',
+   * This test is skipped in hardhat
    */
   function testErc20ReceivedNonContractRevert() public {
     vm.expectRevert(bytes(ErrorConstants.ERC20_OPERATOR_NOT_CONTRACT_ERROR_MSG));
     holographERC20.onERC20Received(deployer, deployer, initialValue, Constants.EMPTY_BYTES);
   }
 
-  //TODO see why mock token have balance? remove Fail to the name of the function
+  //TODO see why mock token have balance?
+  /**
+   * @dev Refers to the test with description 'should fail for fake onERC20Received', which is skipped in hardhat.
+   */
   function testErc20ReceivedFakeContractRevert() public {
     vm.skip(true);
     vm.expectRevert(bytes(ErrorConstants.ERC20_BALANCE_CHECK_FAILED_ERROR_MSG));
@@ -722,7 +726,9 @@ contract Erc20Enforcer is Test {
   }
 
   //TODO see why revert ( amount exceeds balance, need mint and then not fail... ) and not non ERC20Received,
-  //remove Fail to the name of the function
+  /**
+   * @dev Refers to the test with description 'should fail safe transfer for broken "ERC20Receiver', which is skipped in hardhat.
+   */
   function testSafeTransferBrokenErc20ReceivedRevert() public {
     vm.skip(true);
     erc20Mock.toggleWorks(false);
@@ -732,7 +738,10 @@ contract Erc20Enforcer is Test {
   }
 
   //TODO see why revert ( amount exceeds balance,need mint and then not fail... ) and not non ERC20Receiver,
-  //remove Fail to the name of the function
+  /**
+   * @dev Refers to the test with description 'should fail safe transfer (with bytes) for broken "ERC20Receiver',
+   * which is skipped in hardhat.
+   */
   function testSafeTransferBytesBrokenErc20ReceivedRevert() public {
     vm.skip(true);
     erc20Mock.toggleWorks(false);
@@ -741,7 +750,11 @@ contract Erc20Enforcer is Test {
     holographERC20.safeTransfer(address(erc20Mock), initialValue, Constants.EMPTY_BYTES);
   }
 
-  //TODO see why not revert,  remove Fail to the name of the function
+  //TODO see why not revert
+  /**
+   * @dev Refers to the test with description 'should fail safe transfer from for broken "ERC20Receiver',
+   * which is skipped in hardhat.
+   */
   function testSafeTransferFromBrokenErc20ReceivedRevert() public {
     vm.skip(true);
     vm.prank(deployer);
@@ -755,7 +768,11 @@ contract Erc20Enforcer is Test {
     holographERC20.safeTransferFrom(address(deployer), address(erc20Mock), initialValue);
   }
 
-  //TODO see why not revert,  remove Fail to the name of the function
+  //TODO see why not revert
+  /**
+   * @dev Refers to the test with description 'should fail safe transfer from (with bytes) for broken "ERC20Receiver',
+   * which is skipped in hardhat.
+   */
   function testSafeTransferFromBytesBrokenErc20RecivedRevert() public {
     vm.skip(true);
     vm.prank(deployer);
