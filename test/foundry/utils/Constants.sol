@@ -208,7 +208,8 @@ library ErrorConstants {
   string constant ROYALTIES_MAX_TEN_ADDRESSES_MSG = "ROYALTIES: max 10 addresses";
   string constant ROYALTIES_BPS_MUST_EQUAL_1000 = "ROYALTIES: bps must equal 10000";
   string constant ROYALTIES_SENDER_NOT_AUTORIZED = "ROYALTIES: sender not authorized";
-  string constant ERC20_SPENDER_SERO_ADDRES_ERROR_MSG = "ERC20: spender is zero address";
+  string constant ERC20_ALREADY_INITIALIZED_ERROR_MSG = "ERC20: already initialized";
+  string constant ERC20_SPENDER_SERO_ADDRESS_ERROR_MSG = "ERC20: spender is zero address";
   string constant ERC20_DECREASED_BELOW_ZERO_ERROR_MSG = "ERC20: decreased below zero";
   string constant ERC20_INCREASED_ABOVE_MAX_ERROR_MSG = "ERC20: increased above max value";
   string constant ERC20_AMOUNT_EXCEEDS_BALANCE_ERROR_MSG = "ERC20: amount exceeds balance";
