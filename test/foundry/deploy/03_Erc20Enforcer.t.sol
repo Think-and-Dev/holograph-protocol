@@ -162,7 +162,7 @@ contract Erc20Enforcer is Test {
    * with the ERC165 interface ID.
    * Refers to the hardhat test with the description 'supportsInterface supported'
    */
-  function testSupportinterface() public {
+  function testSupportinterface() public view {
     bytes4 selector = holographERC20.supportsInterface.selector;
     holographERC20.supportsInterface(selector);
   }
@@ -173,7 +173,7 @@ contract Erc20Enforcer is Test {
    * function with the selector of the allowance function.
    * Refers to the hardhat test with the description 'allowance supported'
    */
-  function testAllowanceInterface() public {
+  function testAllowanceInterface() public view {
     bytes4 selector = holographERC20.allowance.selector;
     holographERC20.supportsInterface(selector);
   }
@@ -184,7 +184,7 @@ contract Erc20Enforcer is Test {
    * function with the selector of the approve function.
    * Refers to the hardhat test with the description 'approve supported'
    */
-  function testApproveInterface() public {
+  function testApproveInterface() public view {
     bytes4 selector = holographERC20.approve.selector;
     holographERC20.supportsInterface(selector);
   }
@@ -195,7 +195,7 @@ contract Erc20Enforcer is Test {
    * function with the selector of the balanceOf function.
    * Refers to the hardhat test with the description 'balanceOf supported'
    */
-  function testBalanceOfInterface() public {
+  function testBalanceOfInterface() public view {
     bytes4 selector = holographERC20.balanceOf.selector;
     holographERC20.supportsInterface(selector);
   }
@@ -206,7 +206,7 @@ contract Erc20Enforcer is Test {
    * function with the selector of the totalSupply function.
    * Refers to the hardhat test with the description 'totalSupply supported'
    */
-  function testTotalSupplyInterface() public {
+  function testTotalSupplyInterface() public view {
     bytes4 selector = holographERC20.totalSupply.selector;
     holographERC20.supportsInterface(selector);
   }
@@ -217,7 +217,7 @@ contract Erc20Enforcer is Test {
    * function with the selector of the transfer function.
    * Refers to the hardhat test with the description 'transfer supported'
    */
-  function testTransferInterface() public {
+  function testTransferInterface() public view {
     bytes4 selector = holographERC20.transfer.selector;
     holographERC20.supportsInterface(selector);
   }
@@ -228,7 +228,7 @@ contract Erc20Enforcer is Test {
    * function with the selector of the transferFrom function.
    * Refers to the hardhat test with the description 'transferFrom supported'
    */
-  function testTransferFromInterface() public {
+  function testTransferFromInterface() public view {
     bytes4 selector = holographERC20.transferFrom.selector;
     holographERC20.supportsInterface(selector);
   }
@@ -239,7 +239,7 @@ contract Erc20Enforcer is Test {
    * the supportsInterface function with the computed ID.
    * Refers to the hardhat test with the description 'ERC20 interface supported'
    */
-  function testERC20Interface() public {
+  function testERC20Interface() public view {
     bytes4 computedId = bytes4(
       holographERC20.allowance.selector ^
         holographERC20.approve.selector ^
@@ -257,7 +257,7 @@ contract Erc20Enforcer is Test {
    * This redundancy ensures that even if the holographERC20 interface undergoes changes in the future, the ERC20 interface
    * remains intact and verifiable.
    */
-  function testHolographERC20Interface() public {
+  function testHolographERC20Interface() public view {
     bytes4 computedId = bytes4(
       holographERC20.allowance.selector ^
         holographERC20.approve.selector ^
@@ -275,7 +275,7 @@ contract Erc20Enforcer is Test {
    * the selector of the name function.
    * Refers to the hardhat test with the description 'name supported'
    */
-  function testNameInterface() public {
+  function testNameInterface() public view {
     bytes4 selector = holographERC20.name.selector;
     holographERC20.supportsInterface(selector);
   }
@@ -286,7 +286,7 @@ contract Erc20Enforcer is Test {
    * the selector of the symbol function.
    * Refers to the hardhat test with the description 'symbol supported'
    */
-  function testSymbolInterface() public {
+  function testSymbolInterface() public view {
     bytes4 selector = holographERC20.symbol.selector;
     holographERC20.supportsInterface(selector);
   }
@@ -297,7 +297,7 @@ contract Erc20Enforcer is Test {
    * function with the selector of the decimals function.
    * Refers to the hardhat test with the description 'decimals supported'
    */
-  function testDecimalsInterface() public {
+  function testDecimalsInterface() public view {
     bytes4 selector = holographERC20.decimals.selector;
     holographERC20.supportsInterface(selector);
   }
@@ -308,7 +308,7 @@ contract Erc20Enforcer is Test {
    * contract supports it.
    * Refers to the hardhat test with the description 'ERC20Metadata interface supported'
    */
-  function testERC20MetadataInterface() public {
+  function testERC20MetadataInterface() public view {
     bytes4 computedId = bytes4(
       holographERC20.name.selector ^ holographERC20.symbol.selector ^ holographERC20.decimals.selector
     );
@@ -321,7 +321,7 @@ contract Erc20Enforcer is Test {
    * function with the selector of the burn function.
    * Refers to the hardhat test with the description 'burn supported'
    */
-  function testBurnInterface() public {
+  function testBurnInterface() public view {
     bytes4 selector = holographERC20.burn.selector;
     holographERC20.supportsInterface(selector);
   }
@@ -332,7 +332,7 @@ contract Erc20Enforcer is Test {
    * function with the selector of the burnFrom function.
    * Refers to the hardhat test with the description 'burnFrom supported'
    */
-  function testBurnFromInterface() public {
+  function testBurnFromInterface() public view {
     bytes4 selector = holographERC20.burnFrom.selector;
     holographERC20.supportsInterface(selector);
   }
@@ -342,7 +342,7 @@ contract Erc20Enforcer is Test {
    * @dev This test computes the interface ID for ERC20 burn (burn, burnFrom) and checks if the ERC20 contract supports it.
    * Refers to the hardhat test with the description 'ERC20Burnable interface supported'
    */
-  function testERC20BurnInterface() public {
+  function testERC20BurnInterface() public view {
     bytes4 computedId = bytes4(holographERC20.burn.selector ^ holographERC20.burnFrom.selector);
     assertTrue(holographERC20.supportsInterface(computedId));
   }
@@ -353,7 +353,7 @@ contract Erc20Enforcer is Test {
    * (address, uint256) by calling the supportsInterface function with the corresponding selector.
    * Refers to the hardhat test with the description 'safeTransfer supported'
    */
-  function testSafeTransferInterface() public {
+  function testSafeTransferInterface() public view {
     holographERC20.supportsInterface(bytes4(keccak256("safeTransfer(address,uint256)")));
   }
 
@@ -363,7 +363,7 @@ contract Erc20Enforcer is Test {
    * (address, uint256, bytes) by calling the supportsInterface function with the corresponding selector.
    * Refers to the hardhat test with the description 'safeTransfer (with bytes) supported'
    */
-  function testSafeTransferInterfaceDiferentCallTwo() public {
+  function testSafeTransferInterfaceDiferentCallTwo() public view {
     holographERC20.supportsInterface(bytes4(keccak256("safeTransfer(address,uint256,bytes)")));
   }
 
@@ -373,7 +373,7 @@ contract Erc20Enforcer is Test {
    * (address, uint256, uint256) by calling the supportsInterface function with the corresponding selector.
    * Refers to the hardhat test with the description 'safeTransferFrom supported'
    */
-  function testSafeTransferInterfaceDiferentCallThree() public {
+  function testSafeTransferInterfaceDiferentCallThree() public view {
     holographERC20.supportsInterface(bytes4(keccak256("safeTransfer(address,uint256,uint256)")));
   }
 
@@ -383,7 +383,7 @@ contract Erc20Enforcer is Test {
    *  address data, uint256 value, bytes data) by calling the supportsInterface function with the corresponding selector.
    * Refers to the hardhat test with the description 'safeTransferFrom (with bytes) supported'
    */
-  function testSafeTransferInterfaceDiferentCallFour() public {
+  function testSafeTransferInterfaceDiferentCallFour() public view {
     holographERC20.supportsInterface(bytes4(keccak256("safeTransfer(address,address,uint256,bytes)")));
   }
 
@@ -416,7 +416,7 @@ contract Erc20Enforcer is Test {
    * function with the selector of the permit function.
    * Refers to the hardhat test with the description 'permit supported'
    */
-  function testSafePermitInterface() public {
+  function testSafePermitInterface() public view {
     bytes4 selector = holographERC20.permit.selector;
     holographERC20.supportsInterface(selector);
   }
@@ -427,7 +427,7 @@ contract Erc20Enforcer is Test {
    * function with the selector of the nonces function.
    * Refers to the hardhat test with the description 'nonces supported'
    */
-  function testNoncesInterface() public {
+  function testNoncesInterface() public view {
     bytes4 selector = holographERC20.nonces.selector;
     holographERC20.supportsInterface(selector);
   }
@@ -438,7 +438,7 @@ contract Erc20Enforcer is Test {
    * function with the selector of the DOMAIN_SEPARATOR function.
    * Refers to the hardhat test with the description 'DOMAIN_SEPARATOR supported'
    */
-  function testDomainSeparatorInterface() public {
+  function testDomainSeparatorInterface() public view {
     bytes4 selector = holographERC20.DOMAIN_SEPARATOR.selector;
     holographERC20.supportsInterface(selector);
   }
@@ -449,7 +449,7 @@ contract Erc20Enforcer is Test {
    * ERC20 contract supports it.
    * Refers to the hardhat test with the description 'ERC20Permit interface supported'
    */
-  function testERC20Permit() public {
+  function testERC20Permit() public view {
     bytes4 computedId = bytes4(
       holographERC20.permit.selector ^ holographERC20.nonces.selector ^ holographERC20.DOMAIN_SEPARATOR.selector
     );
@@ -504,7 +504,7 @@ contract Erc20Enforcer is Test {
    * expected value.
    * Refers to the hardhat test with the description 'token name:'
    */
-  function testName() public {
+  function testName() public view {
     assertEq(holographERC20.name(), "Sample ERC20 Token (localhost)");
   }
 
@@ -514,7 +514,7 @@ contract Erc20Enforcer is Test {
    * the expected value.
    * Refers to the hardhat test with the description 'token symbol:'
    */
-  function testSymbol() public {
+  function testSymbol() public view {
     assertEq(holographERC20.symbol(), "SMPL");
   }
 
@@ -524,7 +524,7 @@ contract Erc20Enforcer is Test {
    * to the `tokenDecimals` variable.
    * Refers to the hardhat test with the description 'token decimals:'
    */
-  function testDecimals() public {
+  function testDecimals() public view {
     assertEq(holographERC20.decimals(), tokenDecimals);
   }
 
@@ -537,7 +537,7 @@ contract Erc20Enforcer is Test {
    * @dev This test checks the total supply of the ERC20 token by calling the `totalSupply` function and comparing the result to 0.
    * Refers to the hardhat test with the description 'should have a total supply of 0 ' + tokenSymbol + ' tokens'
    */
-  function testTotalSupply() public {
+  function testTotalSupply() public view {
     assertEq(holographERC20.totalSupply(), 0);
   }
 
@@ -1077,7 +1077,7 @@ contract Erc20Enforcer is Test {
    * @dev This test checks if the nonce for the Alice address is initially 0.
    * Refers to the hardhat test with the description 'should return 0 nonce'
    */
-  function testPermitZeroNonce() public {
+  function testPermitZeroNonce() public view {
     assertEq(holographERC20.nonces(alice), 0);
   }
 
@@ -1188,7 +1188,7 @@ contract Erc20Enforcer is Test {
    * @dev This test checks if the owner of the contract is the deployer.
    * Refers to the hardhat test with the description 'should return deployer address'
    */
-  function testOwner() public {
+  function testOwner() public view {
     assertEq(holographERC20.owner(), deployer);
   }
 
@@ -1217,7 +1217,7 @@ contract Erc20Enforcer is Test {
    * @dev This test checks if the owner proxy of the ERC20 contract is the address of the admin.
    * Refers to the hardhat test with the description 'should return "HolographFactoryProxy" address'
    */
-  function testErc20GetOwnerProxy() public {
+  function testErc20GetOwnerProxy() public view {
     assertEq(holographERC20.getOwner(), address(admin));
   }
 
@@ -1269,7 +1269,7 @@ contract Erc20Enforcer is Test {
    * @dev This test checks if the admin of the ERC20 contract is set to the admin address.
    * Refers to the hardhat test with the description 'admin() should return "HolographFactoryProxy" address'
    */
-  function testErc20Admin() public {
+  function testErc20Admin() public view {
     assertEq(holographERC20.admin(), address(admin));
   }
 
@@ -1278,7 +1278,7 @@ contract Erc20Enforcer is Test {
    * @dev This test checks if the getAdmin function of the ERC20 contract returns the admin address.
    * Refers to the hardhat test with the description 'getAdmin() should return "HolographFactoryProxy" address'
    */
-  function testErc20GetAdmin() public {
+  function testErc20GetAdmin() public view {
     assertEq(holographERC20.getAdmin(), address(admin));
   }
 
