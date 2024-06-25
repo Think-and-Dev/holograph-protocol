@@ -75,6 +75,7 @@ contract Erc20Enforcer is Test {
    * @return The computed EIP-712 domain separator
    */
   function buildDomainSeparator(
+    uint256 chainid,
     string memory name,
     string memory version,
     address contractAddress
@@ -82,16 +83,8 @@ contract Erc20Enforcer is Test {
     bytes32 nameHash = keccak256(bytes(name));
     bytes32 versionHash = keccak256(bytes(version));
     bytes32 typeHash = keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
-    return
-      keccak256(
-        abi.encodePacked(
-          typeHash,
-          nameHash,
-          versionHash,
-          uint256(block.chainid),
-          address(Constants.getHolographERC20())
-        )
-      );
+    bytes32 addressBytes = bytes32(uint256(uint160(contractAddress)));
+    return keccak256(abi.encodePacked(typeHash, nameHash, versionHash, chainid, addressBytes));
   }
 
   /* -------------------------------------------------------------------------- */
@@ -1064,11 +1057,9 @@ contract Erc20Enforcer is Test {
    * Refers to the hardhat test with the description 'should return correct domain seperator'
    */
   function testCheckDomainSeparator() public {
-    // TODO Check
-    vm.skip(true);
     assertEq(
       holographERC20.DOMAIN_SEPARATOR(),
-      buildDomainSeparator("Sample ERC20 Token", "1", address(holographERC20))
+      buildDomainSeparator(uint256(block.chainid), "Sample ERC20 Token", "1", address(holographERC20))
     );
   }
 
