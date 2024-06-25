@@ -33,9 +33,6 @@ contract Erc20Enforcer is Test {
   address alice = vm.addr(1);
   address bob = vm.addr(2);
   uint256 initialValue = 1;
-  // uint256 maxValue = 2 ** 256 - 1;
-  // uint256 halfValue = 2 ** 128 - 1;
-  // uint256 halfInverseValue = 115792089237316195423570985008687907852929702298719625575994209400481361428480;
   bytes zeroBytes = Constants.EMPTY_BYTES;
   uint256 maxValue = Constants.MAX_UINT256;
   uint256 halfValue = Constants.HALF_VALUE;
@@ -467,7 +464,7 @@ contract Erc20Enforcer is Test {
    * Refers to the hardhat test with the description 'should fail initializing already initialized Holographer'
    */
   function testInitRevert() public {
-    bytes memory paramInit = abi.encode("0x0000000000000000000000000000000000000000");
+    bytes memory paramInit = Constants.EMPTY_BYTES;
     vm.expectRevert(bytes(ErrorConstants.HOLOGRAPHER_ALREADY_INITIALIZED_ERROR_MSG));
     holographERC20.init(paramInit);
   }
@@ -714,24 +711,14 @@ contract Erc20Enforcer is Test {
    */
   function testErc20ReceivedNonContractRevert() public {
     vm.expectRevert(bytes(ErrorConstants.ERC20_OPERATOR_NOT_CONTRACT_ERROR_MSG));
-    holographERC20.onERC20Received(
-      deployer,
-      deployer,
-      initialValue,
-      bytes(abi.encode("0x0000000000000000000000000000000000000000"))
-    );
+    holographERC20.onERC20Received(deployer, deployer, initialValue, Constants.EMPTY_BYTES);
   }
 
   //TODO see why mock token have balance? remove Fail to the name of the function
   function testErc20ReceivedFakeContractRevert() public {
     vm.skip(true);
     vm.expectRevert(bytes(ErrorConstants.ERC20_BALANCE_CHECK_FAILED_ERROR_MSG));
-    holographERC20.onERC20Received(
-      address(erc20Mock),
-      deployer,
-      initialValue,
-      bytes(abi.encode("0x0000000000000000000000000000000000000000"))
-    );
+    holographERC20.onERC20Received(address(erc20Mock), deployer, initialValue, Constants.EMPTY_BYTES);
   }
 
   //TODO see why revert ( amount exceeds balance, need mint and then not fail... ) and not non ERC20Received,
@@ -751,11 +738,7 @@ contract Erc20Enforcer is Test {
     erc20Mock.toggleWorks(false);
     vm.expectRevert(bytes(ErrorConstants.ERC20_NON_ERC20RECEIVER_ERROR_MSG));
     vm.prank(deployer);
-    holographERC20.safeTransfer(
-      address(erc20Mock),
-      initialValue,
-      bytes(abi.encode("0x0000000000000000000000000000000000000000"))
-    );
+    holographERC20.safeTransfer(address(erc20Mock), initialValue, Constants.EMPTY_BYTES);
   }
 
   //TODO see why not revert,  remove Fail to the name of the function
