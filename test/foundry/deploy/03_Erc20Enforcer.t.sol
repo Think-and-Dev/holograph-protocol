@@ -4,6 +4,7 @@ pragma solidity 0.8.13;
 import {Test, Vm, console} from "forge-std/Test.sol";
 import {Constants, ErrorConstants} from "../utils/Constants.sol";
 import {HolographERC20} from "../../../src/enforcer/HolographERC20.sol";
+import {Holographer} from "../../../src/enforcer/Holographer.sol";
 import {SampleERC20} from "../../../src/token/SampleERC20.sol";
 import {ERC20Mock} from "../../../src/mock/ERC20Mock.sol";
 import {Admin} from "../../../src/abstract/Admin.sol";
@@ -23,6 +24,7 @@ contract Erc20Enforcer is Test {
   uint256 localHostFork;
   string LOCALHOST_RPC_URL = vm.envString("LOCALHOST_RPC_URL");
   HolographERC20 holographERC20;
+  Holographer holographer;
   SampleERC20 sampleERC20;
   ERC20Mock erc20Mock;
   Admin admin;
@@ -55,6 +57,7 @@ contract Erc20Enforcer is Test {
     vm.selectFork(localHostFork);
     erc20Mock = ERC20Mock(payable(Constants.getERC20Mock()));
     holographERC20 = HolographERC20(payable(Constants.getSampleERC20()));
+    holographer = Holographer(payable(Constants.getSampleERC20()));
     sampleERC20 = SampleERC20(payable(Constants.getSampleERC20()));
     admin = Admin(payable(Constants.getHolographFactoryProxy()));
     badDeadLine = uint256(block.timestamp) - 1;
@@ -458,20 +461,36 @@ contract Erc20Enforcer is Test {
   /* -------------------------------------------------------------------------- */
 
   /**
-   * @notice Verifies that the contract initialization reverts if already initialized
+   * @notice Verifies that the initialization of theHolopgraphERC20 reverts if already initialized
    * @dev This test attempts to initialize the contract with a parameter and expects it to revert with the message
    * "HOLOGRAPHER: already initialized".
    * Refers to the hardhat test with the description 'should fail initializing already initialized Holographer'
    */
-  function testInitRevert() public {
+  function testInitHolographERC20Revert() public {
     bytes memory paramInit = Constants.EMPTY_BYTES;
     vm.expectRevert(bytes(ErrorConstants.HOLOGRAPHER_ALREADY_INITIALIZED_ERROR_MSG));
     holographERC20.init(paramInit);
   }
 
-  //TODO make the test
-  function testInit() public {
-    vm.skip(true);
+  /**
+   * @notice Verifies that the initialization of the Sample ERC20 Enforcer reverts if already initialized
+   * @dev This test attempts to initialize the Sample ERC20 Enforcer contract with some parameters and e
+   * xpects it to revert with the message "ERC20: already initialized".
+   * Refers to the hardhat test with the description 'should fail initializing already initialized ERC721 Enforcer'
+   */
+  function testInitSampleERC20EnforcerRevert() public {
+    holographer.getHolographEnforcer();
+    Holographer sampleERC20Enforcer = Holographer(payable(holographer.getHolographEnforcer()));
+    bytes memory initCode = abi.encode(
+      "",
+      "",
+      "0x00",
+      "0x0000000000000000000000000000000000000000000000000000000000000000",
+      false,
+      "0x0000000000000000000000000000000000000000000000000000000000000000"
+    );
+    vm.expectRevert(bytes(ErrorConstants.ERC20_ALREADY_INITIALIZED_ERROR_MSG));
+    sampleERC20Enforcer.init(initCode);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -564,7 +583,7 @@ contract Erc20Enforcer is Test {
    * Refers to the hardhat test with the description 'should fail when approving a zero address'
    */
   function testApprovalRevertZeroAddress() public {
-    vm.expectRevert(bytes(ErrorConstants.ERC20_SPENDER_SERO_ADDRES_ERROR_MSG));
+    vm.expectRevert(bytes(ErrorConstants.ERC20_SPENDER_SERO_ADDRESS_ERROR_MSG));
     holographERC20.approve(Constants.zeroAddress, maxValue);
   }
 
