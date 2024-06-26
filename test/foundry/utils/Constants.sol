@@ -183,6 +183,7 @@ library Constants {
   address public constant zeroAddress = address(0x0000000000000000000000000000000000000000);
   address public constant originAddress = address(0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38);
   bytes32 public constant saltHex = bytes32(0x00000000000000000000000000000000000000000000000000000000000003e8);
+  bytes32 public constant eventConfig = bytes32(0x0000000000000000000000000000000000000000000000000000000000000086);
   uint256 constant MAX_UINT256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
   uint256 constant MIN_UINT256 = 0x00000000000000000000000000000000000000000000000000000000000000;
   bytes public constant EMPTY_BYTES = abi.encode(0x0);
