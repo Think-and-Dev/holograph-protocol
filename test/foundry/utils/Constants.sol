@@ -186,7 +186,9 @@ library Constants {
   bytes32 public constant eventConfig = bytes32(0x0000000000000000000000000000000000000000000000000000000000000086);
   uint256 constant MAX_UINT256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
   uint256 constant MIN_UINT256 = 0x00000000000000000000000000000000000000000000000000000000000000;
+  bytes32 public constant EMPTY_BYTES32 = bytes32(0x0);
   bytes public constant EMPTY_BYTES = abi.encode(0x0);
+  bytes32 public constant hTokenHash = bytes32(0x000000000000000000000000000000000000486f6c6f67726170684552433230);
 }
 
 library ErrorConstants {
