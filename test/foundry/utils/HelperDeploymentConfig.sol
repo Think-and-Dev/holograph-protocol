@@ -16,7 +16,7 @@ library HelperDeploymentConfig {
   function getInitCodeHtokenETH() public pure returns (bytes memory) {
     return
       abi.encode(
-        bytes32(0x000000000000000000000000000000000000000000000000000068546f6b656e), //htokenHash
+        Constants.hTokenHash,
         Constants.getHolographRegistryProxy(), //registry address
         abi.encode(Constants.getDeployer(), uint16(0))
       );
@@ -113,7 +113,7 @@ library HelperDeploymentConfig {
   ) public pure returns (DeploymentConfig memory deployConfig) {
     return
       getDeployConfigERC20(
-        Constants.hTokenHash,
+        Constants.erc20Hash,
         chainType,
         contractByteCode,
         "Holographed ETH",
@@ -131,7 +131,7 @@ library HelperDeploymentConfig {
   ) public pure returns (DeploymentConfig memory deployConfig) {
     return
       getDeployConfigERC20(
-        Constants.hTokenHash,
+        Constants.erc20Hash,
         chainType,
         contractByteCode,
         isL1 ? "Sample ERC20 Token (localhost)" : "Sample ERC20 Token (localhost2)",
