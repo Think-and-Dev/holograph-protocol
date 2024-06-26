@@ -185,6 +185,7 @@ library Constants {
   bytes32 public constant saltHex = bytes32(0x00000000000000000000000000000000000000000000000000000000000003e8);
   uint256 constant MAX_UINT256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
   uint256 constant MIN_UINT256 = 0x00000000000000000000000000000000000000000000000000000000000000;
+  bytes public constant EMPTY_BYTES = abi.encode(0x0);
 }
 
 library ErrorConstants {
