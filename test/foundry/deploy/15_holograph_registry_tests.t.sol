@@ -32,7 +32,7 @@ contract HolographRegistryTests is Test {
 
   uint256 constant privateKeyDeployer = 0xff22437ccbedfffafa93a9f1da2e8c19c1711052799acf3b58ae5bebb5c6bd7b;
   address deployer = vm.addr(privateKeyDeployer);
-  address zeroAddress = Constants.getZeroAddress();
+  address zeroAddress = Constants.zeroAddress;
   address constant origin = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38; //default address origin in foundry
   address constant mockAddress = 0xeB721f3E4C45a41fBdF701c8143E52665e67c76b;
   address constant utilityTokenAddress = 0x4b02422DC46bb21D657A701D02794cD3Caeb17d0;
