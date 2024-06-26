@@ -111,13 +111,13 @@ library Constants {
   // NOTE: This has to be updated to the correct address every time a new contract is added to be
   //       deployed within the hardhat deploy pipeline
   function getERC20Mock() internal pure returns (address) {
-    return address(0x71B7f5A882F25c7292d0Ae5fa6d78129f431b957);
+    return address(0x4aF55cAE288F8B9867AF8992F5910080D3cebB4f);
   }
 
   // NOTE: This has to be updated to the correct address every time a new contract is added to be
   //       deployed within the hardhat deploy pipeline
   function getMockERC721Receiver() internal pure returns (address) {
-    return address(0x3a95a5263bb12083088c0A11296B18655121C9Ec);
+    return address(0xE13E4368adA84D7F73d30648cd67215B348D9D15);
   }
 
   function getSampleERC20() internal pure returns (address) {
@@ -136,8 +136,12 @@ library Constants {
     return address(0xB94053201514E26133770eA1351959AffF0DE684);
   }
 
-  function getZeroAddress() internal pure returns (address) {
-    return address(0x0000000000000000000000000000000000000000);
+  function getMockLZEndpoint() internal pure returns (address) {
+    return address(0x4d186eac2A5F2ec7a16079B8b111ab2EfB8b4342);
+  }
+
+  function getLayerZeroModuleProxy() internal pure returns (address) {
+    return address(0x350856f758d9A1b8c24540d8E10cd6AB45B1466d);
   }
 
   function getDropsEventConfig() internal pure returns (uint256) {
@@ -168,6 +172,10 @@ library Constants {
     return address(0xdf5295149F367b1FBFD595bdA578BAd22e59f504);
   }
 
+  function getGenesisDeployer() internal pure returns (address) {
+    return address(0xBB566182f35B9E5Ae04dB02a5450CC156d2f89c1);
+  }
+
   function getPKDeployer() internal pure returns (uint256) {
     return uint256(0xff22437ccbedfffafa93a9f1da2e8c19c1711052799acf3b58ae5bebb5c6bd7b);
   }
@@ -176,6 +184,9 @@ library Constants {
   address public constant originAddress = address(0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38);
   bytes32 public constant saltHex = bytes32(0x00000000000000000000000000000000000000000000000000000000000003e8);
   bytes32 public constant eventConfig = bytes32(0x0000000000000000000000000000000000000000000000000000000000000086);
+  uint256 constant MAX_UINT256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+  uint256 constant MIN_UINT256 = 0x00000000000000000000000000000000000000000000000000000000000000;
+  bytes public constant EMPTY_BYTES = abi.encode(0x0);
 }
 
 library ErrorConstants {
@@ -189,4 +200,12 @@ library ErrorConstants {
   string constant EMPTY_CONTRACT_ERROR_MSG = "HOLOGRAPH: empty contract";
   string constant CONTRACT_ALREADY_SET_ERROR_MSG = "HOLOGRAPH: contract already set";
   string constant ROYALTIES_ONLY_OWNER_ERROR_MSG = "ROYALTIES: caller not an owner";
+  string constant INCORRECT_CHAIN_ID = "HOLOGRAPH: incorrect chain id";
+  string constant DEPLOYMENT_FAIL = "HOLOGRAPH: deployment failed";
+  string constant INITIALIZATION_FAIL = "HOLOGRAPH: initialization failed";
+  string constant DEPLOYER_NOT_APPROVED = "HOLOGRAPH: deployer not approved";
+  string constant ROYALTIES_MISSMATCHED_LENGHTS_ERROR_MSG = "ROYALTIES: missmatched lenghts";
+  string constant ROYALTIES_MAX_TEN_ADDRESSES_MSG = "ROYALTIES: max 10 addresses";
+  string constant ROYALTIES_BPS_MUST_EQUAL_1000 = "ROYALTIES: bps must equal 10000";
+  string constant ROYALTIES_SENDER_NOT_AUTORIZED = "ROYALTIES: sender not authorized";
 }
