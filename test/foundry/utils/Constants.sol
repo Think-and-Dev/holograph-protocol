@@ -189,6 +189,8 @@ library Constants {
   bytes32 public constant EMPTY_BYTES32 = bytes32(0x0);
   bytes public constant EMPTY_BYTES = abi.encode(0x0);
   bytes32 public constant hTokenHash = bytes32(0x000000000000000000000000000000000000486f6c6f67726170684552433230);
+  bytes32 public constant holographERC721Hash =
+    bytes32(0x0000000000000000000000000000000000486f6c6f6772617068455243373231);
 }
 
 library ErrorConstants {
