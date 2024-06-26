@@ -673,6 +673,7 @@ VALIDATE CROSS-CHAIN DATA
     HolographDropERC721V2 holographDropERC721V2Chain2 = holographDropERC721V2;
     assertEq(address(holographDropERC721V2Chain1), address(holographDropERC721V2Chain2));
   }
+
   /*
 DEPLOY CROSS-CHAIN CONTRACTS
 */
@@ -810,7 +811,7 @@ DEPLOY CROSS-CHAIN CONTRACTS
     DeploymentConfig memory deployConfig = HelperDeploymentConfig.getERC721(
       Constants.getHolographIdL1(),
       vm.getCode("SampleERC721.sol:SampleERC721"),
-      bytes32(0x0000000000000000000000000000000000000000000000000000000000000086),
+      Constants.eventConfig,
       true
     );
 
@@ -840,7 +841,7 @@ DEPLOY CROSS-CHAIN CONTRACTS
     DeploymentConfig memory deployConfig = HelperDeploymentConfig.getERC721(
       Constants.getHolographIdL2(),
       vm.getCode("SampleERC721.sol:SampleERC721"),
-      bytes32(0x0000000000000000000000000000000000000000000000000000000000000086),
+      Constants.eventConfig,
       false
     );
 
@@ -874,7 +875,7 @@ DEPLOY CROSS-CHAIN CONTRACTS
     DeploymentConfig memory deployConfig = HelperDeploymentConfig.getCxipERC721(
       Constants.getHolographIdL1(),
       vm.getCode("CxipERC721Proxy.sol:CxipERC721Proxy"),
-      bytes32(0x0000000000000000000000000000000000000000000000000000000000000086),
+      Constants.eventConfig,
       true
     );
 
@@ -904,7 +905,7 @@ DEPLOY CROSS-CHAIN CONTRACTS
     DeploymentConfig memory deployConfig = HelperDeploymentConfig.getCxipERC721(
       Constants.getHolographIdL2(),
       vm.getCode("CxipERC721Proxy.sol:CxipERC721Proxy"),
-      bytes32(0x0000000000000000000000000000000000000000000000000000000000000086),
+      Constants.eventConfig,
       false
     );
 

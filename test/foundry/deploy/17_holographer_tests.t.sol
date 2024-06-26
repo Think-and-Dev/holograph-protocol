@@ -47,7 +47,7 @@ contract HolographerTests is Test {
       vm.getCode("SampleERC721.sol:SampleERC721"),
       "Sample ERC721 Contract: unit test",
       "SMPLR",
-      0x0000000000000000000000000000000000000000000000000000000000000086,
+      Constants.eventConfig,
       1000,
       HelperDeploymentConfig.getInitCodeSampleErc721()
     );

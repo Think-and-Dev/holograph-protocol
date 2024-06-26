@@ -400,7 +400,7 @@ contract CrossChainMinting is Test {
     deployConfig = HelperDeploymentConfig.getERC721(
       isL1 ? Constants.getHolographIdL1() : Constants.getHolographIdL2(),
       vm.getCode("SampleERC721.sol:SampleERC721"),
-      0x0000000000000000000000000000000000000000000000000000000000000086, // eventConfig,
+      Constants.eventConfig,
       isL1
     );
 
@@ -421,7 +421,7 @@ contract CrossChainMinting is Test {
     deployConfig = HelperDeploymentConfig.getCxipERC721(
       isL1 ? Constants.getHolographIdL1() : Constants.getHolographIdL2(),
       vm.getCode("CxipERC721Proxy.sol:CxipERC721Proxy"),
-      0x0000000000000000000000000000000000000000000000000000000000000086, // eventConfig,
+      Constants.eventConfig,
       isL1
     );
 
